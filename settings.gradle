@@ -1,0 +1,27 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            println("构建使用插件" + requested.id.id)
+        }
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven {
+            allowInsecureProtocol true
+            url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+        // maven { url 'http://developer.huawei.com/repo'} //如果需要使用华为推送HMS，则需要加上此句
+
+    }
+}
+rootProject.name = "dauth"
+include ':app'

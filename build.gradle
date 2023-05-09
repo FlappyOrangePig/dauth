@@ -1,0 +1,55 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    // Gradle will not find vars defined in an external file when referring to them
+    // in the buildscript block, unless you link it from the buildscript block, too.
+    apply from: 'config.gradle'
+}
+
+plugins {
+    id 'com.android.application' version '7.4.2' apply false
+    id 'com.android.library' version '7.4.2' apply false
+    id 'org.jetbrains.kotlin.android' version '1.8.20' apply false
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.20'
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileSdkVersion versions.compile_sdk
+                buildToolsVersion versions.build_tools
+                defaultConfig {
+                    minSdk versions.min_sdk
+                    targetSdk versions.target_sdk
+                    versionCode versions.version_code
+                    versionName versions.version_name
+                    vectorDrawables.useSupportLibrary = true
+                    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+                }
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                    targetCompatibility JavaVersion.VERSION_1_8
+                }
+                kotlinOptions { jvmTarget = '1.8' }
+                buildFeatures { viewBinding = true }
+                signingConfigs {
+                    /*release {
+                        storeFile project.rootProject.file("signing-keys/debug.jks")
+                        storePassword ''
+                        keyAlias ''
+                        keyPassword ''
+                    }*/
+                }
+                buildTypes {
+                    release {
+                        minifyEnabled false
+                        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                    }
+                    debug {
+                    }
+                }
+            }
+            println("namespace=" + android.namespace)
+        }
+    }
+}

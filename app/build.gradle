@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.kapt'
+    id 'org.jetbrains.kotlin.plugin.parcelize'
+}
+
+android {
+    //加载资源
+    Properties properties = new Properties()
+    InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream()
+    properties.load(inputStream)
+
+    namespace 'com.cyberflow.dauth'
+    defaultConfig {
+        applicationId "com.cyberflow.dauth"
+    }
+}
+
+dependencies {
+    implementation libraries.core_ktx
+    implementation libraries.appcompat
+    implementation libraries.material
+    testImplementation libraries.junit
+    androidTestImplementation libraries.ext_junit
+    androidTestImplementation libraries.espresso_core
+
+    implementation libraries.constraintlayout
+}

@@ -1,0 +1,69 @@
+ext {
+}.versions = [
+        version_code                 : 1,
+        version_name                 : '1.0.0',
+        min_sdk                      : 21,
+        target_sdk                   : 33,
+        compile_sdk                  : 33,
+        build_tools                  : '33.0.2',
+
+        core_ktx                     : "1.9.0",
+        activity_ktx                 : "1.6.1",
+        fragment_ktx                 : "1.5.5",
+        collection_ktx               : "1.1.0",
+        appcompat                    : "1.6.1",
+        material                     : "1.8.0",
+        junit                        : "4.13.2",
+        ext_junit                    : "1.1.5",
+        espresso_core                : "3.5.1",
+        constraintlayout             : "2.1.4",
+        lifecycle                    : "2.2.0",
+        coroutine                    : "1.6.1",
+        kotlin_stdlib                : "1.8.0",
+        room                         : "2.5.0",
+        huanxin                      : "4.0.0",
+        retrofit                     : "2.9.0",
+        glide                        : "4.11.0",
+        okhttp                       : "5.0.0-alpha.2",
+        gson                         : "2.9.0",
+        serialization                : "1.5.0",
+]
+
+ext {
+}.libraries = [
+        appcompat                     : "androidx.appcompat:appcompat:$versions.appcompat",
+        material                      : "com.google.android.material:material:$versions.material",
+        junit                         : "junit:junit:$versions.junit",
+        ext_junit                     : "androidx.test.ext:junit:$versions.ext_junit",
+        espresso_core                 : "androidx.test.espresso:espresso-core:$versions.espresso_core",
+        constraintlayout              : "androidx.constraintlayout:constraintlayout:$versions.constraintlayout",
+
+        // ktx
+        core_ktx                      : "androidx.core:core-ktx:$versions.core_ktx",
+        activity_ktx                  : "androidx.activity:activity-ktx:$versions.activity_ktx",
+        fragment_ktx                  : "androidx.fragment:fragment-ktx:$versions.fragment_ktx",
+        collection_ktx                : "androidx.collection:collection-ktx:$versions.collection_ktx",
+        lifecycle_viewmodel_ktx       : "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.lifecycle",
+        lifecycle_livedata_ktx        : "androidx.lifecycle:lifecycle-livedata-ktx:$versions.lifecycle",
+        lifecycle_runtime_ktx         : "androidx.lifecycle:lifecycle-runtime-ktx:$versions.lifecycle",
+        lifecycle_viewmodel_savedstate: "androidx.lifecycle:lifecycle-viewmodel-savedstate:$versions.lifecycle",
+
+        kotlin_stdlib                 : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin_stdlib",
+        coroutine                     : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutine",
+        coroutines_play_services      : "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions.coroutine",
+        coroutines_test               : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutine",
+
+        room_runtime                  : "androidx.room:room-runtime:$versions.room",
+        room_compiler                 : "androidx.room:room-compiler:$versions.room",
+        room_ktx                      : "androidx.room:room-ktx:$versions.room",
+        room_testing                  : "androidx.room:room-testing:$versions.room",
+
+        huanxin                       : "io.hyphenate:hyphenate-chat:$versions.huanxin",
+        retrofit                      : "com.squareup.retrofit2:retrofit:$versions.retrofit",
+        retrofit_converter_gson       : "com.squareup.retrofit2:converter-gson:$versions.retrofit",
+        glide                         : "com.github.bumptech.glide:glide:$versions.glide",
+        glide_compiler                : "com.github.bumptech.glide:compiler:$versions.glide",
+        okhttp                        : "com.squareup.okhttp3:okhttp:$versions.okhttp",
+        gson                          : "com.google.code.gson:gson:$versions.gson",
+        serialization_json            : "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions.serialization",
+]
