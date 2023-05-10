@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
     id 'org.jetbrains.kotlin.plugin.parcelize'
+//    id 'com.google.gms.google-services'
 }
 
 android {
@@ -13,7 +14,7 @@ android {
 
     namespace 'com.cyberflow.dauth'
     defaultConfig {
-        applicationId "com.cyberflow.dauth"
+        applicationId "com.cyberflow.dauthsdk"
     }
 }
 
@@ -26,4 +27,6 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
+    implementation project(":DauthSDK")
 }
+
