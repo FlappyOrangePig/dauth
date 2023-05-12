@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:name="com.cyberflow.dauthsdk.CyberflowApplication"
+        android:name="com.cyberflow.dauthsdk.MyApplication"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:fullBackupOnly="false"
@@ -19,6 +19,7 @@
         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
 
         <activity
+            android:theme="@style/Theme.client"
             android:name="com.cyberflow.dauthsdk.MainActivity"
             android:exported="true">
             <intent-filter>

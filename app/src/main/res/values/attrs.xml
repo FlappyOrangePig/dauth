@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="dauthColorWhite" format="color"/>
+    <attr name="dauthColorWhite2" format="color"/>
+    <attr name="dauthColorBlack" format="color"/>
+    <attr name="dauthColorBlue" format="color"/>
+    <attr name="dauthColorGreen" format="color"/>
+</resources>

@@ -1,0 +1,72 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.cyberflow.dauthsdk'
+    compileSdk versions.compile_sdk
+
+    defaultConfig {
+        minSdk versions.min_sdk
+        targetSdk versions.target_sdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    implementation libraries.core_ktx
+    implementation libraries.appcompat
+    implementation libraries.material
+    testImplementation libraries.junit
+    androidTestImplementation libraries.ext_junit
+    androidTestImplementation libraries.espresso_core
+
+    implementation libraries.constraintlayout
+    //日志拦截器
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation libraries.okhttp
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:31.4.0')
+
+    // Add the dependency for the Firebase Authentication library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    //Google sdk
+    api 'com.google.android.gms:play-services-auth:20.5.0'
+
+    //twitter
+    api 'com.twitter.sdk.android:twitter:3.1.1'
+    api 'com.twitter.sdk.android:twitter-core:3.1.1'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.12.0'
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation 'commons-beanutils:commons-beanutils:1.9.4'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    // 协程Android支持库
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    // 协程Java8支持库
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4"
+    // lifecycle对于协程的扩展封装
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
+}

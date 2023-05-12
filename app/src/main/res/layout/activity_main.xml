@@ -7,14 +7,34 @@
     tools:context="com.cyberflow.dauthsdk.MainActivity">
 
     <Button
-        android:id="@+id/btn_login"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_dauth_login"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="GoogleLogin"
-        app:layout_constraintBottom_toTopOf="@id/twitter_login"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:text="Dauth授权登录"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:background="@drawable/allow_btn_shape"
+        app:layout_constraintBottom_toTopOf="@id/btn_google_login"
+        android:layout_marginBottom="50dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btn_google_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:text="Google授权登录"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:background="@drawable/allow_btn_shape"
+        app:layout_constraintBottom_toTopOf="@id/btn_my_twitter"
+        android:layout_marginBottom="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.twitter.sdk.android.core.identity.TwitterLoginButton
         android:visibility="gone"
@@ -29,10 +49,15 @@
 
     <Button
         android:id="@+id/btn_my_twitter"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TWITTER"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:textColor="@color/white"
+        android:text="Twitter授权登录"
+        android:textAllCaps="false"
+        android:background="@drawable/allow_btn_shape"
+        android:layout_marginBottom="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
