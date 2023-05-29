@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'com.kezong.fat-aar'
 }
 
 android {
@@ -31,7 +32,6 @@ android {
 }
 
 dependencies {
-
     implementation libraries.core_ktx
     implementation libraries.appcompat
     implementation libraries.material
@@ -44,20 +44,23 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
     implementation libraries.okhttp
     implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
-    // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:31.4.0')
+//    // Import the BoM for the Firebase platform
+//    implementation platform('com.google.firebase:firebase-bom:31.4.0')
 
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation 'com.google.firebase:firebase-auth-ktx'
+//    implementation 'com.google.firebase:firebase-auth-ktx'
     //Google sdk
-    api 'com.google.android.gms:play-services-auth:20.5.0'
+    implementation 'com.google.android.gms:play-services-auth:20.5.0'
+    implementation 'com.google.android.gms:play-services-base:18.2.0@aar'
+
+    implementation 'com.google.code.gson:gson:2.9.0'
 
     //twitter
-    api 'com.twitter.sdk.android:twitter:3.1.1'
-    api 'com.twitter.sdk.android:twitter-core:3.1.1'
+    implementation 'com.twitter.sdk.android:twitter:3.1.1'
+    implementation 'com.twitter.sdk.android:twitter-core:3.1.1@aar'
+
     implementation 'com.squareup.moshi:moshi-kotlin:1.12.0'
-    implementation 'org.apache.commons:commons-lang3:3.7'
     implementation 'org.apache.commons:commons-lang3:3.7'
     implementation 'commons-beanutils:commons-beanutils:1.9.4'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"

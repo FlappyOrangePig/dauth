@@ -1,10 +1,9 @@
-package com.cyberflow.dauthsdk.login
+package com.cyberflow.dauthsdk
 
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.cyberflow.dauthsdk.constant.LoginType
 import com.cyberflow.dauthsdk.google.GoogleLoginManager
 import com.cyberflow.dauthsdk.twitter.TwitterLoginManager
@@ -23,11 +22,11 @@ class DAuthSDK {
         }
     }
 
-    fun initSDK(context : Context, appId: String, appKey: String) {
+    fun initSDK(activity: Activity , appId: String, appKey: String) {
         val intent = Intent()
         intent.component =
             ComponentName("com.cyberflow.dauthsdk", "com.cyberflow.dauthsdk.view.DAuthActivity");
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     fun login() {
@@ -45,6 +44,7 @@ class DAuthSDK {
                         override fun success(result: Result<TwitterSession>?) {
                             val token = result?.data?.authToken
                             val userId = result?.data?.userId
+
                             DAuthLogger.d("twitter login success")
                         }
 
@@ -57,6 +57,11 @@ class DAuthSDK {
             }
         }
     }
+
+    fun createDAuthAccount(userName: String, passWord: String, oPassWord: String) {
+
+    }
+
 
     fun logout() {
 

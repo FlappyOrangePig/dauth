@@ -102,7 +102,7 @@ class TwitterLoginManager() {
                 }
 
                 override fun failure(exception: TwitterException?) {
-                    TODO("Not yet implemented")
+                    DAuthLogger.e("twitter auth exception:$exception")
                 }
 
             })

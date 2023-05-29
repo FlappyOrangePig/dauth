@@ -97,7 +97,7 @@ class GoogleLoginManager {
             )
             activity.lifecycleScope.launch(Dispatchers.IO) {
                 val data = AccountApi().authorizeExchangedToken(authorizeParam)
-                withContext(Dispatchers.Main){
+                withContext(Dispatchers.Main) {
 
                 }
             }
