@@ -23,13 +23,13 @@ package com.cyberflow.dauthsdk.model
  */
 data class LoginAuthParam (
     /* 账号类型 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
     /* 客户端 web\\apple\\android */
-    val platform: kotlin.String,
+    val platform: String,
     /* 用户登录凭证 */
-    val session_id: kotlin.String,
+    val session_id: String,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
     val clientInHeader: ClientInHeader? = null
 ) {
 

@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class SignParam (
     /* 检验参数 */
-    val sign: kotlin.String
+    val sign: String
 ) {
 
 }

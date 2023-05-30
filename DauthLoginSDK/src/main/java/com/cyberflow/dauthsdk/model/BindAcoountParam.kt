@@ -23,13 +23,13 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class BindAcoountParam (
     /* 用户main openudid */
-    val openudid: kotlin.String,
+    val openudid: String,
     /* sub账号的access code */
-    val subaccesscode: kotlin.String,
+    val subaccesscode: String,
     /* 账号类型 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
     val accessTokenInHeader : AccessTokenInHeader? = null
 ) {
 

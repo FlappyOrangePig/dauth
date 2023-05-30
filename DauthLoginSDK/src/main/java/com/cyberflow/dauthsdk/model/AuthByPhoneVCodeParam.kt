@@ -22,13 +22,13 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthByPhoneVCodeParam (
     /* 手机号 */
-    val phone: kotlin.String,
+    val phone: String,
     /* 手机区号 */
-    val phone_area_code: kotlin.String,
+    val phone_area_code: String,
     /* 验证码 */
-    val verify_code: kotlin.Int,
+    val verify_code: Int,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
     val clientInHeader : ClientInHeader? = null
 ) {
 

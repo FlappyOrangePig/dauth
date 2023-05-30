@@ -21,9 +21,9 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class GetAcccountInfoParam (
     /* 用户id */
-    val openudid: kotlin.String,
+    val openudid: String,
     /* 登录来源 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

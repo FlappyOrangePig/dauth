@@ -20,7 +20,7 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class QueryRealInfoParam (
     /* 用户id */
-    val openudid: kotlin.String,
+    val openudid: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

@@ -22,13 +22,13 @@ package com.cyberflow.dauthsdk.model
  */
 data class TokenAuthenticationRes (
     /* 用户登录标识,调用凭证,接口header传入,有效期短 */
-    val access_token: kotlin.String,
-    val token_type: kotlin.String,
+    val access_token: String,
+    val token_type: String,
     /* access_token有效期，单位（秒） */
-    val expire_in: kotlin.Long,
+    val expire_in: Long,
     /* 用于刷新access_token,每次刷新返回新的 */
-    val refresh_token: kotlin.String,
-    val scope: kotlin.String
+    val refresh_token: String,
+    val scope: String
 ) {
 
 }

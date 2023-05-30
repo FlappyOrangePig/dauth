@@ -11,15 +11,18 @@
 */
 package com.cyberflow.dauthsdk.model
 
+import com.cyberflow.dauthsdk.network.BaseResponse
+
 
 /**
  * 
  * @param SessionID 登录凭证
  */
-data class CreateAccountRes (
-    /* 登录凭证 */
-    val SessionID: kotlin.String
-) {
+data class CreateAccountRes(val data: Data) : BaseResponse() {
+    class Data {
+        /* 登录凭证 */
+        var SessionID: String? = null
+    }
 
 }
 

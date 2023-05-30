@@ -20,7 +20,7 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class QueryByPhoneParam (
     /* 电话号码 */
-    val phone: kotlin.String,
+    val phone: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

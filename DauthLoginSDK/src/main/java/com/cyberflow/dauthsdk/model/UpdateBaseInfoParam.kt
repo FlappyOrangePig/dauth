@@ -30,27 +30,27 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class UpdateBaseInfoParam (
     /* 用户唯一标识 */
-    val openudid: kotlin.String,
+    val openudid: String,
     /* 昵称 */
-    val nickname: kotlin.String,
+    val nickname: String,
     /* 生日 */
-    val birthday: kotlin.String,
+    val birthday: String,
     /* 性别 0保密 1男 2女 */
-    val sex: kotlin.Int,
+    val sex: Int,
     /* 用户图像地址 */
-    val head_img_url: kotlin.String,
+    val head_img_url: String,
     /* 国家/地区 */
-    val country: kotlin.String,
+    val country: String,
     /* 省份 */
-    val province: kotlin.String,
+    val province: String,
     /* 城市 */
-    val city: kotlin.String,
+    val city: String,
     /* 区 */
-    val district: kotlin.String,
+    val district: String,
     /* 详细地址 */
-    val address: kotlin.String,
+    val address: String,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.model
 
+import com.cyberflow.dauthsdk.network.BaseResponse
+
 
 /**
  * 
@@ -19,11 +21,13 @@ package com.cyberflow.dauthsdk.model
  * @param refresh_after DIDToken应该刷新的时间 一般过期时间的前几天
  */
 data class AuthorizeToken2Res(
-    val did_token: kotlin.String,
-    val d_access_token: kotlin.String,
-    val d_refresh_token: kotlin.String,
-    val d_expire_in: kotlin.Long
-) {
-
+    var data: Data? = null
+) : BaseResponse() {
+    class Data {
+        val did_token: kotlin.String? = null
+        val d_access_token: kotlin.String? = null
+        val d_refresh_token: kotlin.String? = null
+        val d_expire_in: kotlin.Long? = null
+    }
 }
 

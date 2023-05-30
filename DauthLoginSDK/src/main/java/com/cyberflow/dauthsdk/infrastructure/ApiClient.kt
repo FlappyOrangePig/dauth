@@ -1,6 +1,5 @@
 package com.cyberflow.dauthsdk.infrastructure
 
-import com.cyberflow.dauthsdk.model.BaseErrorResponse
 import com.cyberflow.dauthsdk.utils.DAuthLogger
 import com.cyberflow.dauthsdk.utils.SignUtils
 import com.google.gson.Gson
@@ -9,7 +8,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -75,40 +73,9 @@ open class ApiClient(val baseUrl: String) {
         if(response.body == null) return null
         val body = response.body
         val rb = body?.string()
-        val data = JSONObject(rb)
-        val ret = data.getInt("iRet")
-        val objStr = data.getString("data")
-        val msg = data.getString("sMsg")
-        DAuthLogger.e("接口返回：$msg")
-        if (T::class.java == java.io.File::class.java) {
-            return downloadFileFromResponse(response) as T
-        } else if (T::class == Unit::class) {
-            return Unit as T
-        }
-        
-        var contentType = response.headers["Content-Type"]
-        
-        if(contentType == null) {
-            contentType = JsonMediaType
-        }
-        if(ret == 0) {
-            try {
-                return if (isJsonMime(contentType)) {
-                    val gson = Gson()
-                    gson.fromJson(objStr, T::class.java)
-                } else if (contentType.equals(String.Companion::class.java)) {
-                    response.body.toString() as T
-                } else {
-                    DAuthLogger.e("Fill in more types!")
-                    return null
-                }
-            } catch (e: java.lang.Exception) {
-                DAuthLogger.e("responseBody Serializer exception: $e")
-            }
-        } else {
-            DAuthLogger.e("http request response errorCode:$ret,errorMsg:$msg")
-        }
-        return null
+        DAuthLogger.d("Response body: $rb")
+        val gson = Gson()
+        return gson.fromJson(rb,T::class.java)
     }
     
     fun isJsonMime(mime: String?): Boolean {

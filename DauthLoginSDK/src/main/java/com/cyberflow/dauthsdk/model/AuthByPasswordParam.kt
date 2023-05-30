@@ -24,18 +24,18 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthByPasswordParam (
     /* 用户账号 */
-    val account: kotlin.String,
+    val account: String,
     /* 密码 */
-    val password: kotlin.String,
+    val password: String,
     /* 客户端 web\\apple\\android */
-    val client: kotlin.String,
+    val client: String,
     /* 登录来源 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
     val clientInHeader: ClientInHeader? = null,
     /* 手机号登录时必填 */
-    val phone_area_code: kotlin.String? = null
+    val phone_area_code: String? = null
 ) {
 
 }

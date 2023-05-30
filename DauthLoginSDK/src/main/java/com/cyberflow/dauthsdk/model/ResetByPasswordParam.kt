@@ -21,9 +21,9 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class ResetByPasswordParam (
     /* 用户id */
-    val openudid: kotlin.String,
+    val openudid: String,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.model
 
+import com.cyberflow.dauthsdk.network.BaseResponse
+
 
 /**
  * 
@@ -34,45 +36,46 @@ package com.cyberflow.dauthsdk.model
  * @param user_state 用户状态
  * @param create_time 注册时间
  */
-data class AccountRes (
-    /* 用户账号 */
-    val account: kotlin.String,
-    /* 用户昵称 */
-    val nickname: kotlin.String,
-    /* 用户生日 */
-    val birthday: kotlin.String,
-    /* 性别 0保密 1男 2女 */
-    val sex: kotlin.Int,
-    /* 邮箱 */
-    val email: kotlin.String,
-    /* 电话区号 */
-    val phone_area_code: kotlin.String,
-    /* 电话号码 */
-    val phone: kotlin.Long,
-    val identity_Status: kotlin.Int,
-    /* 用户图像地址 */
-    val head_img_url: kotlin.String,
-    /* 国家/地区 */
-    val country: kotlin.String,
-    /* 省份 */
-    val province: kotlin.String,
-    /* 城市 */
-    val city: kotlin.String,
-    /* 区 */
-    val district: kotlin.String,
-    /* 详细地址 */
-    val address: kotlin.String,
-    /* 注册来源 */
-    val user_type: kotlin.Int,
-    /* 用户状态 */
-    val user_state: kotlin.Int,
-    /* 注册时间 */
-    val create_time: kotlin.String,
-    /* 用户真实名称 */
-    val real_name: kotlin.String? = null,
-    /* 身份证 */
-    val identity: kotlin.String? = null
-) {
-
+data class AccountRes (var data : Data?= null
+): BaseResponse() {
+    class Data {
+        /* 用户账号 */
+        var account: String?= null
+        /* 用户昵称 */
+        var nickname: String?= null
+        /* 用户生日 */
+        var birthday: String?= null
+        /* 性别 0保密 1男 2女 */
+        var sex: Int?= null
+        /* 邮箱 */
+        var email: String?= null
+        /* 电话区号 */
+        var phone_area_code: String?= null
+        /* 电话号码 */
+        var phone: Long ?= null
+        var identity_Status: Int?= null
+        /* 用户图像地址 */
+        var head_img_url: String?= null
+        /* 国家/地区 */
+        var country: String?= null
+        /* 省份 */
+        var province: String?= null
+        /* 城市 */
+        var city: String?= null
+        /* 区 */
+        var district: String?= null
+        /* 详细地址 */
+        var address: String?= null
+        /* 注册来源 */
+        var user_type: Int?= null
+        /* 用户状态 */
+        var user_state: Int?= null
+        /* 注册时间 */
+        var create_time: String?= null
+        /* 用户真实名称 */
+        var real_name: String? = null
+        /* 身份证 */
+        var identity: String? = null
+    }
 }
 

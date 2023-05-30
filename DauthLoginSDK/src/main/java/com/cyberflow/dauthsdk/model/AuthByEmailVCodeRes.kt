@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthByEmailVCodeRes (
     /* 用户id */
-    val code: kotlin.String
+    val code: String
 ) {
 
 }

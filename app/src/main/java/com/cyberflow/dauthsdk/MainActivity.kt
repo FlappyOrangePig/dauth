@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainBinding
@@ -18,11 +19,17 @@ import com.cyberflow.dauthsdk.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.twitter.TwitterLoginUtils
 import com.cyberflow.dauthsdk.utils.DAuthLogger
 import com.cyberflow.dauthsdk.utils.SignUtils
+import com.cyberflow.dauthsdk.view.WalletWebViewActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 private const val TWITTER_REQUEST_CODE = 140
+private const val GOOGLE_REQUEST_CODE = 9001
+private const val GOOGLE = "GOOGLE"
+private const val TWITTER = "TWITTER"
+private const val FACEBOOK = "FACEBOOK"
+
 class MainActivity : AppCompatActivity() {
     var mainBinding: ActivityMainBinding?  = null
     private val binding: ActivityMainBinding get() = mainBinding!!
@@ -33,31 +40,52 @@ class MainActivity : AppCompatActivity() {
         mainBinding = ActivityMainBinding.inflate(LayoutInflater.from(this))
 
         setContentView(binding.root)
-        binding.btnMyTwitter.setOnClickListener {
-            DAuthSDK.instance.loginWithType(LoginType.TWITTER,this@MainActivity)
-        }
 
         binding.btnDauthLogin.setOnClickListener {
-            DAuthSDK.instance.initSDK(this,"","")
+            val account = binding.edtAccount.text.toString()
+            DAuthSDK.instance.login(account)
         }
 
-        binding.btnGoogleLogin.setOnClickListener {
-            DAuthSDK.instance.loginWithType(LoginType.GOOGLE,this@MainActivity)
-
+        binding.tvForgetPwd.setOnClickListener {
+            ResetPasswordActivity.launch(this)
         }
 
-//        twitterCallback()
+        binding.tvRegister.setOnClickListener {
+            RegisterActivity.launch(this)
+        }
+        initView()
+    }
+
+    private fun initView() {
+        binding.ivGoogle.setOnClickListener {
+            DAuthSDK.instance.loginWithType(GOOGLE, this)
+        }
+
+        binding.ivTwitter.setOnClickListener {
+            DAuthSDK.instance.loginWithType(TWITTER, this)
+        }
+
+        binding.ivWallet.setOnClickListener {
+            WalletWebViewActivity.launch(this, false)
+        }
+
+        binding.tvSendCode.setOnClickListener {
+            Toast.makeText(this, "验证码发送成功", Toast.LENGTH_SHORT).show()
+            DAuthSDK.instance.sendVerifyCode()
+        }
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        //twitter
-        if(requestCode == TWITTER_REQUEST_CODE) {
-            TwitterLoginManager.instance.onActivityResult(requestCode, resultCode, data)
+        when(requestCode) {
+            TWITTER_REQUEST_CODE -> {
+                TwitterLoginManager.instance.onActivityResult(requestCode, resultCode, data)
+            }
+            GOOGLE_REQUEST_CODE -> {
+                GoogleLoginManager.instance.onActivityResult(this, data)
+            }
         }
-        //google
-        googleUser = GoogleLoginManager.instance.onActivityResult(this,data)
     }
 
 

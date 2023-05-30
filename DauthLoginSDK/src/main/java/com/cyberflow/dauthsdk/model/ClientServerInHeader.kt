@@ -19,7 +19,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class ClientServerInHeader (
     /* 所属应用id */
-    val ClientID: kotlin.String? = null,
+    val ClientID: String? = null,
     /* app标识key */
     val ClientKey: kotlin.String? = null
 ) {

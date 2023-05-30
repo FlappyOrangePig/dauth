@@ -27,20 +27,20 @@ package com.cyberflow.dauthsdk.model
  */
 data class LoginParam (
     /* 账号类型 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
     /* 客户端 web\\apple\\android */
-    val platform: kotlin.String,
+    val platform: String,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
     val clientInHeader: ClientInHeader? = null,
     /* 手机号,手机号登录时必填 */
-    val phone: kotlin.String? = null,
+    val phone: String? = null,
     /* 手机区号,手机号登录时必填 */
-    val phone_area_code: kotlin.String? = null,
+    val phone_area_code: String? = null,
     /* 邮箱账号或自定义账号,账号登录时必填 */
-    val account: kotlin.String? = null,
+    val account: String? = null,
     /* 密码,账号登录时必填 */
-    val password: kotlin.String? = null,
+    val password: String? = null,
     /* 验证码,手机号或邮箱登录时必填 */
     val verify_code: kotlin.Int? = null
 ) {

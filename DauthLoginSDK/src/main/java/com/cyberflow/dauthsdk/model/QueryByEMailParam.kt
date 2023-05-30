@@ -20,7 +20,7 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class QueryByEMailParam (
     /* 邮箱 */
-    val email: kotlin.String,
+    val email: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

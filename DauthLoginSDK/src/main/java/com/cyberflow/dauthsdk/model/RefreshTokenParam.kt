@@ -24,15 +24,15 @@ package com.cyberflow.dauthsdk.model
  */
 data class RefreshTokenParam (
     /* 用户id */
-    val openudid: kotlin.String,
+    val openudid: String,
     /* 账号类型 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
     /* 平台来源 */
-    val platform: kotlin.String,
+    val platform: String,
     /* 用于刷新access_token */
-    val refresh_token: kotlin.String,
+    val refresh_token: String,
     /* 检验参数 */
-    val sign: kotlin.String,
+    val sign: String,
     val clientInHeader: ClientInHeader? = null
 ) {
 

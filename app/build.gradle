@@ -26,6 +26,7 @@ dependencies {
     implementation libraries.core_ktx
     implementation libraries.appcompat
     implementation libraries.material
+    implementation 'androidx.fragment:fragment:1.4.1'
     testImplementation libraries.junit
     androidTestImplementation libraries.ext_junit
     androidTestImplementation libraries.espresso_core
@@ -53,7 +54,6 @@ dependencies {
     //twitter
     implementation 'com.twitter.sdk.android:twitter:3.1.1'
     implementation 'com.twitter.sdk.android:twitter-core:3.1.1@aar'
-
 
 
 }

@@ -36,13 +36,13 @@ package com.cyberflow.dauthsdk.model
  */
 data class MiniAccountRealInfoRes (
     /* 用户账号 */
-    val account: kotlin.String,
+    val account: String,
     /* 用户昵称 */
-    val nickname: kotlin.String,
+    val nickname: String,
     /* 用户生日 */
-    val birthday: kotlin.String,
+    val birthday: String,
     /* 性别 0保密 1男 2女 */
-    val sex: kotlin.Int,
+    val sex: Int,
     /* 邮箱 */
     val email: kotlin.String,
     /* 电话区号 */

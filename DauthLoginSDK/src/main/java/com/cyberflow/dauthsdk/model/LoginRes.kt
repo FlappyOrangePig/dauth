@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class LoginRes (
     /* 用户登录凭证 */
-    val session_id: kotlin.String
+    val session_id: String
 ) {
 
 }

@@ -25,7 +25,6 @@ import com.cyberflow.dauthsdk.model.CreateAccountParam
 import com.cyberflow.dauthsdk.model.CreateAccountRes
 import com.cyberflow.dauthsdk.model.GetAcccountInfoParam
 import com.cyberflow.dauthsdk.model.GetAcccountInfoRes
-import com.cyberflow.dauthsdk.model.GetBindAcoountsParam
 import com.cyberflow.dauthsdk.model.LoginAuthParam
 import com.cyberflow.dauthsdk.model.LoginAuthRes
 import com.cyberflow.dauthsdk.model.LoginParam
@@ -52,7 +51,7 @@ import com.cyberflow.dauthsdk.utils.DAuthLogger
 private const val BASE_URL = "https://dauth-test.mimo.immo"
 private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
 private const val CLIENT_SECRET = "4657*@cde"
-class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
+class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
 
     /**
     * 第三方认证登录，返回临时 code
@@ -62,12 +61,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun authorize(body: AuthorizeParam) : AuthorizeRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -88,7 +87,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -99,13 +98,13 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * @return AuthorizeToken2Res
     */
     @Suppress("UNCHECKED_CAST")
-    fun authorizeExchangedToken(body: AuthorizeToken2Param) : AuthorizeToken2Res {
-        val localVariableBody: kotlin.Any? = body
+    fun authorizeExchangedToken(body: AuthorizeToken2Param) : AuthorizeToken2Res? {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
 
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("client_id" to CLIENT_ID)
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf("client_id" to CLIENT_ID)
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
 
@@ -119,35 +118,30 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             localVariableBody
         )
-        DAuthLogger.e("接口参数：${localVariableBody.toString()}")
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as AuthorizeToken2Res
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException(
-                (response as ClientError<*>).body as? String ?: "Client error"
-            )
-            ResponseType.ServerError -> throw ServerException(
-                (response as ServerError<*>).message ?: "Server error"
-            )
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+        DAuthLogger.e("接口参数：$localVariableBody")
+        val responseData = (response as Success<*>).data
+        if(responseData.toString().isNotEmpty() && responseData.toString() != "null") {
+            return (response as Success<*>).data as AuthorizeToken2Res
+        } else {
+            DAuthLogger.e("接口请求失败")
         }
+        return null
     }
 
     /**
     * 绑定子账号
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun bindAccount(body: BindAcoountParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun bindAccount(body: BindAcoountParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -157,18 +151,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -176,16 +170,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 绑定邮箱
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun bindEmail(body: BindEmailParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun bindEmail(body: BindEmailParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -195,18 +189,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -214,16 +208,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 绑定手机号
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun bindPhone(body: BindPhoneParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun bindPhone(body: BindPhoneParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -233,18 +227,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -252,16 +246,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 绑定用户真实信息
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun bindRealInfo(body: BindRealInfoParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun bindRealInfo(body: BindRealInfoParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -271,18 +265,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -294,13 +288,13 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun createAccount(body: CreateAccountParam) : CreateAccountRes? {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         DAuthLogger.e("加密后所有参数：${localVariableBody.toString()}")
         val contentHeaders:  Map<String,String> = mapOf("client_id" to CLIENT_ID)
         val platformHeaders:  Map<String,String> = mapOf("platform" to "android")
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(platformHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
@@ -316,49 +310,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             localVariableBody
         )
 
-        if((response as Success<*>).data != null) {
-            return (response as Success<*>).data as CreateAccountRes
+        DAuthLogger.e("接口参数：$localVariableBody")
+        val responseData = (response as Success<*>).data
+        if(responseData != null && responseData.toString() != "null") {
+            return (response as? Success<*>)?.data as? CreateAccountRes
+        } else {
+            DAuthLogger.e("接口请求失败")
         }
         return null
     }
 
-    /**
-    * 查询绑定的子账号，给appserver用
-    * 
-    * @param body  
-    * @return kotlin.Any
-    */
-    @Suppress("UNCHECKED_CAST")
-    fun getBindAccounts(body: GetBindAcoountsParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/getBindAccounts",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
-        val response = request<kotlin.Any>(
-            localVariableConfig,
-            localVariableBody
-        )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
-        }
-    }
+
 
     /**
     * 获取用户信息
@@ -368,12 +331,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun getUserInfo(body: AuthorizeToken2Param) : AuthorizeToken2Res {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -394,7 +357,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -405,13 +368,13 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * @return GetAcccountInfoRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun getacccountinfo(body: GetAcccountInfoParam) : GetAcccountInfoRes {
-        val localVariableBody: kotlin.Any? = body
+    fun getAccountInfo(body: GetAcccountInfoParam) : GetAcccountInfoRes {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -432,7 +395,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -444,12 +407,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun login(body: LoginParam) : LoginRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -470,7 +433,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -482,12 +445,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun loginAuth(body: LoginAuthParam) : LoginAuthRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -508,7 +471,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -516,16 +479,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 账号退出，包括第三方账号退出
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun logout(body: LogoutParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun logout(body: LogoutParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -535,18 +498,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -558,12 +521,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun queryByAccountNum(body: QueryByAccountParam) : AccountRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -584,7 +547,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -596,12 +559,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun queryByEMail(body: QueryByEMailParam) : AccountRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -622,7 +585,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -634,12 +597,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun queryByPhone(body: QueryByPhoneParam) : AccountRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -660,7 +623,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -672,12 +635,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun queryRealInfo(body: QueryRealInfoParam) : MiniAccountRealInfoRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -698,7 +661,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -710,12 +673,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun refreshToken(body: RefreshTokenParam) : RefreshTokenParamRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -736,7 +699,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -744,16 +707,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 重置密码
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun resetByPassword(body: ResetByPasswordParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun resetByPassword(body: ResetByPasswordParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -763,18 +726,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -782,16 +745,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 发送邮件验证码
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -801,18 +764,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -820,16 +783,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 发送手机短信验证码
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun sendPhoneVerifyCode(body: SendPhoneVerifyCodeParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun sendPhoneVerifyCode(body: SendPhoneVerifyCodeParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -839,18 +802,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -862,12 +825,12 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun tokenAuthentication(body: TokenAuthenticationParam) : TokenAuthenticationRes {
-        val localVariableBody: kotlin.Any? = body
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -888,7 +851,7 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -896,16 +859,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 邮箱解绑
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun unbindEmail(body: UnbindEmailParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun unbindEmail(body: UnbindEmailParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -915,18 +878,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -934,16 +897,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 手机号解绑
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun unbindPhone(body: UnbindPhoneParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun unbindPhone(body: UnbindPhoneParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -953,18 +916,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 
@@ -972,16 +935,16 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
     * 更新用户信息
     * 
     * @param body  
-    * @return kotlin.Any
+    * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun updateBaseInfo(body: UpdateBaseInfoParam) : kotlin.Any {
-        val localVariableBody: kotlin.Any? = body
+    fun updateBaseInfo(body: UpdateBaseInfoParam) : Any {
+        val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
+        val contentHeaders: Map<String,String> = mapOf()
+        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
         
@@ -991,18 +954,18 @@ class AccountApi(basePath: kotlin.String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<kotlin.Any>(
+        val response = request<Any>(
             localVariableConfig,
             localVariableBody
         )
 
         return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as kotlin.Any
+            ResponseType.Success -> (response as Success<*>).data as Any
             ResponseType.Informational -> TODO()
             ResponseType.Redirection -> TODO()
             ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
             ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            else -> throw IllegalStateException("Undefined ResponseType.")
         }
     }
 

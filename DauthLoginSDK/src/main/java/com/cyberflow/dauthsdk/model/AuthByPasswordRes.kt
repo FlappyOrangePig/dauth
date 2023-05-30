@@ -19,9 +19,9 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthByPasswordRes (
     /* 用户id */
-    val openudid: kotlin.String,
+    val openudid: String,
     /* 临时code */
-    val code: kotlin.String
+    val code: String
 ) {
 
 }

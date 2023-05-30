@@ -42,24 +42,29 @@ package com.cyberflow.dauthsdk.model
 data class CreateAccountParam (
     /* 账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter */
     val user_type: Int,
-    /* 密码 */
-    val password: String,
-    /* 确认密码 */
-    val confirm_password: String,
-    /* 昵称 */
-    val nickname: String,
-    /* 生日 */
-    val birthday: Int,
-    /* 性别 0保密 1男 2女 */
-    val sex: Int,
-    /* 是否实名认证 */
-    val identity_status: Int,
+
     /* 设备唯一标识 */
     val uuid: String,
-    /* 是否登录 0不登陆 1登录 */
-    val is_login: Int,
+
     /* 检验参数 */
     val sign: String,
+
+    /* 是否登录 0不登陆 1登录 */
+    val is_login: Int,
+
+    /* 密码 */
+    val password: String ?= null,
+    /* 确认密码 */
+    val confirm_password: String ?= null,
+    /* 昵称 */
+    val nickname: String ?= null,
+    /* 生日 */
+    val birthday: Int ?= null,
+    /* 性别 0保密 1男 2女 */
+    val sex: Int ?= null,
+    /* 是否实名认证 */
+    val identity_status: Int ?= null,
+
     val commonHeader: CommonHeader? = null,
     /* 用户账号,自定义账号时必填 */
     val account: String? = null,

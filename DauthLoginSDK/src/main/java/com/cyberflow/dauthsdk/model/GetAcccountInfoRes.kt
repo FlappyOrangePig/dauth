@@ -36,42 +36,42 @@ package com.cyberflow.dauthsdk.model
  */
 data class GetAcccountInfoRes (
     /* 用户账号 */
-    val account: kotlin.String,
+    val account: String,
     /* 用户昵称 */
-    val nickname: kotlin.String,
+    val nickname: String,
     /* 用户生日 */
-    val birthday: kotlin.String,
+    val birthday: String,
     /* 性别 0保密 1男 2女 */
-    val sex: kotlin.Int,
+    val sex: Int,
     /* 邮箱 */
-    val email: kotlin.String,
+    val email: String,
     /* 电话区号 */
-    val phone_area_code: kotlin.String,
+    val phone_area_code: String,
     /* 电话号码 */
-    val phone: kotlin.Long,
-    val identity_Status: kotlin.Int,
+    val phone: Long,
+    val identity_Status: Int,
     /* 用户图像地址 */
-    val head_img_url: kotlin.String,
+    val head_img_url: String,
     /* 国家/地区 */
-    val country: kotlin.String,
+    val country: String,
     /* 省份 */
-    val province: kotlin.String,
+    val province: String,
     /* 城市 */
-    val city: kotlin.String,
+    val city: String,
     /* 区 */
-    val district: kotlin.String,
+    val district: String,
     /* 详细地址 */
-    val address: kotlin.String,
+    val address: String,
     /* 注册来源 */
-    val user_type: kotlin.Int,
+    val user_type: Int,
     /* 用户状态 */
-    val user_state: kotlin.Int,
+    val user_state: Int,
     /* 注册时间 */
-    val create_time: kotlin.String,
+    val create_time: String,
     /* 用户真实名称 */
-    val real_name: kotlin.String? = null,
+    val real_name: String? = null,
     /* 身份证 */
-    val identity: kotlin.String? = null
+    val identity: String? = null
 ) {
 
 }

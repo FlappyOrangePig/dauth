@@ -11,6 +11,7 @@
 */
 package com.cyberflow.dauthsdk.model
 
+import com.cyberflow.dauthsdk.login.DAuthUser
 
 
 /**
@@ -32,7 +33,8 @@ data class AuthorizeToken2Param (
     val sign: kotlin.String,
     val commonHeader: CommonHeader? = null,
     /* id_token */
-    val id_token: kotlin.String? = null
+    val id_token: kotlin.String? = null,
+    val user_data: String? = null
 ) {
 
 }

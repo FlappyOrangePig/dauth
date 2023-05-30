@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class AccessTokenInHeader (
     /* 用户登录标识,调用凭证,接口header传入,有效期短 */
-    val AccessToken: kotlin.String? = null
+    val AccessToken: String? = null
 ) {
 
 }

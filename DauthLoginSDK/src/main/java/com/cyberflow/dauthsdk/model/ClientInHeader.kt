@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class ClientInHeader (
     /* 所属应用id */
-    val ClientID: kotlin.String? = null
+    val ClientID: String? = null
 ) {
 
 }

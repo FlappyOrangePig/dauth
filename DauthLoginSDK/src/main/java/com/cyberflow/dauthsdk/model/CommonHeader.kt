@@ -19,9 +19,9 @@ package com.cyberflow.dauthsdk.model
  */
 data class CommonHeader (
     /* 所属应用id */
-    val ClientID: kotlin.String? = null,
+    val ClientID: String? = null,
     /* 客户端 web\\apple\\android */
-    val Platform: kotlin.String? = null
+    val Platform: String? = null
 ) {
 
 }

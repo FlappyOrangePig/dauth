@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthorizeRes (
     /* 临时code */
-    val code: kotlin.String
+    val code: String
 ) {
 
 }

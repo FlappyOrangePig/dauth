@@ -26,13 +26,13 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthorizeParam (
     /* 账号类型 */
-    val user_type: kotlin.Int,
-    val scope: kotlin.String,
-    val redirect_uri: kotlin.String,
-    val response_type: kotlin.String,
-    val state: kotlin.String,
-    val code_challenge: kotlin.String,
-    val code_challenge_method: kotlin.String,
+    val user_type: Int,
+    val scope: String,
+    val redirect_uri: String,
+    val response_type: String,
+    val state: String,
+    val code_challenge: String,
+    val code_challenge_method: String,
     val clientInHeader : ClientInHeader? = null
 ) {
 

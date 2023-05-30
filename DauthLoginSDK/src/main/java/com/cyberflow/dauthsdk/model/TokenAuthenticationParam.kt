@@ -23,14 +23,14 @@ package com.cyberflow.dauthsdk.model
  */
 data class TokenAuthenticationParam (
     /* 平台 */
-    val platform: kotlin.String,
+    val platform: String,
     /* dauth或第三方的code */
-    val code: kotlin.String,
+    val code: String,
     /* grand_type */
-    val grant_type: kotlin.Int,
-    val redirect_uri: kotlin.String,
+    val grant_type: Int,
+    val redirect_uri: String,
     /* 代码校验器 */
-    val code_verifier: kotlin.String,
+    val code_verifier: String,
     val clientServerInHeader: ClientServerInHeader? = null
 ) {
 

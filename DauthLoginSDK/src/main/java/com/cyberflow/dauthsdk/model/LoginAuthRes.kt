@@ -18,7 +18,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class LoginAuthRes (
     /* 临时code */
-    val code: kotlin.String
+    val code: String
 ) {
 
 }
