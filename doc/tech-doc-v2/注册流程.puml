@@ -1,0 +1,70 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+skin rose
+|app|
+start
+:点击google，调用loginWithType();
+note left: 包含小狐狸、三方、自有账号
+|#AntiqueWhite|core-sdk|
+:登录;
+note right: loginWithType(type:Int)
+:google返回id和token;
+|DAuthServer|
+:登录注册接口，返回是否有钱包;
+note right: login()
+
+|core-sdk|
+if (有钱包) is (N) then
+    |app|
+    :调SDK结果：登录失败-钱包未创建;
+    if (用passcode保护钱包？) is (Y) then
+        :输入passcode;
+    else (N)
+    endif
+    :调用createWallet(passcode:String?);
+    |core-sdk|
+    :创建钱包;
+    note right: createWallet(passcode:String?)
+    |#AntiqueWhite|MPC.so|
+    :生成秘钥，返回3片秘钥;
+    note right: generateSignKeys()
+    |core-sdk|
+    :根据3片秘钥生成钱包地址addr\n生成MergeResult并使用passcode保护MergeResult;
+    note right: 这段算法后续由@苟建提供\n由移动端实现
+    :调用合约创建钱包;
+    note right: createAccount(aaAddress:String)
+    |core-sdk|
+    :把AppServerKey上报给AppServer;
+    note right: URL由SDK初始化方法传入
+    :把DAuthServerKey上报给DAuthServer;
+    |DAuthServer|
+    :上报：\nmergeResult（如果有）\naddr\nDAuthServerKey;
+    note right: updateBaseInfo(\nmergeResult,\naddr,\nDAuthServerKey)
+    |core-sdk|
+    if (调用接口成功) is (N) then
+        |app|
+        :创建钱包失败;
+        :回登录页面\n从头开始;
+        stop
+    else (Y)
+        |core-sdk|
+        :保存appkey;
+        |app|
+        :创建钱包成功;
+        :注册成功;
+        partition "尝试一次非强制绑定主账号" {
+        if (请求DAuthServer判断是否绑了主账号) is (N) then
+                    :绑定账号流程;
+                else (Y)
+                endif
+        }
+
+        stop
+    endif
+else (Y)
+    |core-sdk|
+    :省略，参见登录流程;
+    stop
+endif
+
+@enduml

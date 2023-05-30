@@ -1,0 +1,7 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+autonumber
+app -> appServer: idToken/accessToken
+appServer --> app: jwtToken
+@enduml

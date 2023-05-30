@@ -1,0 +1,81 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+skin rose
+|app|
+start
+:点击google，调用loginWithType();
+|#AntiqueWhite|core-sdk|
+:登录;
+note right: loginWithType(type:Int)
+:google返回id和token;
+|DAuthServer|
+:登录注册接口，返回是否有钱包;
+note right: login()
+
+|core-sdk|
+if (有钱包) is (Y) then
+    |app|
+    :调SDK结果：登录失败-钱包未创建;
+    :省略，参见注册流程;
+    stop
+else (N)
+    |core-sdk|
+    :获取本地私钥签名私钥;
+    :构造验证本地签名私钥的消息json;
+    :调用MPC签名模块signTransaction方法;
+    |#AntiqueWhite|MPC.so|
+    :签名;
+    note right: signTransaction(txJson:String)
+    |core-sdk|
+    :返回签名结果;
+    :调用合约isValidateSign方法;
+    :调用合约验证签名有效;
+    note right:isValidateSign(signResult:String)
+    |core-sdk|
+    :把验证结果返回给app;
+    |app|
+    if (验证通过) is (Y) then
+        :登录成功;
+        stop
+    else (N)
+        :登录失败：需要恢复秘钥;
+        :请求AppServer恢复秘钥\n获得AppServer秘钥;
+        :请求SDK恢复秘钥;
+        |core-sdk|
+        :恢复秘钥;
+        note right: requestRecover(appServerKey:String)
+        :请求DAuthServer的秘钥;
+        |DAuthServer|
+        :获取DAuthServer秘钥;
+        note right: requestRecover()
+        |core-sdk|
+        :返回DAuthServer秘钥和MergeResult;
+        :调用MPC分片模块刷新秘钥;
+        |#AntiqueWhite|MPC.so|
+        :刷新秘钥，使用户公钥不变，私钥和serverkey改变;
+        note right: refreshKeys(\ndauthServerKey:String,\nappServerKey:String,\nmergeResult: String\n)
+        |core-sdk|
+        :返回新的三片秘钥;
+        :把AppServerKey上报给AppServer;
+        note right: URL由SDK初始化方法传入
+        :把DAuthServerKey上报给DAuthServer;
+        |DAuthServer|
+        :上报：\nmergeResult（如果有）\naddr\nDAuthServerKey;
+        note right: updateBaseInfo(\nmergeResult,\naddr,\nDAuthServerKey)
+        |core-sdk|
+        if (调用接口成功) is (N) then
+            |app|
+            :恢复失败;
+            :回登录页面\n从头开始;
+            stop
+        else (Y)
+            |core-sdk|
+            :保存appkey;
+            |app|
+            :恢复成功;
+            stop
+        endif
+    endif
+endif
+
+@enduml

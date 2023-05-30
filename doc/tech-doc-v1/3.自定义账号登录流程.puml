@@ -1,0 +1,9 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+autonumber
+app -> sdk: 自定义登录
+sdk -> DAuthServer: 授权登录/注册
+DAuthServer --> sdk: idToken/accessToken/refreshToken
+sdk --> app: idToken/accessToken/refreshToken
+@enduml

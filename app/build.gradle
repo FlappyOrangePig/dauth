@@ -32,7 +32,7 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
-    implementation project(':DauthLoginSDK')
+    implementation project(':dauth-sdk')
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
     // 协程Android支持库
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"

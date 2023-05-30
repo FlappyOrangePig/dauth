@@ -1,0 +1,20 @@
+@startwbs
+'https://plantuml.com/wbs-diagram
+skin rose
+* DAuthWallet
+** ClientSDK
+*** core-sdk
+**** auth-lib
+***** 三方登录
+***** 自有登录
+***** WalletConnect登录
+**** wallet-lib
+***** Web3Manager
+***** Websocket
+*** MPC.so
+**** MPC-split
+**** MPC-sign
+** SignService
+** Relayer
+** Contract
+@endwbs

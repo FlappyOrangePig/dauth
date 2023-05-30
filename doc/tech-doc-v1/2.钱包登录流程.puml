@@ -1,0 +1,11 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+autonumber
+app -> sdk: 点钱包登录按钮
+sdk -> metamask: 授权
+metamask --> sdk: 钱包地址
+sdk -> DAuthServer: 主账号绑定钱包地址
+DAuthServer --> sdk: idToken/accessToken/refreshToken
+sdk --> app: idToken/accessToken/refreshToken
+@enduml

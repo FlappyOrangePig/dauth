@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+skin rose
+
+|app|
+start
+:调用simulateTransaction;
+|core-sdk|
+:预估gas费;
+note right: simulateTransaction(\ntoUserId:String,\ncount:Int\n)
+:调用Contract.simulateTransaction;
+|合约|
+:预估gas费;
+note right: Contract.simulateTransaction(\ntoUserId:String,\ncount:Int\n)
+|core-sdk|
+:返回预估的gas费和交易号txId;
+|app|
+:UI展示预估的gas费;
+
+
+|app|
+:调用sendTransaction;
+|#AntiqueWhite|core-sdk|
+:转账;
+note right: sendTransaction(txId:String)
+:获取本地私钥签名私钥;
+:构造消息json;
+:调用MPC签名模块的签名;
+|#AntiqueWhite|MPC.so|
+:签名;
+note right: signTransaction(txJson:String)\n还要传入socket句柄方式待定
+|core-sdk|
+:返回签名结果;
+:调用Contract.sendTransaction();
+|#AntiqueWhite|合约|
+:发送交易;
+note right: Contract.sendTransaction()\n不是web3.sendRawTransaction
+|core-sdk|
+:比较签名结果的hash和返回的hash\n不一致返回失败;
+|app|
+:返回结果;
+
+
+
+
+
+@enduml

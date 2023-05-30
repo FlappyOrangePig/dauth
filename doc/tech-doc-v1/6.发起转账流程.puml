@@ -1,0 +1,23 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+app -> sdk: 转账
+sdk -> DAuthServer: MPC签名
+DAuthServer -> sdk: MPC签名
+sdk -> DAuthServer: MPC签名
+DAuthServer -> sdk: MPC签名
+sdk -> DAuthServer: MPC签名
+DAuthServer -> sdk: MPC签名
+sdk -> DAuthServer: MPC签名
+DAuthServer -> sdk: MPC签名
+
+note left: MPC签名要三方中两方的签名\n要经过两端多次交互\n结束后两端获得相同签名的结果
+note right: 在sdk中配置开关，决定用本地+AppServer签还是本地+DAuthServer签\n虎牙项目中是AppServer签
+
+...
+
+sdk -> relayer: 提交交易
+relayer -> relayer: 风险检测
+relayer --> sdk: 返回结果
+sdk --> app: 返回结果
+@enduml

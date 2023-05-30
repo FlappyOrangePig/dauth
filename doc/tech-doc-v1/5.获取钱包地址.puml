@@ -1,0 +1,20 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+app -> sdk: 获取AA钱包地址
+sdk -> DAuthServer: 获取AA钱包地址
+alt AA钱包地址不存在（新用户）
+DAuthServer --> sdk: 没有AA钱包地址
+sdk -> sdk: 1）MPC生成第2、3片\n2）三片求和MergeResult\n3）生成签名地址
+note left: 防止交互太多（很慢）\n才决定在本地生成另外两片
+sdk -> relayer: 使用签名地址创建账户
+relayer --> sdk: AA地址
+sdk -> AppServer: AppServer分片
+sdk -> DAuthServer: DAuthServer分片、AA地址、用户ID、MergeResult
+DAuthServer -> DAuthServer: 绑定AA地址和用户ID
+DAuthServer --> sdk: 创建AA账号流程结束
+else AA钱包地址存在（老用户）
+DAuthServer --> sdk: 返回有效的AA钱包地址
+end
+sdk --> app: 返回有效的AA钱包地址
+@enduml

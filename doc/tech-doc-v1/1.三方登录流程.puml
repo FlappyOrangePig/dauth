@@ -1,0 +1,11 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+autonumber
+app -> sdk: 谷歌登录
+sdk -> googleSdk: 谷歌登录
+googleSdk --> sdk: GoogleSignInAccount
+sdk -> DAuthServer: 第三方认证登录
+DAuthServer --> sdk: idToken/accessToken/refreshToken
+sdk --> app: idToken/accessToken/refreshToken
+@enduml

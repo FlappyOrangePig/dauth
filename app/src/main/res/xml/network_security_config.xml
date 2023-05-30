@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- 苟建的电脑IP -->
+        <domain includeSubdomains="true">172.16.13.155</domain>
+    </domain-config>
 </network-security-config>

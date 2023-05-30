@@ -1,0 +1,31 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+skin rose
+
+|app|
+start
+:调用simulateTransaction;
+|ClientSDK|
+:预估gas费;
+note right: simulateTransaction(\ntoUserId:String,\ncount:Int\n)
+:使用web3接口预估gas费;
+
+|ClientSDK|
+:返回预估的gas费;
+|app|
+:UI展示预估的gas费;
+
+|app|
+:调用sendTransaction;
+|#AntiqueWhite|ClientSDK|
+:转账;
+note right: sendEoaTransaction(\ntoUserId:String,\ncount:Int\n)
+:构造消息json;
+:用WalletConnect签名;
+note right: 需要前端开发量
+:调用web3.sendTransaction();
+:比较签名结果的hash和返回的hash\n不一致返回失败;
+|app|
+:返回结果;
+
+@enduml

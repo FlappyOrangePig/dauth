@@ -1,0 +1,8 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skin rose
+app -> sdk: 查询
+sdk -> web3js.api: 查询
+web3js.api --> sdk: 查询结果
+sdk -> app: 查询结果
+@enduml

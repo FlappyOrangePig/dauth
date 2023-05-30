@@ -27,5 +27,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "dauth"
 include ':app'
-include ':DauthLoginSDK'
-include ':DAuthWalletSDK'
+include ':dauth-sdk'
