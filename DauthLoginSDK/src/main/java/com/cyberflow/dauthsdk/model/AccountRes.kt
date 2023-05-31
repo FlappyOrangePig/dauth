@@ -36,44 +36,62 @@ import com.cyberflow.dauthsdk.network.BaseResponse
  * @param user_state 用户状态
  * @param create_time 注册时间
  */
-data class AccountRes (var data : Data?= null
-): BaseResponse() {
+data class AccountRes(
+    var data: Data? = null
+) : BaseResponse() {
     class Data {
         /* 用户账号 */
-        var account: String?= null
+        var account: String? = null
+
         /* 用户昵称 */
-        var nickname: String?= null
+        var nickname: String? = null
+
         /* 用户生日 */
-        var birthday: String?= null
+        var birthday: String? = null
+
         /* 性别 0保密 1男 2女 */
-        var sex: Int?= null
+        var sex: Int? = null
+
         /* 邮箱 */
-        var email: String?= null
+        var email: String? = null
+
         /* 电话区号 */
-        var phone_area_code: String?= null
+        var phone_area_code: String? = null
+
         /* 电话号码 */
-        var phone: Long ?= null
-        var identity_Status: Int?= null
+        var phone: Long? = null
+        var identity_Status: Int? = null
+
         /* 用户图像地址 */
-        var head_img_url: String?= null
+        var head_img_url: String? = null
+
         /* 国家/地区 */
-        var country: String?= null
+        var country: String? = null
+
         /* 省份 */
-        var province: String?= null
+        var province: String? = null
+
         /* 城市 */
-        var city: String?= null
+        var city: String? = null
+
         /* 区 */
-        var district: String?= null
+        var district: String? = null
+
         /* 详细地址 */
-        var address: String?= null
+        var address: String? = null
+
         /* 注册来源 */
-        var user_type: Int?= null
+        var user_type: Int? = null
+
         /* 用户状态 */
-        var user_state: Int?= null
+        var user_state: Int? = null
+
         /* 注册时间 */
-        var create_time: String?= null
+        var create_time: String? = null
+
         /* 用户真实名称 */
         var real_name: String? = null
+
         /* 身份证 */
         var identity: String? = null
     }

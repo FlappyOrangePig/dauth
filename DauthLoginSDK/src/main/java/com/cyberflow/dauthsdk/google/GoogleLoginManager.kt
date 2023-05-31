@@ -2,12 +2,11 @@ package com.cyberflow.dauthsdk.google
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauthsdk.login.DAuthUser
 import com.cyberflow.dauthsdk.model.AuthorizeToken2Param
-import com.cyberflow.dauthsdk.network.AccountApi
+import com.cyberflow.dauthsdk.network.RequestApi
 import com.cyberflow.dauthsdk.utils.DAuthLogger
 import com.cyberflow.dauthsdk.utils.SignUtils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -16,9 +15,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -96,7 +93,7 @@ class GoogleLoginManager {
                 accountIdToken
             )
             activity.lifecycleScope.launch(Dispatchers.IO) {
-                val data = AccountApi().authorizeExchangedToken(authorizeParam)
+                val data = RequestApi().authorizeExchangedToken(authorizeParam)
                 withContext(Dispatchers.Main) {
 
                 }

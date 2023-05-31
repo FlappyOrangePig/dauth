@@ -12,46 +12,32 @@
 package com.cyberflow.dauthsdk.network
 
 import com.cyberflow.dauthsdk.infrastructure.*
-import com.cyberflow.dauthsdk.model.AccountRes
-import com.cyberflow.dauthsdk.model.AuthorizeParam
-import com.cyberflow.dauthsdk.model.AuthorizeRes
-import com.cyberflow.dauthsdk.model.AuthorizeToken2Param
-import com.cyberflow.dauthsdk.model.AuthorizeToken2Res
-import com.cyberflow.dauthsdk.model.BindAcoountParam
-import com.cyberflow.dauthsdk.model.BindEmailParam
-import com.cyberflow.dauthsdk.model.BindPhoneParam
-import com.cyberflow.dauthsdk.model.BindRealInfoParam
-import com.cyberflow.dauthsdk.model.CreateAccountParam
-import com.cyberflow.dauthsdk.model.CreateAccountRes
-import com.cyberflow.dauthsdk.model.GetAcccountInfoParam
-import com.cyberflow.dauthsdk.model.GetAcccountInfoRes
-import com.cyberflow.dauthsdk.model.LoginAuthParam
-import com.cyberflow.dauthsdk.model.LoginAuthRes
-import com.cyberflow.dauthsdk.model.LoginParam
-import com.cyberflow.dauthsdk.model.LoginRes
-import com.cyberflow.dauthsdk.model.LogoutParam
-import com.cyberflow.dauthsdk.model.MiniAccountRealInfoRes
-import com.cyberflow.dauthsdk.model.QueryByAccountParam
-import com.cyberflow.dauthsdk.model.QueryByEMailParam
-import com.cyberflow.dauthsdk.model.QueryByPhoneParam
-import com.cyberflow.dauthsdk.model.QueryRealInfoParam
-import com.cyberflow.dauthsdk.model.RefreshTokenParam
-import com.cyberflow.dauthsdk.model.RefreshTokenParamRes
-import com.cyberflow.dauthsdk.model.ResetByPasswordParam
-import com.cyberflow.dauthsdk.model.SendEmailVerifyCodeParam
-import com.cyberflow.dauthsdk.model.SendPhoneVerifyCodeParam
-import com.cyberflow.dauthsdk.model.TokenAuthenticationParam
-import com.cyberflow.dauthsdk.model.TokenAuthenticationRes
-import com.cyberflow.dauthsdk.model.UnbindEmailParam
-import com.cyberflow.dauthsdk.model.UnbindPhoneParam
-import com.cyberflow.dauthsdk.model.UpdateBaseInfoParam
+import com.cyberflow.dauthsdk.model.*
 import com.cyberflow.dauthsdk.utils.DAuthLogger
+import com.google.gson.Gson
 
 
 private const val BASE_URL = "https://dauth-test.mimo.immo"
 private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
 private const val CLIENT_SECRET = "4657*@cde"
-class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
+class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
+
+    private fun setCommonParams(url: String): RequestConfig {
+        val localVariableQuery: MultiValueMap = mapOf()
+        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders.putAll(contentHeaders)
+        localVariableHeaders.putAll(acceptsHeaders)
+
+        return RequestConfig(
+            RequestMethod.POST,
+            url,
+            query = localVariableQuery,
+            headers = localVariableHeaders
+        )
+
+    }
 
     /**
     * 第三方认证登录，返回临时 code
@@ -60,7 +46,7 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return AuthorizeRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun authorize(body: AuthorizeParam) : AuthorizeRes {
+    fun authorize(body: AuthorizeParam) : AuthorizeRes? {
         val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
@@ -81,14 +67,12 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableBody
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as AuthorizeRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if(response.statusCode == 200) {
+
+        } else {
+            DAuthLogger.e("sociallogin/auth return errorCode==${response.statusCode}")
         }
+        return null
     }
 
     /**
@@ -99,34 +83,27 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun authorizeExchangedToken(body: AuthorizeToken2Param) : AuthorizeToken2Res? {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
 
-        val contentHeaders: Map<String,String> = mapOf("client_id" to CLIENT_ID)
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/sociallogin/exchangedtoken",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+        val localVariableConfig = setCommonParams("/account/v1/sociallogin/exchangedtoken")
         val response = request<AuthorizeToken2Res>(
             localVariableConfig,
-            localVariableBody
+            body
         )
-        DAuthLogger.e("接口参数：$localVariableBody")
-        val responseData = (response as Success<*>).data
-        if(responseData.toString().isNotEmpty() && responseData.toString() != "null") {
-            return (response as Success<*>).data as AuthorizeToken2Res
+        DAuthLogger.e("接口参数：$body")
+        if (response.statusCode == 200) {
+            val responseData = (response as Success<*>).data
+            if (responseData.toString().isNotEmpty() && responseData.toString() != "null") {
+                return (response as Success<*>).data as AuthorizeToken2Res
+            } else {
+                DAuthLogger.e("接口请求失败")
+            }
         } else {
-            DAuthLogger.e("接口请求失败")
+            DAuthLogger.e("接口请求失败 errorCode : ${response.statusCode}")
         }
         return null
     }
+
+
 
     /**
     * 绑定子账号
@@ -135,7 +112,7 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun bindAccount(body: BindAcoountParam) : Any {
+    fun bindAccount(body: BindAcoountParam) : Any? {
         val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
         
@@ -155,15 +132,19 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             localVariableBody
         )
-
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as Any
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        val statusCode = response.statusCode
+        if(statusCode == 200) {
+            val data = (response as Success<*>).data
+            if(data.toString().isEmpty()) {
+                DAuthLogger.e("bindAccount return data is null")
+            } else {
+                return data
+            }
+        } else {
+            DAuthLogger.e("bindAccount return errorCode == $statusCode")
         }
+
+      return null
     }
 
     /**
@@ -287,40 +268,27 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return CreateAccountRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun createAccount(body: CreateAccountParam) : CreateAccountRes? {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        DAuthLogger.e("加密后所有参数：${localVariableBody.toString()}")
-        val contentHeaders:  Map<String,String> = mapOf("client_id" to CLIENT_ID)
-        val platformHeaders:  Map<String,String> = mapOf("platform" to "android")
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(platformHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/create",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun createAccount(body: CreateAccountParam): CreateAccountRes? {
+
+        val localVariableConfig = setCommonParams("/account/v1/create")
         val response = request<CreateAccountRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        DAuthLogger.e("接口参数：$localVariableBody")
-        val responseData = (response as Success<*>).data
-        if(responseData != null && responseData.toString() != "null") {
-            return (response as? Success<*>)?.data as? CreateAccountRes
+        DAuthLogger.e("接口参数：$body")
+        if (response.responseType == ResponseType.Success) {
+            val responseData = (response as Success<*>).data
+            if (responseData != null && responseData.toString() != "null") {
+                return (response as? Success<*>)?.data as? CreateAccountRes
+            } else {
+                DAuthLogger.e("接口请求失败")
+            }
         } else {
-            DAuthLogger.e("接口请求失败")
+            DAuthLogger.e("接口请求失败 errorCode: ${response.statusCode}")
         }
         return null
     }
-
-
 
 
     /**
@@ -331,24 +299,11 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     */
     @Suppress("UNCHECKED_CAST")
     fun getUserInfo(body: AuthorizeToken2Param) : AuthorizeToken2Res {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/get_user_info",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+
+        val localVariableConfig = setCommonParams("/account/v1/get_user_info")
         val response = request<AuthorizeToken2Res>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
         return when (response.responseType) {
@@ -406,35 +361,25 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return LoginRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun login(body: LoginParam) : LoginRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/login",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun login(body: LoginParam): LoginRes? {
+        val localVariableConfig = setCommonParams("/account/v1/login")
         val response = request<LoginRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as LoginRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.responseType == ResponseType.Success) {
+            val responseData = (response as Success<*>).data
+            if (responseData != null && responseData.toString() != "null") {
+                return (response as? Success<*>)?.data as? LoginRes
+            } else {
+                DAuthLogger.e("接口请求失败")
+            }
+        } else {
+            DAuthLogger.e("login 接口请求失败 errorCode: ${response.statusCode}")
         }
+
+        return null
     }
 
     /**
@@ -444,35 +389,23 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return LoginAuthRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun loginAuth(body: LoginAuthParam) : LoginAuthRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/login/auth",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun loginAuth(body: LoginAuthParam): LoginAuthRes? {
+        val localVariableConfig = setCommonParams("/account/v1/login/auth")
         val response = request<LoginAuthRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
-
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as LoginAuthRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.responseType == ResponseType.Success) {
+            val responseData = (response as Success<*>).data
+            if (responseData != null && responseData.toString() != "null") {
+                return (response as? Success<*>)?.data as? LoginAuthRes
+            } else {
+                DAuthLogger.e("loginAuth 接口请求失败")
+            }
+        } else {
+            DAuthLogger.e("loginAuth 接口请求失败 errorCode: ${response.statusCode}")
         }
+        return null
     }
 
     /**
@@ -482,35 +415,17 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun logout(body: LogoutParam) : Any {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/logout",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
-        val response = request<Any>(
-            localVariableConfig,
-            localVariableBody
-        )
+    fun logout(body: LogoutParam) : Any? {
+        val localVariableConfig = setCommonParams("/account/v1/logout")
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as Any
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        val response = request<Any> (
+            localVariableConfig,
+            body
+        )
+        if(response.statusCode == 200) {
+            return true
         }
+       return null
     }
 
     /**
@@ -520,35 +435,18 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return AccountRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun queryByAccountNum(body: QueryByAccountParam) : AccountRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/userinfo/query",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun queryByAccountNum(body: QueryByAccountParam): AccountRes? {
+
+        val localVariableConfig = setCommonParams("/account/v1/userinfo/query")
+
         val response = request<AccountRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
-
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as AccountRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.statusCode == 200) {
+            return (response as Success<*>).data as AccountRes
         }
+        return null
     }
 
     /**
@@ -558,35 +456,18 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return AccountRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun queryByEMail(body: QueryByEMailParam) : AccountRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/userinfo/email/query",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun queryByEMail(body: QueryByEMailParam) : AccountRes? {
+        val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
+
         val response = request<AccountRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as AccountRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.statusCode == 200) {
+            return (response as Success<*>).data as AccountRes
         }
+        return null
     }
 
     /**
@@ -596,35 +477,19 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return AccountRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun queryByPhone(body: QueryByPhoneParam) : AccountRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/userinfo/phone/query",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun queryByPhone(body: QueryByPhoneParam) : AccountRes? {
+
+        val localVariableConfig = setCommonParams("/account/v1/userinfo/phone/query")
+
         val response = request<AccountRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as AccountRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.statusCode == 200) {
+            return (response as Success<*>).data as AccountRes
         }
+        return null
     }
 
     /**
@@ -634,35 +499,18 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return MiniAccountRealInfoRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun queryRealInfo(body: QueryRealInfoParam) : MiniAccountRealInfoRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/realinfo/query",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun queryRealInfo(body: QueryRealInfoParam) : MiniAccountRealInfoRes? {
+        val localVariableConfig = setCommonParams("/account/v1/realinfo/query")
+
         val response = request<MiniAccountRealInfoRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as MiniAccountRealInfoRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.statusCode == 200) {
+            return (response as Success<*>).data as MiniAccountRealInfoRes
         }
+        return null
     }
 
     /**
@@ -672,35 +520,20 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return RefreshTokenParamRes
     */
     @Suppress("UNCHECKED_CAST")
-    fun refreshToken(body: RefreshTokenParam) : RefreshTokenParamRes {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/refresh_token",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun refreshToken(body: RefreshTokenParam) : RefreshTokenParamRes? {
+
+        val localVariableConfig = setCommonParams("/account/v1/refresh_token")
+
         val response = request<RefreshTokenParamRes>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as RefreshTokenParamRes
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.statusCode == 200) {
+            return (response as Success<*>).data as RefreshTokenParamRes
         }
+        return null
+
     }
 
     /**
@@ -710,35 +543,18 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun resetByPassword(body: ResetByPasswordParam) : Any {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/password/reset",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
-        val response = request<Any>(
+    fun resetByPassword(body: ResetByPasswordParam) : Any? {
+        val localVariableConfig = setCommonParams("/account/v1/password/reset")
+
+        val response = request<ResetByPasswordParam>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as Any
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if (response.statusCode == 200) {
+            return (response as Success<*>).data as ResetByPasswordParam
         }
+        return null
     }
 
     /**
@@ -748,35 +564,26 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     * @return Any
     */
     @Suppress("UNCHECKED_CAST")
-    fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam) : Any {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: Map<String,String> = mapOf()
-        val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String,String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/emailverifycode/send",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
+    fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam) : Boolean {
+
+        val localVariableConfig = setCommonParams("/account/v1/emailverifycode/send")
         val response = request<Any>(
             localVariableConfig,
-            localVariableBody
+            body
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as Any
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw IllegalStateException("Undefined ResponseType.")
+        if(response.statusCode == 200 ) {
+            val data = (response as? Success<*>)?.data
+            val toJson = Gson().toJson(data)
+            val sendEmailVerifyCode = Gson().fromJson(toJson, SendEmailVerifyCode::class.java)
+            DAuthLogger.e("验证码接口返回：$data")
+            if( sendEmailVerifyCode.iRet == 0) {
+                return true
+            }
+        } else {
+            DAuthLogger.e("sendEmailVerifyCode return errorCode == ${response.statusCode}")
         }
+        return false
     }
 
     /**
@@ -836,7 +643,7 @@ class AccountApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         
         val localVariableConfig = RequestConfig(
             RequestMethod.POST,
-            "/account/v1/token",
+            "account/v1/oauth2/token",
             query = localVariableQuery,
             headers = localVariableHeaders
         )

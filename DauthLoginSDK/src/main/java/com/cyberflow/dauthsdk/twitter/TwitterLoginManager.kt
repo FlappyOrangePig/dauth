@@ -6,7 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.cyberflow.dauthsdk.login.DAuthUser
 import com.cyberflow.dauthsdk.model.AuthorizeToken2Param
-import com.cyberflow.dauthsdk.network.AccountApi
+import com.cyberflow.dauthsdk.network.RequestApi
 import com.cyberflow.dauthsdk.utils.DAuthLogger
 import com.cyberflow.dauthsdk.utils.SignUtils
 import com.cyberflow.dauthsdk.utils.ThreadPoolUtils
@@ -124,7 +124,7 @@ class TwitterLoginManager() {
                     )
 
                     ThreadPoolUtils.execute {
-                        val data = AccountApi().authorizeExchangedToken(body)
+                        val data = RequestApi().authorizeExchangedToken(body)
                         DAuthLogger.d("twitter login auth return : $data")
                     }
 

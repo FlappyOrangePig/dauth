@@ -16,7 +16,7 @@ package com.cyberflow.dauthsdk.model
 /**
  * 
  * @param  
- * @param user_type 账号类型
+ * @param user_type 账号类型 :10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter
  * @param platform 客户端 web\\apple\\android
  * @param phone 手机号,手机号登录时必填
  * @param phone_area_code 手机区号,手机号登录时必填
@@ -25,11 +25,9 @@ package com.cyberflow.dauthsdk.model
  * @param verify_code 验证码,手机号或邮箱登录时必填
  * @param sign 检验参数
  */
-data class LoginParam (
+data class LoginParam(
     /* 账号类型 */
     val user_type: Int,
-    /* 客户端 web\\apple\\android */
-    val platform: String,
     /* 检验参数 */
     val sign: String,
     val clientInHeader: ClientInHeader? = null,
@@ -42,7 +40,7 @@ data class LoginParam (
     /* 密码,账号登录时必填 */
     val password: String? = null,
     /* 验证码,手机号或邮箱登录时必填 */
-    val verify_code: kotlin.Int? = null
+    val verify_code: String? = null
 ) {
 
 }

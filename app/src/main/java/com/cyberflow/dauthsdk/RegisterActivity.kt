@@ -38,10 +38,7 @@ class RegisterActivity: AppCompatActivity() {
             val password = binding.edtPassword.text.toString()
             val ensurePassword = binding.edtEnsurePassword.text.toString()
             if(account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
-                val isSuccess = DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
-                if(isSuccess) {
-                    Toast.makeText(this, "DAuth账号注册成功", Toast.LENGTH_SHORT).show()
-                }
+                 DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
             } else {
                 Toast.makeText(this, "请输入账号或密码", Toast.LENGTH_SHORT).show()
             }

@@ -32,27 +32,37 @@ open class ApiClient(val baseUrl: String) {
         val builder: OkHttpClient.Builder = OkHttpClient.Builder()
 
         @JvmStatic
-        var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(mapOf(ContentType to FormDataMediaType, Accept to JsonMediaType))
+        var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
+            mapOf(
+                ContentType to FormDataMediaType,
+                Accept to JsonMediaType
+            )
+        )
 
         @JvmStatic
-        val jsonHeaders: Map<String, String> = mapOf(ContentType to JsonMediaType, Accept to JsonMediaType)
+        val jsonHeaders: Map<String, String> =
+            mapOf(ContentType to JsonMediaType, Accept to JsonMediaType)
     }
 
-    protected inline fun <reified T> requestBody(content: T, mediaType: String = FormDataMediaType): RequestBody {
+    protected inline fun <reified T> requestBody(
+        content: T,
+        mediaType: String = FormDataMediaType
+    ): RequestBody {
 
-        if(content is File) {
+        if (content is File) {
             return content
                 .asRequestBody(mediaType.toMediaTypeOrNull())
-        } else if(mediaType == FormDataMediaType) {
+        } else if (mediaType == FormDataMediaType) {
             val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
 
             // content's type *must* be Map<String, Any>
             @Suppress("UNCHECKED_CAST")
             val map = SignUtils.objToMap(content)
             map.forEach { (key, value) ->
-                if(value::class == File::class) {
+                if (value::class == File::class) {
                     val file = value as File
-                    requestBodyBuilder.addFormDataPart(key, file.name,
+                    requestBodyBuilder.addFormDataPart(
+                        key, file.name,
                         file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
                     )
                 } else {
@@ -62,7 +72,7 @@ open class ApiClient(val baseUrl: String) {
             }
 
             return requestBodyBuilder.build()
-        }  else if(mediaType == JsonMediaType) {
+        } else if (mediaType == JsonMediaType) {
             return Serializer.moshi.adapter(T::class.java).toJson(content)
                 .toRequestBody(mediaType.toMediaTypeOrNull())
         }
@@ -77,17 +87,13 @@ open class ApiClient(val baseUrl: String) {
         val gson = Gson()
         return gson.fromJson(rb,T::class.java)
     }
-    
-    fun isJsonMime(mime: String?): Boolean {
-        val jsonMime = "(?i)^(application/json|[^;/ \t]+/[^;/ \t]+[+]json)[ \t]*(;.*)?$"
-        return mime != null && (mime.matches(jsonMime.toRegex()) || mime == "*/*")
-    }
+
 
     protected inline fun <reified T: Any?> request(requestConfig: RequestConfig, body : Any? = null): ApiInfrastructureResponse<T?> {
         val httpUrl = baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
 
         var urlBuilder = httpUrl.newBuilder()
-                .addPathSegments(requestConfig.path.trimStart('/'))
+            .addPathSegments(requestConfig.path.trimStart('/'))
 
         requestConfig.query.forEach { query ->
             query.value.forEach { queryValue ->
@@ -98,12 +104,12 @@ open class ApiClient(val baseUrl: String) {
         val url = urlBuilder.build()
         val headers = defaultHeaders + requestConfig.headers
 
-        if((headers[ContentType] ?: "") == "") {
-            throw  IllegalStateException("Missing Content-Type header. This is required.")
+        if ((headers[ContentType] ?: "") == "") {
+            throw IllegalStateException("Missing Content-Type header. This is required.")
         }
 
-        if((headers[Accept] ?: "") == "") {
-            throw  IllegalStateException("Missing Accept header. This is required.")
+        if ((headers[Accept] ?: "") == "") {
+            throw IllegalStateException("Missing Accept header. This is required.")
         }
 
         // TODO: support multiple contentType,accept options here.
@@ -112,7 +118,7 @@ open class ApiClient(val baseUrl: String) {
         val accept = (headers[Accept] as String).substringBefore(";")
             .lowercase(Locale.ROOT)
 
-        var request : Request.Builder =  when (requestConfig.method) {
+        var request: Request.Builder = when (requestConfig.method) {
             RequestMethod.DELETE -> Request.Builder().url(url).delete()
             RequestMethod.GET -> Request.Builder().url(url)
             RequestMethod.HEAD -> Request.Builder().url(url).head()
@@ -131,28 +137,28 @@ open class ApiClient(val baseUrl: String) {
         when {
             response.isRedirect -> return Redirection(
                 response.code,
-                    response.headers.toMultimap()
+                response.headers.toMultimap()
             )
             response.isInformational -> return Informational(
-                    response.message,
-                    response.code,
-                    response.headers.toMultimap()
+                response.message,
+                response.code,
+                response.headers.toMultimap()
             )
             response.isSuccessful -> return Success(
-                    responseBody(response, accept),
-                    response.code,
-                    response.headers.toMultimap()
+                responseBody(response, accept),
+                response.code,
+                response.headers.toMultimap()
             )
             response.isClientError -> return ClientError(
-                    response.body?.string(),
-                    response.code,
-                    response.headers.toMultimap()
+                response.body?.string(),
+                response.code,
+                response.headers.toMultimap()
             )
             else -> return ServerError(
-                    null,
-                    response.body?.string(),
-                    response.code,
-                    response.headers.toMultimap()
+                null,
+                response.body?.string(),
+                response.code,
+                response.headers.toMultimap()
             )
         }
     }
@@ -190,7 +196,7 @@ open class ApiClient(val baseUrl: String) {
             val pos = filename.lastIndexOf('.')
 
             if (pos == -1) {
-            prefix = filename + "-";
+            prefix = "$filename-";
             } else {
                 prefix = filename.substring(0, pos) + "-"
                 suffix = filename.substring(pos)

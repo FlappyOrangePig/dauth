@@ -2,26 +2,16 @@ package com.cyberflow.dauthsdk
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainBinding
-import com.cyberflow.dauthsdk.constant.LoginType
 import com.cyberflow.dauthsdk.google.GoogleLoginManager
-import com.cyberflow.dauthsdk.login.DAuthUser
-import com.cyberflow.dauthsdk.model.AuthorizeParam
-import com.cyberflow.dauthsdk.model.AuthorizeToken2Param
-import com.cyberflow.dauthsdk.model.CreateAccountParam
-import com.cyberflow.dauthsdk.network.AccountApi
+import com.cyberflow.dauthsdk.`interface`.DAuthCallback
+import com.cyberflow.dauthsdk.model.LoginRes
 import com.cyberflow.dauthsdk.twitter.TwitterLoginManager
-import com.cyberflow.dauthsdk.twitter.TwitterLoginUtils
 import com.cyberflow.dauthsdk.utils.DAuthLogger
-import com.cyberflow.dauthsdk.utils.SignUtils
 import com.cyberflow.dauthsdk.view.WalletWebViewActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 private const val TWITTER_REQUEST_CODE = 140
@@ -33,7 +23,6 @@ private const val FACEBOOK = "FACEBOOK"
 class MainActivity : AppCompatActivity() {
     var mainBinding: ActivityMainBinding?  = null
     private val binding: ActivityMainBinding get() = mainBinding!!
-    private var googleUser: DAuthUser ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +32,19 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
-            DAuthSDK.instance.login(account)
+            val password = binding.edtPassword.text.toString()
+            DAuthSDK.instance.login(account,password, object : DAuthCallback<LoginRes> {
+                override fun onResult(obj: LoginRes) {
+                    val code = obj.iRet
+                    DAuthLogger.d("登录成功返回code: $code")
+                }
+
+                override fun onFailed(errorMsg: String) {
+                    DAuthLogger.d("登录失败返回: $errorMsg")
+                }
+
+            })
+
         }
 
         binding.tvForgetPwd.setOnClickListener {
@@ -70,8 +71,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.tvSendCode.setOnClickListener {
-            Toast.makeText(this, "验证码发送成功", Toast.LENGTH_SHORT).show()
-            DAuthSDK.instance.sendVerifyCode()
+            val isSend = DAuthSDK.instance.sendVerifyCode()
+            if(isSend) {
+                Toast.makeText(this, "验证码发送成功", Toast.LENGTH_SHORT).show()
+            }
+            DAuthLogger.d("验证码发送结果：$isSend")
         }
     }
 
