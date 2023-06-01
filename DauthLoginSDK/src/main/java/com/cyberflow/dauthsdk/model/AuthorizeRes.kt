@@ -18,8 +18,10 @@ package com.cyberflow.dauthsdk.model
  */
 data class AuthorizeRes (
     /* 临时code */
-    val code: String
+    val data: Data
 ) {
-
+    class Data {
+        val code: String? = null
+    }
 }
 

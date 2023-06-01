@@ -22,10 +22,4 @@ class FacebookLoginManager {
             DAuthLogger.e( "init fbSDK success")
         }
     }
-
-    fun faceBookAuth(activity: Activity) {
-        LoginManager.getInstance().logInWithReadPermissions(activity, listOf(FACEBOOK_PERMISSIONS))
-        AccessToken.getCurrentAccessToken()
-    }
-
 }

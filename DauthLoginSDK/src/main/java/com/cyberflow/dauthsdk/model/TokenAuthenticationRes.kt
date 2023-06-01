@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.model
 
+import com.cyberflow.dauthsdk.network.BaseResponse
+
 
 /**
  * 
@@ -21,15 +23,17 @@ package com.cyberflow.dauthsdk.model
  * @param scope 
  */
 data class TokenAuthenticationRes (
-    /* 用户登录标识,调用凭证,接口header传入,有效期短 */
-    val access_token: String,
-    val token_type: String,
-    /* access_token有效期，单位（秒） */
-    val expire_in: Long,
-    /* 用于刷新access_token,每次刷新返回新的 */
-    val refresh_token: String,
-    val scope: String
-) {
-
+    val data: Data?
+) : BaseResponse(){
+    class Data {
+        /* 用户登录标识,调用凭证,接口header传入,有效期短 */
+        var access_token: String? = null
+        var token_type: String? = null
+        /* access_token有效期，单位（秒） */
+        var expire_in: Long? = null
+        /* 用于刷新access_token,每次刷新返回新的 */
+        var refresh_token: String? = null
+        var scope: String? = null
+    }
 }
 

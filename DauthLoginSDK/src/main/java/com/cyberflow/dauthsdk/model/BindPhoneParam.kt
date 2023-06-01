@@ -33,7 +33,7 @@ data class BindPhoneParam (
     val verify_code: Int,
     /* 检验参数 */
     val sign: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+    val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 
 }

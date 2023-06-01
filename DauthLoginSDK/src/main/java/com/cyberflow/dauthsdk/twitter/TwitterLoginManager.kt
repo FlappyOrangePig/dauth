@@ -1,9 +1,7 @@
 package com.cyberflow.dauthsdk.twitter
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.cyberflow.dauthsdk.login.DAuthUser
 import com.cyberflow.dauthsdk.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.network.RequestApi
@@ -20,7 +18,7 @@ import com.twitter.sdk.android.core.models.User
 private const val CONSUMER_KEY = "tfCWoaQgJqsbAsYNKFM8r2rI3"
 private const val CONSUMER_SECRET = "hUbRMtwQNgyaxRMCDaYRoezV9Z7xGoJk4i3kseFSFP4mfr3b9v"
 
-private const val TYPE_OF_TWITTER = 110L
+private const val TYPE_OF_TWITTER = "110"
 private const val USER_TYPE = "user_type"
 private const val USER_DATA = "user_data"
 
@@ -38,16 +36,6 @@ class TwitterLoginManager() {
             TwitterLoginManager()
         }
 
-    }
-
-    fun initTwitterSDK(context: Context) {
-        val config = TwitterConfig.Builder(context)
-            .logger(DefaultLogger(Log.DEBUG))
-            .twitterAuthConfig(TwitterAuthConfig(CONSUMER_KEY, CONSUMER_SECRET))
-            .debug(true)
-            .build()
-        Twitter.initialize(config)
-        DAuthLogger.d("twitter is init")
     }
 
 
@@ -110,7 +98,7 @@ class TwitterLoginManager() {
                     val gson = Gson()
                     val userDataStr = gson.toJson(userData)
                     val map = HashMap<String, String?>()
-                    map[USER_TYPE] = TYPE_OF_TWITTER.toString()
+                    map[USER_TYPE] = TYPE_OF_TWITTER
                     map[USER_DATA] = userDataStr
                     val sign = SignUtils.sign(map)
                     val body = AuthorizeToken2Param(
@@ -124,10 +112,8 @@ class TwitterLoginManager() {
                     )
 
                     ThreadPoolUtils.execute {
-                        val data = RequestApi().authorizeExchangedToken(body)
-                        DAuthLogger.d("twitter login auth return : $data")
+                        RequestApi().authorizeExchangedToken(body)
                     }
-
                     DAuthLogger.d("get twitter userinfo==$twitterUserInfo")
                 }
 

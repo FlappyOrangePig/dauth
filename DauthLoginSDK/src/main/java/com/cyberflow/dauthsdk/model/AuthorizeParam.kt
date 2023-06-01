@@ -11,8 +11,6 @@
 */
 package com.cyberflow.dauthsdk.model
 
- 
-
 /**
  * 
  * @param  
@@ -27,12 +25,13 @@ package com.cyberflow.dauthsdk.model
 data class AuthorizeParam (
     /* 账号类型 */
     val user_type: Int,
-    val scope: String,
-    val redirect_uri: String,
-    val response_type: String,
-    val state: String,
     val code_challenge: String,
     val code_challenge_method: String,
+    val sign: String,
+    val scope: String ?= null,
+    val redirect_uri: String ?= null,
+    val response_type: String ?= null,
+    val state: String ?= null,
     val clientInHeader : ClientInHeader? = null
 ) {
 

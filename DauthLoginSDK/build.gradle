@@ -79,4 +79,7 @@ dependencies {
     //webview
     implementation 'com.tencent.tbs:tbssdk:44286'
     implementation 'androidx.activity:activity-ktx:1.6.1'
+
+    //jwt
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
 }

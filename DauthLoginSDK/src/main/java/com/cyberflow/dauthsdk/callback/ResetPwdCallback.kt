@@ -1,4 +1,4 @@
-package com.cyberflow.dauthsdk.`interface`
+package com.cyberflow.dauthsdk.callback
 
 interface ResetPwdCallback {
     fun success()

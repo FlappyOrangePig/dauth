@@ -12,6 +12,7 @@
 package com.cyberflow.dauthsdk.model
 
 import com.cyberflow.dauthsdk.model.AccessTokenInHeader
+import com.cyberflow.dauthsdk.network.BaseResponse
 
 /**
  * 
@@ -23,7 +24,7 @@ import com.cyberflow.dauthsdk.model.AccessTokenInHeader
  */
 data class SendPhoneVerifyCodeParam (
     /* 用户id */
-    val openudid: String,
+    val openudid: String ?= null,
     /* 手机号 */
     val phone: String,
     /* 手机区号 */
@@ -31,7 +32,7 @@ data class SendPhoneVerifyCodeParam (
     /* 检验参数 */
     val sign: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
-) {
+) : BaseResponse(){
 
 }
 

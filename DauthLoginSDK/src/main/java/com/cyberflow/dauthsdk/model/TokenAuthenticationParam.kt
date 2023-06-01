@@ -21,16 +21,18 @@ package com.cyberflow.dauthsdk.model
  * @param redirect_uri 
  * @param code_verifier 代码校验器
  */
-data class TokenAuthenticationParam (
-    /* 平台 */
-    val platform: String,
+data class TokenAuthenticationParam(
+    val code_verifier: String,
+
     /* dauth或第三方的code */
     val code: String,
+
+    val sign: String,
     /* grand_type */
-    val grant_type: Int,
-    val redirect_uri: String,
-    /* 代码校验器 */
-    val code_verifier: String,
+    val grant_type: Int? = null,
+    val redirect_uri: String? = null,
+    /* 平台 */
+    val platform: String? = null,
     val clientServerInHeader: ClientServerInHeader? = null
 ) {
 

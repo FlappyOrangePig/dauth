@@ -7,10 +7,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauth.databinding.ActivityMainBinding
 import com.cyberflow.dauthsdk.google.GoogleLoginManager
-import com.cyberflow.dauthsdk.`interface`.DAuthCallback
+import com.cyberflow.dauthsdk.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.model.LoginRes
 import com.cyberflow.dauthsdk.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.utils.DAuthLogger
+import com.cyberflow.dauthsdk.utils.JwtChallengeCode
 import com.cyberflow.dauthsdk.view.WalletWebViewActivity
 
 private const val TAG = "MainActivity"
@@ -33,10 +34,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
             val password = binding.edtPassword.text.toString()
-            DAuthSDK.instance.login(account,password, object : DAuthCallback<LoginRes> {
-                override fun onResult(obj: LoginRes) {
-                    val code = obj.iRet
-                    DAuthLogger.d("登录成功返回code: $code")
+            DAuthSDK.instance.login(account,password, object : BaseHttpCallback<LoginRes> {
+
+                override fun onResult(obj: String?) {
+                    DAuthLogger.d("登录成功返回: $obj")
                 }
 
                 override fun onFailed(errorMsg: String) {
@@ -59,7 +60,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         binding.ivGoogle.setOnClickListener {
-            DAuthSDK.instance.loginWithType(GOOGLE, this)
+//            DAuthSDK.instance.loginWithType(GOOGLE, this)
+
+            //DAuth 授权接口测试
+            val codeVerifier = JwtChallengeCode().generateCodeVerifier()
+            val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
+            DAuthLogger.d("codeVerify == $codeVerifier")
+            val code = DAuthSDK.instance.loginAuth(codeChallenge)
+//
+//            //DAuth 授权接口测试
+            DAuthSDK.instance.getDAuthToken(codeVerifier,code)
+
         }
 
         binding.ivTwitter.setOnClickListener {
@@ -71,11 +82,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.tvSendCode.setOnClickListener {
-            val isSend = DAuthSDK.instance.sendVerifyCode()
+            val account = binding.edtAccount.text.toString()
+            val isSend = DAuthSDK.instance.sendEmailVerifyCode(account)
             if(isSend) {
                 Toast.makeText(this, "验证码发送成功", Toast.LENGTH_SHORT).show()
             }
-            DAuthLogger.d("验证码发送结果：$isSend")
         }
     }
 
@@ -87,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                 TwitterLoginManager.instance.onActivityResult(requestCode, resultCode, data)
             }
             GOOGLE_REQUEST_CODE -> {
-                GoogleLoginManager.instance.onActivityResult(this, data)
+                GoogleLoginManager.instance.onActivityResult(data)
             }
         }
     }

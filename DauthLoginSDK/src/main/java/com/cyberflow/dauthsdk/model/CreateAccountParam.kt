@@ -41,7 +41,7 @@ package com.cyberflow.dauthsdk.model
  */
 data class CreateAccountParam (
     /* 账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter */
-    val user_type: Int,
+    val user_type: String,
 
     /* 设备唯一标识 */
     val uuid: String,

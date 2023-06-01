@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
-import com.cyberflow.dauthsdk.`interface`.ResetPwdCallback
+import com.cyberflow.dauthsdk.callback.ResetPwdCallback
 
 class ResetPasswordActivity: AppCompatActivity() {
 
@@ -49,7 +49,8 @@ class ResetPasswordActivity: AppCompatActivity() {
 
         binding.tvSendCode.setOnClickListener {
             Toast.makeText(this, "验证码发送成功", Toast.LENGTH_SHORT).show()
-            DAuthSDK.instance.sendVerifyCode()
+            val account = binding.edtVerifyCode.text.toString()
+            DAuthSDK.instance.sendEmailVerifyCode(account)
         }
 
 

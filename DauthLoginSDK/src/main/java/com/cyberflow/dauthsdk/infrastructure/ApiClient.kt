@@ -1,5 +1,6 @@
 package com.cyberflow.dauthsdk.infrastructure
 
+import com.cyberflow.dauthsdk.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.utils.DAuthLogger
 import com.cyberflow.dauthsdk.utils.SignUtils
 import com.google.gson.Gson
@@ -8,8 +9,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
-import java.io.IOException
+import java.io.*
 import java.util.*
 import java.util.regex.Pattern
 
@@ -89,9 +89,70 @@ open class ApiClient(val baseUrl: String) {
     }
 
 
-    protected inline fun <reified T: Any?> request(requestConfig: RequestConfig, body : Any? = null): ApiInfrastructureResponse<T?> {
-        val httpUrl = baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
+//    protected inline fun <reified T: Any?> request(requestConfig: RequestConfig, body : Any? = null, baseHttpCallback: BaseHttpCallback<T>) {
+//        val httpUrl = baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
+//        var urlBuilder = httpUrl.newBuilder()
+//            .addPathSegments(requestConfig.path.trimStart('/'))
+//
+//        requestConfig.query.forEach { query ->
+//            query.value.forEach { queryValue ->
+//                urlBuilder = urlBuilder.addQueryParameter(query.key, queryValue)
+//            }
+//        }
+//
+//        val url = urlBuilder.build()
+//        val headers = defaultHeaders + requestConfig.headers
+//
+//        if ((headers[ContentType] ?: "") == "") {
+//            throw IllegalStateException("Missing Content-Type header. This is required.")
+//        }
+//
+//        if ((headers[Accept] ?: "") == "") {
+//            throw IllegalStateException("Missing Accept header. This is required.")
+//        }
+//
+//        // TODO: support multiple contentType,accept options here.
+//        val contentType = (headers[ContentType] as String).substringBefore(";")
+//            .lowercase(Locale.ROOT)
+//        val accept = (headers[Accept] as String).substringBefore(";")
+//            .lowercase(Locale.ROOT)
+//
+//        var request: Request.Builder = when (requestConfig.method) {
+//            RequestMethod.DELETE -> Request.Builder().url(url).delete()
+//            RequestMethod.GET -> Request.Builder().url(url)
+//            RequestMethod.HEAD -> Request.Builder().url(url).head()
+//            RequestMethod.PATCH -> Request.Builder().url(url).patch(requestBody(body, contentType))
+//            RequestMethod.PUT -> Request.Builder().url(url).put(requestBody(body, contentType))
+//            RequestMethod.POST -> Request.Builder().url(url).post(requestBody(body, contentType))
+//            RequestMethod.OPTIONS -> Request.Builder().url(url).method("OPTIONS", null)
+//        }
+//
+//        headers.forEach { header -> request = request.addHeader(header.key, header.value) }
+//
+//        val realRequest = request.build()
+//        client.newCall(realRequest).enqueue(object : Callback {
+//            override fun onFailure(call: Call, e: IOException) {
+//                baseHttpCallback.onFailed(e.toString())
+//            }
+//
+//            override fun onResponse(call: Call, response: Response) {
+//                val result = StringBuffer()
+//                val ins = response.body?.byteStream()
+//                val br = BufferedReader(InputStreamReader(ins, "UTF-8"))
+//                var temp: String? = null
+//                if (br.readLine().also { temp = it } != null) {
+//                    result.append(temp)
+//                }
+//                baseHttpCallback.onResult(result.toString())
+//
+//            }
+//
+//        })
+//
+//    }
 
+    protected inline fun <reified T : Any?> request(requestConfig: RequestConfig, body: Any?) :String?{
+        val httpUrl = baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
         var urlBuilder = httpUrl.newBuilder()
             .addPathSegments(requestConfig.path.trimStart('/'))
 
@@ -118,7 +179,7 @@ open class ApiClient(val baseUrl: String) {
         val accept = (headers[Accept] as String).substringBefore(";")
             .lowercase(Locale.ROOT)
 
-        var request: Request.Builder = when (requestConfig.method) {
+        val request: Request.Builder = when (requestConfig.method) {
             RequestMethod.DELETE -> Request.Builder().url(url).delete()
             RequestMethod.GET -> Request.Builder().url(url)
             RequestMethod.HEAD -> Request.Builder().url(url).head()
@@ -128,41 +189,26 @@ open class ApiClient(val baseUrl: String) {
             RequestMethod.OPTIONS -> Request.Builder().url(url).method("OPTIONS", null)
         }
 
-        headers.forEach { header -> request = request.addHeader(header.key, header.value) }
+        headers.forEach { header -> request.addHeader(header.key, header.value) }
 
         val realRequest = request.build()
-        val response = client.newCall(realRequest).execute()
+        val response: Response?
+        try {
+            response = client.newCall(realRequest).execute()
 
-        // TODO: handle specific mapping types. e.g. Map<int, Class<?>>
-        when {
-            response.isRedirect -> return Redirection(
-                response.code,
-                response.headers.toMultimap()
-            )
-            response.isInformational -> return Informational(
-                response.message,
-                response.code,
-                response.headers.toMultimap()
-            )
-            response.isSuccessful -> return Success(
-                responseBody(response, accept),
-                response.code,
-                response.headers.toMultimap()
-            )
-            response.isClientError -> return ClientError(
-                response.body?.string(),
-                response.code,
-                response.headers.toMultimap()
-            )
-            else -> return ServerError(
-                null,
-                response.body?.string(),
-                response.code,
-                response.headers.toMultimap()
-            )
+            if (response.isSuccessful) {
+                return response.body?.string()
+            } else {
+                val errorMessage = response.message
+            }
+        } catch (e: Exception) {
+            DAuthLogger.e("网络异常, 请检查网络连接")
         }
+
+        return null
     }
-    
+
+
     @Throws(IOException::class)
     fun downloadFileFromResponse(response: Response): File {
         val file = prepareDownloadFile(response)

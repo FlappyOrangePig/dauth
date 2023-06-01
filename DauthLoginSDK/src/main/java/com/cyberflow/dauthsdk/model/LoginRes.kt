@@ -20,8 +20,11 @@ import com.cyberflow.dauthsdk.network.BaseResponse
  */
 data class LoginRes (
     /* 用户登录凭证 */
-    val session_id: String
+    val session_id: String,
+    val data: Data
 ) : BaseResponse(){
-
+    class Data{
+        var did_token: String ?= null
+    }
 }
 
