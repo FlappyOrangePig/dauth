@@ -1,12 +1,13 @@
 package com.cyberflow.dauthsdk
 
-import com.cyberflow.dauthsdk.login.CyberFlowApplication
-import com.twitter.sdk.android.core.Twitter
+import android.app.Application
+import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 
-class MyApplication: CyberFlowApplication() {
+class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Twitter.initialize(this);
+        DAuthSDK.instance.initSDK(this, SdkConfig("", ""))
     }
 }
