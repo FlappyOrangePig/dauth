@@ -34,43 +34,27 @@ package com.cyberflow.dauthsdk.login.model
  * @param user_state 用户状态
  * @param create_time 注册时间
  */
-data class Account (
-    /* 用户账号 */
+
+
+data class Account(
     val account: String,
-    /* 用户昵称 */
     val nickname: String,
-    /* 用户生日 */
     val birthday: String,
-    /* 性别 0保密 1男 2女 */
     val sex: Int,
-    /* 邮箱 */
     val email: String,
-    /* 电话区号 */
     val phone_area_code: String,
-    /* 电话号码 */
-    val phone:  Long,
+    val phone: Long,
     val identity_Status: Int,
-    /* 用户图像地址 */
     val head_img_url: String,
-    /* 国家/地区 */
     val country: String,
-    /* 省份 */
     val province: String,
-    /* 城市 */
     val city: String,
-    /* 区 */
     val district: String,
-    /* 详细地址 */
     val address: String,
-    /* 注册来源 */
     val user_type: Int,
-    /* 用户状态 */
     val user_state: Int,
-    /* 注册时间 */
     val create_time: String,
-    /* 用户真实名称 */
     val real_name: String? = null,
-    /* 身份证 */
     val identity: String? = null
 ) {
 

@@ -34,6 +34,7 @@ data class TokenAuthenticationRes (
         /* 用于刷新access_token,每次刷新返回新的 */
         var refresh_token: String? = null
         var scope: String? = null
+        var id_token: String? = null
     }
 }
 

@@ -13,7 +13,7 @@ android {
 
     namespace 'com.cyberflow.dauth'
     defaultConfig {
-        applicationId "com.cyberflow.dauthsdk"
+        applicationId "com.infras.dauth"
     }
     sourceSets {
         main {

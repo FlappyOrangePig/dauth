@@ -17,6 +17,7 @@ class DummyWallet internal constructor(): IWalletApi {
     }
 
     override fun createWallet(passcode: String?): Int {
+        DAuthLogger.d("钱包创建成功")
         return 0
     }
 

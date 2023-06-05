@@ -1,3 +1,5 @@
+-keep class com.cyberflow.dauthsdk.login.model.** { *; }
+-keep class com.cyberflow.dauthsdk.login.impl.** { *; }
 ### web3j
 
 #Java8 rules

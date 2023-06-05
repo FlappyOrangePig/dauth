@@ -11,12 +11,20 @@
  */
 package com.cyberflow.dauthsdk.login.network
 
+import android.os.Parcel
+import com.cyberflow.dauthsdk.login.const.LoginConst
 import com.cyberflow.dauthsdk.login.infrastructure.ApiClient
 import com.cyberflow.dauthsdk.login.infrastructure.MultiValueMap
 import com.cyberflow.dauthsdk.login.infrastructure.RequestConfig
 import com.cyberflow.dauthsdk.login.infrastructure.RequestMethod
 import com.cyberflow.dauthsdk.login.model.*
+import com.cyberflow.dauthsdk.login.response.BaseResponseBody
+import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.Call
+import okhttp3.Response
 
 
 private const val BASE_URL = "https://dauth-test.mimo.immo"
@@ -41,6 +49,16 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         )
 
     }
+
+    private inline fun <reified T> fromJson(json: String?): T {
+        return Gson().fromJson(json, T::class.java)
+    }
+
+
+    fun Call.await(): Response {
+        return execute()
+    }
+
 
     /**
      * 第三方认证登录，返回临时 code
@@ -68,8 +86,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             localVariableBody
         )
-        val authorizeRes = Gson().fromJson(response, AuthorizeRes::class.java)
-        return authorizeRes
+        return fromJson(response)
     }
 
     /**
@@ -79,10 +96,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @return AuthorizeRes
      */
 
-    fun ownAuthorize(body: AuthorizeParam): AuthorizeRes? {
-        //登录后返回dIdToken  有效期2h
-        val didToken =
-            "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiNDUzMzc2MDc3QHFxLmNvbSIsIm5pY2tuYW1lIjoiIiwiaGVhZF9pbWdfdXJsIjoiIiwiaXNzIjoiZGF1dGgiLCJzdWIiOiI5Y2IxNDAxY2Y1ZTdhODFiOGQzZTUyZTA1ZTc4OTA2MyIsImF1ZCI6WyJlMmZjNzE0YzQ3MjdlZTkzOTVmMzI0Y2QyZTdmMzMxZiJdLCJleHAiOjE2ODU2OTUzOTJ9.l1eiuSSD7M3MDg0ZQJ6-XN0jVXZnIhanpmNe5N3OpytlWZ7OcIMwG54nRJUtK-ItwnPhjH7PIPe6On_JxzRY-Uy6hbwvmcYvzOIdqH7Mh8oKKhkKhsWhmYg2hkZ1NTfWL5RULHXk2RpRG7g7IXOgJqqH37S33ErMSsAyrH5uE1WWAGgB-5G7oBkdTKeYZAwmiw73Jhbb8Hlhi2WZ1Sse3kxlo7h7hP6Y8PC2dpwcGLX3dX4P1UOhw9qZ8z0xH6SnolqhD5VsMWsDCpKYrSi90860i9iCjzkDlTrVnHduEf49ChotiU1UWxXolQ3wzrJw7hVSAid5gLOrd5FqGzCUXA"
+    fun ownAuthorize(body: AuthorizeParam, didToken: String): AuthorizeRes? {
         val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
         val contentIdHeaders: Map<String, String> = mapOf("Authorization" to didToken)
@@ -99,7 +113,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             headers = localVariableHeaders
         )
         val response = request<AuthorizeRes>(localVariableConfig, body)
-        return null
+        return fromJson(response)
 
     }
 
@@ -115,7 +129,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         val localVariableConfig = setCommonParams("/account/v1/sociallogin/exchangedtoken")
 
         val response = request<AuthorizeToken2Res>(localVariableConfig, body)
-        return Gson().fromJson(response, AuthorizeToken2Res::class.java)
+        return fromJson(response)
     }
 
 
@@ -126,12 +140,9 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @return Any
      */
     fun bindAccount(body: BindAcoountParam): BaseResponse? {
-
         val localVariableConfig = setCommonParams("/account/v1/bind")
         val response = request<Any>(localVariableConfig, body)
-        val baseResponse = Gson().fromJson(response, BaseResponse::class.java)
-
-        return baseResponse
+        return fromJson(response)
     }
 
     /**
@@ -148,9 +159,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        val baseResponse = Gson().fromJson(response, BaseResponse::class.java)
-
-        return baseResponse
+        return fromJson(response)
     }
 
     /**
@@ -166,9 +175,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        val baseResponse = Gson().fromJson(response, BaseResponse::class.java)
-
-        return baseResponse
+        return fromJson(response)
     }
 
     /**
@@ -185,7 +192,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             body,
         )
 
-        return Gson().fromJson(response, BaseResponse::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -202,7 +209,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, CreateAccountRes::class.java)
+        return fromJson(response)
     }
 
 
@@ -221,7 +228,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             body
 
         )
-        return Gson().fromJson(response, AuthorizeToken2Res::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -238,7 +245,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, GetAcccountInfoRes::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -252,16 +259,48 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         val localVariableConfig = setCommonParams("/account/v1/login")
 
         val response = request<LoginRes>(localVariableConfig, body)
-        return Gson().fromJson(response, LoginRes::class.java)
+        return fromJson(response)
     }
+
+    /**
+     * @param access_token 访问资源凭证,有效期短,过期需要刷新
+     * @param authid 用户id
+     */
+    fun queryWallet(accessToken: String, authId: String, ): QueryWalletRes {
+        val map = HashMap<String,String>()
+        map[LoginConst.ACCESS_TOKEN] = accessToken
+        map["authId"] = authId
+        val sign = SignUtils.sign(map)
+        val body = QueryWalletParam(accessToken, authId, sign)
+        val localVariableConfig = setCommonParams("/wallet/v1/query")
+        val response = request<QueryWalletRes>(localVariableConfig, body)
+        return fromJson(response)
+    }
+
+    fun bindWallet(accessToken: String, authId: String): BaseResponse {
+        val bindWalletParam = BindWalletParam(
+            accessToken,
+            authId,
+            "0xff00",
+            11,
+            "0xff",
+            "0x"
+        )
+        val localVariableConfig = setCommonParams("/wallet/v1/bind")
+        val response = request<BaseResponse>(
+            localVariableConfig,
+            bindWalletParam
+        )
+
+        return  fromJson(response)
+    }
+
 
     /**
      * 自有账号授权获取token
      */
 
     fun ownOauth2Token(body: TokenAuthenticationParam, didToken: String?): TokenAuthenticationRes? {
-//        val didToken =
-//            "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiNDUzMzc2MDc3QHFxLmNvbSIsIm5pY2tuYW1lIjoiIiwiaGVhZF9pbWdfdXJsIjoiIiwiaXNzIjoiZGF1dGgiLCJzdWIiOiI5Y2IxNDAxY2Y1ZTdhODFiOGQzZTUyZTA1ZTc4OTA2MyIsImF1ZCI6WyJlMmZjNzE0YzQ3MjdlZTkzOTVmMzI0Y2QyZTdmMzMxZiJdLCJleHAiOjE2ODU2OTUzOTJ9.l1eiuSSD7M3MDg0ZQJ6-XN0jVXZnIhanpmNe5N3OpytlWZ7OcIMwG54nRJUtK-ItwnPhjH7PIPe6On_JxzRY-Uy6hbwvmcYvzOIdqH7Mh8oKKhkKhsWhmYg2hkZ1NTfWL5RULHXk2RpRG7g7IXOgJqqH37S33ErMSsAyrH5uE1WWAGgB-5G7oBkdTKeYZAwmiw73Jhbb8Hlhi2WZ1Sse3kxlo7h7hP6Y8PC2dpwcGLX3dX4P1UOhw9qZ8z0xH6SnolqhD5VsMWsDCpKYrSi90860i9iCjzkDlTrVnHduEf49ChotiU1UWxXolQ3wzrJw7hVSAid5gLOrd5FqGzCUXA"
         val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
         val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
@@ -283,7 +322,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, TokenAuthenticationRes::class.java)
+        return fromJson(response)
     }
 
 
@@ -300,7 +339,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, LoginAuthRes::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -316,7 +355,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, BaseResponse::class.java)
+        return fromJson(response)
 
     }
 
@@ -334,7 +373,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, AccountRes::class.java)
+        return fromJson(response)
 
     }
 
@@ -351,7 +390,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, AccountRes::class.java)
+        return fromJson(response)
 
     }
 
@@ -370,7 +409,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, AccountRes::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -387,7 +426,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, MiniAccountRealInfoRes::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -405,7 +444,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, RefreshTokenParamRes::class.java)
+        return fromJson(response)
 
     }
 
@@ -418,7 +457,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun resetByPassword(body: ResetByPasswordParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/account/v1/password/reset")
         val response = request<Any>(localVariableConfig, body)
-        return Gson().fromJson(response, BaseResponse::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -427,10 +466,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam): BaseResponse? {
-
+    suspend fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam): BaseResponse {
         val localVariableConfig = setCommonParams("/account/v1/emailverifycode/send")
-        val response = request<BaseResponse>(localVariableConfig, body)
+        val response = withContext(Dispatchers.IO) {
+            request<BaseResponse>(localVariableConfig, body)
+        }
         return Gson().fromJson(response, BaseResponse::class.java)
     }
 
@@ -464,7 +504,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, TokenAuthenticationRes::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -481,7 +521,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, BaseResponse::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -499,7 +539,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, BaseResponse::class.java)
+        return fromJson(response)
     }
 
     /**
@@ -516,7 +556,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return Gson().fromJson(response, BaseResponse::class.java)
+        return fromJson(response)
     }
 
 }

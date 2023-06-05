@@ -17,7 +17,7 @@ import com.google.android.gms.common.api.ApiException
 
 private const val REQUEST_CODE = 9001
 private const val TAG = "GoogleLoginManager"
-private const val TEST_SERVER_CLIENT_ID = "535517245452-2qnvgf1sp5vgb9ra6ouelgnedllj4iqs.apps.googleusercontent.com"
+private const val TEST_SERVER_CLIENT_ID = "209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com"
 private const val AUTH_TYPE_OF_GOOGLE = "30"
 private const val USER_TYPE = "user_type"
 class GoogleLoginManager {
@@ -76,7 +76,6 @@ class GoogleLoginManager {
             // Signed in successfully, show authenticated UI.
             val accountId = account?.id.toString()
             val accountIdToken = account?.idToken.toString()
-//            val data = JwtDecoder().decodeAndVerify(accountIdToken)
             DAuthLogger.e("account:$account, accountId:$accountId ,accountIdToken: $accountIdToken")
             user = DAuthUser(accountIdToken, accountId)
 
