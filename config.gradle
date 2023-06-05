@@ -21,12 +21,14 @@ ext {
         coroutine                    : "1.6.1",
         kotlin_stdlib                : "1.8.0",
         room                         : "2.5.0",
-        huanxin                      : "4.0.0",
         retrofit                     : "2.9.0",
         glide                        : "4.11.0",
         okhttp                       : "5.0.0-alpha.2",
         gson                         : "2.9.0",
         serialization                : "1.5.0",
+
+        // 3rd
+        web3j_core                   : "4.8.8-android",
 ]
 
 ext {
@@ -58,7 +60,6 @@ ext {
         room_ktx                      : "androidx.room:room-ktx:$versions.room",
         room_testing                  : "androidx.room:room-testing:$versions.room",
 
-        huanxin                       : "io.hyphenate:hyphenate-chat:$versions.huanxin",
         retrofit                      : "com.squareup.retrofit2:retrofit:$versions.retrofit",
         retrofit_converter_gson       : "com.squareup.retrofit2:converter-gson:$versions.retrofit",
         glide                         : "com.github.bumptech.glide:glide:$versions.glide",
@@ -66,4 +67,7 @@ ext {
         okhttp                        : "com.squareup.okhttp3:okhttp:$versions.okhttp",
         gson                          : "com.google.code.gson:gson:$versions.gson",
         serialization_json            : "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions.serialization",
+
+        // 3rd
+        web3j_core                    : "org.web3j:core:$versions.web3j_core",
 ]

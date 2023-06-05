@@ -1,6 +1,8 @@
 package com.cyberflow.dauthsdk.login
 
 import android.app.Activity
+import android.content.Context
+import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 import com.cyberflow.dauthsdk.login.constant.LoginType
 import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
 import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
@@ -12,9 +14,12 @@ import com.cyberflow.dauthsdk.login.utils.ThreadPoolUtils
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
+import com.cyberflow.dauthsdk.wallet.api.IWalletApi
+import com.cyberflow.dauthsdk.wallet.impl.DAuthWallet
+import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.twitter.sdk.android.core.*
 import kotlinx.coroutines.*
-
+import java.math.BigInteger
 
 private const val ACCOUNT_TYPE_OF_OWN = "70"  //自定义账号
 private const val ACCOUNT_TYPE_OF_EMAIL = 10  //邮箱
@@ -22,19 +27,31 @@ private const val USER_TYPE = "user_type"
 private const val PHONE = "phone"
 private const val VERIFY_CODE = "verify_code"
 private const val ACCOUNT = "account"
-class DAuthSDK {
+
+class DAuthSDK private constructor(): IWalletApi by WalletHolder.walletApi {
 
     companion object {
-        val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        val instance by lazy {
             DAuthSDK()
         }
     }
 
+    private var _context: Context? = null
+    internal val context get() = _context ?: throw RuntimeException("please call initSDK() first")
+    private var _config: SdkConfig? = null
+    private val config get() = _config ?: throw RuntimeException("please call initSDK() first")
+
     /**
+     * 所有后续SDK的方法都应在SDK初始化成功之后调用
      */
-    fun initSDK(activity: Activity , appId: String) {
+    fun initSDK(context: Context, config: SdkConfig) {
+        val appContext = context.applicationContext
+        this._context = appContext
+        this._config = config
         //Twitter初始化
-        Twitter.initialize(activity.applicationContext)
+        Twitter.initialize(appContext)
+        initWallet(appContext)
+        DAuthLogger.i("init sdk")
     }
 
     fun login(account: String, passWord: String, callback: BaseHttpCallback<LoginRes>) {

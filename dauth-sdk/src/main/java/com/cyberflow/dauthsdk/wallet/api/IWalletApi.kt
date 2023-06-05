@@ -5,7 +5,7 @@ import java.math.BigInteger
 
 interface IWalletApi {
 
-    fun init(context: Context)
+    fun initWallet(context: Context)
 
     /**
      * 创建钱包
@@ -33,12 +33,12 @@ interface IWalletApi {
      * @param amount 转账金额，单位wei
      * @return 返回交易ID
      */
-    fun estimateGas(toUserId: String, amount: BigInteger): String?
+    fun estimateGas(toUserId: String, amount: BigInteger): BigInteger?
 
     /**
      * 发送交易
      * @param toAddress 目标地址
      * @param amount 交易金额
      */
-    fun sendTransaction(toAddress: String, amount: String)
+    fun sendTransaction(toAddress: String, amount: BigInteger)
 }

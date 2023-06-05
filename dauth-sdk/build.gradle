@@ -86,5 +86,5 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
     // web3j
-    implementation 'org.web3j:core:4.8.8-android'
+    implementation libraries.web3j_core
 }

@@ -2,9 +2,9 @@ package com.cyberflow.dauthsdk.wallet.util
 
 import android.os.Looper
 import androidx.viewbinding.BuildConfig
-import com.cyberflow.dauthsdk.wallet.const.WalletConst.LOG_TAG
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 
-object ThreadUtil {
+internal object ThreadUtil {
 
     fun isMainThread(): Boolean {
         return Looper.getMainLooper().thread == Thread.currentThread()
@@ -21,7 +21,7 @@ object ThreadUtil {
             if (BuildConfig.DEBUG) {
                 throw java.lang.RuntimeException(msg)
             } else {
-                LogUtil.e(LOG_TAG, msg)
+                DAuthLogger.e(msg)
             }
         }
     }

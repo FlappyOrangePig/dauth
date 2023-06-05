@@ -1,22 +1,29 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-import com.cyberflow.dauthsdk.wallet.sol.TestTemp
-import com.cyberflow.dauthsdk.wallet.util.ConvertUtil
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.const.WalletConst
 import com.cyberflow.dauthsdk.wallet.const.WalletConst.LOG_TAG
-import com.cyberflow.dauthsdk.wallet.util.LogUtil
+import com.cyberflow.dauthsdk.wallet.sol.TestTemp
+import com.cyberflow.dauthsdk.wallet.util.ConvertUtil
+import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.*
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.core.RemoteFunctionCall
+import org.web3j.protocol.core.Request
+import org.web3j.protocol.core.Response
+import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthGasPrice
 import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.ClientTransactionManager
 import org.web3j.tx.gas.DefaultGasProvider
+import org.web3j.utils.Numeric
 import java.math.BigInteger
-
-private const val TAG = LOG_TAG
 
 object Web3Manager {
 
@@ -25,14 +32,14 @@ object Web3Manager {
 
     // sepolia测试节点，从https://sepolia.dev/#抄的
     private const val SEPOLIA_RPC_URL = "https://rpc.sepolia.org/"
-    private val web3j by lazy { Web3j.build(HttpService(GOU_JIAN_URL)) }
+    private val web3j by lazy { Web3j.build(HttpService(SEPOLIA_RPC_URL)) }
 
     private suspend fun <S, T : Response<*>> Request<S, T>.await(): T? {
         val result = withContext(Dispatchers.IO) {
             try {
                 send()
             } catch (e: Exception) {
-                LogUtil.e(TAG, android.util.Log.getStackTraceString(e))
+                DAuthLogger.e(android.util.Log.getStackTraceString(e))
                 null
             }
         }
@@ -44,7 +51,7 @@ object Web3Manager {
             try {
                 send()
             } catch (e: Exception) {
-                LogUtil.e(TAG, android.util.Log.getStackTraceString(e))
+                DAuthLogger.e(android.util.Log.getStackTraceString(e))
                 null
             }
         }
@@ -57,8 +64,39 @@ object Web3Manager {
         }
     }
 
-    suspend fun getGasPrice(): EthGasPrice? {
-        return web3j.ethGasPrice().await()
+    suspend fun getGasPrice(): BigInteger? {
+        return web3j.ethGasPrice().await()?.gasPrice
+    }
+
+    suspend fun estimateGas(from: String, to: String, value: BigInteger): BigInteger? {
+        return web3j.ethEstimateGas(
+            Transaction.createEtherTransaction(
+                from,
+                null,
+                null,
+                null,
+                to,
+                value
+            )
+        ).await()?.amountUsed
+    }
+
+    fun sendTransaction(to: String, amount: BigInteger): String{
+        val credentials = CredentialsUtil.loadCredentials()
+        val address = credentials.address
+        val transactionCount =
+            web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST)
+                .send().transactionCount
+
+        val gasProvider = DefaultGasProvider()
+        val gasPrice = gasProvider.gasPrice
+        val gasLimit = gasProvider.gasLimit
+        val nonce = transactionCount
+        val transaction = RawTransaction.createEtherTransaction(nonce, gasPrice, gasLimit, to, amount)
+        val signedTransaction = TransactionEncoder.signMessage(transaction, credentials)
+        val hexValue = Numeric.toHexString(signedTransaction)
+        val ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send()
+        return ethSendTransaction.transactionHash
     }
 
     private fun getTestTempContract(): TestTemp {
