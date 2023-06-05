@@ -1,6 +1,6 @@
 package com.cyberflow.dauthsdk
 
-import com.cyberflow.dauthsdk.twitter.TwitterLoginManager
+import com.cyberflow.dauthsdk.login.CyberFlowApplication
 import com.twitter.sdk.android.core.Twitter
 
 class MyApplication: CyberFlowApplication() {

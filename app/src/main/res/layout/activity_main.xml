@@ -87,6 +87,7 @@
         android:id="@+id/tv_send_code"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="10dp"
         android:text="Send Code"
         app:layout_constraintEnd_toEndOf="@id/edt_password"
         app:layout_constraintTop_toTopOf="@id/edt_password"

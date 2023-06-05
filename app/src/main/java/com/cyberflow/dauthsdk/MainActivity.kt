@@ -6,13 +6,14 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauth.databinding.ActivityMainBinding
-import com.cyberflow.dauthsdk.google.GoogleLoginManager
-import com.cyberflow.dauthsdk.callback.BaseHttpCallback
-import com.cyberflow.dauthsdk.model.LoginRes
-import com.cyberflow.dauthsdk.twitter.TwitterLoginManager
-import com.cyberflow.dauthsdk.utils.DAuthLogger
-import com.cyberflow.dauthsdk.utils.JwtChallengeCode
-import com.cyberflow.dauthsdk.view.WalletWebViewActivity
+import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
+import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
+import com.cyberflow.dauthsdk.login.callback.OnActivityResultListener
+import com.cyberflow.dauthsdk.login.model.LoginRes
+import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 
 private const val TAG = "MainActivity"
 private const val TWITTER_REQUEST_CODE = 140
@@ -21,7 +22,7 @@ private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
 private const val FACEBOOK = "FACEBOOK"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnActivityResultListener {
     var mainBinding: ActivityMainBinding?  = null
     private val binding: ActivityMainBinding get() = mainBinding!!
 
@@ -60,17 +61,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         binding.ivGoogle.setOnClickListener {
-//            DAuthSDK.instance.loginWithType(GOOGLE, this)
-
-            //DAuth 授权接口测试
-            val codeVerifier = JwtChallengeCode().generateCodeVerifier()
-            val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
-            DAuthLogger.d("codeVerify == $codeVerifier")
-            val code = DAuthSDK.instance.loginAuth(codeChallenge)
-//
-//            //DAuth 授权接口测试
-            DAuthSDK.instance.getDAuthToken(codeVerifier,code)
-
+            DAuthSDK.instance.loginWithType(GOOGLE, this)
         }
 
         binding.ivTwitter.setOnClickListener {

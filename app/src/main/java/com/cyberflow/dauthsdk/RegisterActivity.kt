@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
-import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
+import com.cyberflow.dauthsdk.login.DAuthSDK
 
 class RegisterActivity: AppCompatActivity() {
     private var _binding: ActivityRegisterLayoutBinding?= null

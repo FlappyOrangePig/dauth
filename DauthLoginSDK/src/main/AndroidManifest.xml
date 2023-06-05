@@ -5,7 +5,7 @@
     <application>
         <activity
             android:theme="@style/Theme.client"
-            android:name=".view.DAuthActivity"/>
-        <activity android:name=".view.WalletWebViewActivity"/>
+            android:name=".login.view.DAuthActivity"/>
+        <activity android:name=".login.view.WalletWebViewActivity"/>
     </application>
 </manifest>

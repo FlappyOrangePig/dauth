@@ -7,7 +7,8 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
-import com.cyberflow.dauthsdk.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 
 class ResetPasswordActivity: AppCompatActivity() {
 
