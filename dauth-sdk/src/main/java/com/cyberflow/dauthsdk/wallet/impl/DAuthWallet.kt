@@ -48,7 +48,7 @@ class DAuthWallet internal constructor() : IWalletApi {
         return null
     }
 
-    override fun sendTransaction(toAddress: String, amount: BigInteger) {
+    override fun sendTransaction(toAddress: String, amount: BigInteger): String? {
         runBlocking {
             val address = queryWalletAddress()
             val queryAddress = toAddress
@@ -61,6 +61,7 @@ class DAuthWallet internal constructor() : IWalletApi {
                 DAuthLogger.d("tx: $tx")
             }
         }
+        return null
     }
 
 }
