@@ -86,7 +86,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             localVariableBody
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -113,7 +113,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             headers = localVariableHeaders
         )
         val response = request<AuthorizeRes>(localVariableConfig, body)
-        return fromJson(response)
+        return response
 
     }
 
@@ -129,7 +129,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         val localVariableConfig = setCommonParams("/account/v1/sociallogin/exchangedtoken")
 
         val response = request<AuthorizeToken2Res>(localVariableConfig, body)
-        return fromJson(response)
+        return response
     }
 
 
@@ -141,8 +141,8 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      */
     fun bindAccount(body: BindAcoountParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/account/v1/bind")
-        val response = request<Any>(localVariableConfig, body)
-        return fromJson(response)
+        val response = request<BaseResponse>(localVariableConfig, body)
+        return response
     }
 
     /**
@@ -155,11 +155,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun bindEmail(body: BindEmailParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/account/v1/email/bind")
 
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -171,11 +171,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun bindPhone(body: BindPhoneParam): BaseResponse? {
 
         val localVariableConfig = setCommonParams("/account/v1/phone/bind")
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -187,12 +187,12 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun bindRealInfo(body: BindRealInfoParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/account/v1/realinfo/bind")
 
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body,
         )
 
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -209,7 +209,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
 
@@ -228,7 +228,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             body
 
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -245,7 +245,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -259,14 +259,14 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         val localVariableConfig = setCommonParams("/account/v1/login")
 
         val response = request<LoginRes>(localVariableConfig, body)
-        return fromJson(response)
+        return response
     }
 
     /**
      * @param access_token 访问资源凭证,有效期短,过期需要刷新
      * @param authid 用户id
      */
-    fun queryWallet(accessToken: String, authId: String, ): QueryWalletRes {
+    fun queryWallet(accessToken: String, authId: String, ): QueryWalletRes? {
         val map = HashMap<String,String>()
         map[LoginConst.ACCESS_TOKEN] = accessToken
         map["authId"] = authId
@@ -274,10 +274,10 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
         val body = QueryWalletParam(accessToken, authId, sign)
         val localVariableConfig = setCommonParams("/wallet/v1/query")
         val response = request<QueryWalletRes>(localVariableConfig, body)
-        return fromJson(response)
+        return response
     }
 
-    fun bindWallet(accessToken: String, authId: String): BaseResponse {
+    fun bindWallet(accessToken: String, authId: String): BaseResponse? {
         val bindWalletParam = BindWalletParam(
             accessToken,
             authId,
@@ -292,7 +292,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             bindWalletParam
         )
 
-        return  fromJson(response)
+        return  response
     }
 
 
@@ -322,7 +322,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
 
@@ -339,7 +339,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -351,11 +351,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun logout(body: LogoutParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/account/v1/logout")
 
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
 
     }
 
@@ -373,7 +373,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
 
     }
 
@@ -386,11 +386,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun queryByEMail(body: QueryByEMailParam): AccountRes? {
         val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
 
-        val response = request<Any>(
+        val response = request<AccountRes>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
 
     }
 
@@ -405,11 +405,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
 
         val localVariableConfig = setCommonParams("/account/v1/userinfo/phone/query")
 
-        val response = request<Any>(
+        val response = request<AccountRes>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -422,11 +422,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun queryRealInfo(body: QueryRealInfoParam): MiniAccountRealInfoRes? {
         val localVariableConfig = setCommonParams("/account/v1/realinfo/query")
 
-        val response = request<Any>(
+        val response = request<MiniAccountRealInfoRes>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -440,11 +440,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
 
         val localVariableConfig = setCommonParams("/account/v1/refresh_token")
 
-        val response = request<Any>(
+        val response = request<RefreshTokenParamRes>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
 
     }
 
@@ -456,8 +456,8 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      */
     fun resetByPassword(body: ResetByPasswordParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/account/v1/password/reset")
-        val response = request<Any>(localVariableConfig, body)
-        return fromJson(response)
+        val response = request<BaseResponse>(localVariableConfig, body)
+        return response
     }
 
     /**
@@ -466,12 +466,9 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    suspend fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam): BaseResponse {
+    suspend fun sendEmailVerifyCode(body: SendEmailVerifyCodeParam) = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/emailverifycode/send")
-        val response = withContext(Dispatchers.IO) {
-            request<BaseResponse>(localVariableConfig, body)
-        }
-        return Gson().fromJson(response, BaseResponse::class.java)
+        request<BaseResponse>(localVariableConfig, body)
     }
 
     /**
@@ -483,7 +480,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun sendPhoneVerifyCode(body: SendPhoneVerifyCodeParam): Any {
 
         val localVariableConfig = setCommonParams("/account/v1/phoneverifycode/send")
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
@@ -500,11 +497,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun tokenAuthentication(body: TokenAuthenticationParam): TokenAuthenticationRes? {
         val localVariableConfig = setCommonParams("/account/v1/oauth2/token")
 
-        val response = request<Any>(
+        val response = request<TokenAuthenticationRes>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -517,11 +514,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
     fun unbindEmail(body: UnbindEmailParam): BaseResponse? {
 
         val localVariableConfig = setCommonParams("/account/v1/mail/unbind")
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -535,11 +532,11 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
 
         val localVariableConfig = setCommonParams("/account/v1/phone/unbind")
 
-        val response = request<Any>(
+        val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
     /**
@@ -556,7 +553,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             localVariableConfig,
             body
         )
-        return fromJson(response)
+        return response
     }
 
 }

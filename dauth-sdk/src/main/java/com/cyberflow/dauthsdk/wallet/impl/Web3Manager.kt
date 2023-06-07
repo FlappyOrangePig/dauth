@@ -33,7 +33,7 @@ object Web3Manager {
     // sepolia测试节点，从https://sepolia.dev/#抄的
     // chainId：11155111 (0xaa36a7)
     private const val SEPOLIA_RPC_URL = "https://rpc.sepolia.org/"
-    private val okHttpClient by lazy { getOkhttpClient() }
+    val okHttpClient by lazy { getOkhttpClient() }
     private val web3j by lazy { Web3j.build(HttpService(SEPOLIA_RPC_URL, okHttpClient)) }
 
     private suspend fun <S, T : Response<*>> Request<S, T>.await(): T? {

@@ -1,0 +1,27 @@
+# VIDDIO
+
+## 简介
+
+viddio是虎牙的项目
+
+## 外部文档
+
+[合约设计文档](https://chunchunzhi.notion.site/bcd625d0b7964f069a8075a1e7a740a5)
+
+[需求文档](https://5191bj.axshare.com/#id=whl0gw&p=%E7%99%BB%E5%BD%95_%E6%B3%A8%E5%86%8C_-_0529)
+
+## 内部文档
+
+[DAuth钱包介绍](https://zi7ltea0tfa.feishu.cn/docx/RXu0d2Yj7o9WVFxmyNPccHp1npd)
+
+[DAuth钱包设计文档](https://zi7ltea0tfa.feishu.cn/docx/QqDWdhxc7ozbBjx8ZCgcfAcwnUb)
+
+[DAuth 聚合账号技术方案和api设计](https://docs.google.com/document/d/1OlQYsS4ArPP-dfIkcBPBNNCImcI-GPl2AxKr6-RHujU/edit)
+
+[SDK技术文档](https://cefjzl0pjk.feishu.cn/wiki/HZsfw30mCiYBXokgxGqc1Ce6nfc)
+
+## 外部资料
+
+[基于ECDSA算法的门限签名技术（以太坊非合约多签技术）](https://blog.csdn.net/sinat_32065311/article/details/116486429#:~:text=%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4%E5%A6%82%E4%B8%8B%EF%BC%9A%201.%E7%94%A8%E6%88%B7A%E7%A6%BB%E7%BA%BF%E7%94%9F%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84ECDSA%E7%A7%81%E9%92%A5%EF%BC%8C%E5%90%8C%E6%97%B6%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E5%A4%A7%E9%9A%8F%E6%9C%BA%E6%95%B0%EF%BC%8C%E9%80%9A%E8%BF%87%E9%9A%8F%E6%9C%BA%E6%95%B0%E4%B8%8E%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%8F%8A%E7%A7%81%E9%92%A5%E7%9A%84%E8%BF%90%E7%AE%97%E5%BE%97%E5%88%B0%20D1,2.%20%E7%94%A8%E6%88%B7B%E7%A6%BB%E7%BA%BF%E7%94%9F%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84ECDSA%E7%A7%81%E9%92%A5%EF%BC%8C%E5%90%8C%E6%97%B6%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E5%A4%A7%E9%9A%8F%E6%9C%BA%E6%95%B0%EF%BC%8C%E9%80%9A%E8%BF%87%E9%9A%8F%E6%9C%BA%E6%95%B0%E4%B8%8E%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%8F%8A%E7%A7%81%E9%92%A5%E7%9A%84%E8%BF%90%E7%AE%97%E5%BE%97%E5%88%B0%20D2%203.%E7%94%A8%E6%88%B7A%E5%B0%86D1%E5%8F%91%E9%80%81%E7%BB%99%E7%94%A8%E6%88%B7B%2C%E7%94%A8%E6%88%B7B%E9%80%9A%E8%BF%87D1%E3%80%81D2%E5%90%88%E6%88%90%E5%85%AC%E9%92%A5%E5%B9%B6%E5%BE%97%E5%88%B0%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%9C%B0%E5%9D%80%EF%BC%8C%E8%AF%A5%E5%85%AC%E9%92%A5%E5%AE%8C%E5%85%A8%E7%AC%A6%E5%90%88%E4%BB%A5%E5%A4%AA%E5%9D%8A%E8%A7%84%E8%8C%83%EF%BC%8C%E5%9F%BA%E4%BA%8EECDSA%E3%80%82)
+
+[Metamask不支持WallectConnect](https://github.com/MetaMask/metamask-mobile/issues/3957)

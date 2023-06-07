@@ -87,3 +87,5 @@ dependencies {
     // web3j
     implementation libraries.web3j_core
 }
+
+apply from: '../maven_publish.gradle'
