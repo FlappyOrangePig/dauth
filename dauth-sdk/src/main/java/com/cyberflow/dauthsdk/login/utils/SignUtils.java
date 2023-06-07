@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.login.utils;
 
 
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -29,8 +30,9 @@ public class SignUtils {
                 continue;
             }
             // 参数值为空，则不参与签名
-            if (String.valueOf(data.get(keyArray[i])).length() > 0) {
-                sb.append(keyArray[i]).append("=").append(data.get(keyArray[i]));
+            String v = data.get(keyArray[i]);
+            if (v != null) {
+                sb.append(keyArray[i]).append("=").append(v);
                 if (i < keyArray.length - 1) {
                     sb.append("&");
                 }
@@ -72,10 +74,10 @@ public class SignUtils {
         }
     }
 
-    public static Map<String, Object> objToMap(Object obj) {
+    public static Map<String, String> objToMap(Object obj) {
 
 
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, String> map = new HashMap<String, String>();
 
         Field[] fields = obj.getClass().getDeclaredFields(); // 获取f对象对应类中的所有属性域
 

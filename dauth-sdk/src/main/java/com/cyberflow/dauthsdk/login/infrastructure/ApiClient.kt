@@ -2,12 +2,14 @@ package com.cyberflow.dauthsdk.login.infrastructure
 
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
+import com.cyberflow.dauthsdk.wallet.impl.Web3Manager
 import com.google.gson.Gson
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.io.*
 import java.util.*
 import java.util.regex.Pattern
@@ -24,11 +26,8 @@ open class ApiClient(val baseUrl: String) {
 
         @JvmStatic
         val client by lazy {
-            builder.build()
+            Web3Manager.okHttpClient
         }
-
-        @JvmStatic
-        val builder: OkHttpClient.Builder = OkHttpClient.Builder()
 
         @JvmStatic
         var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
@@ -57,6 +56,8 @@ open class ApiClient(val baseUrl: String) {
             // content's type *must* be Map<String, Any>
             @Suppress("UNCHECKED_CAST")
             val map = SignUtils.objToMap(content)
+
+            map["sign"] = SignUtils.sign(map)
             map.forEach { (key, value) ->
                 if (value::class == File::class) {
                     val file = value as File
@@ -78,17 +79,52 @@ open class ApiClient(val baseUrl: String) {
         return MultipartBody.Builder().setType(MultipartBody.FORM).build()
     }
 
+    fun isJsonMime(mime: String?): Boolean {
+        val jsonMime = "(?i)^(application/json|[^;/ \t]+/[^;/ \t]+[+]json)[ \t]*(;.*)?$"
+        return mime != null && (mime.matches(jsonMime.toRegex()) || mime == "*/*")
+    }
+
     protected inline fun <reified T: Any?> responseBody(response: Response, accept: String): T? {
         if(response.body == null) return null
         val body = response.body
         val rb = body?.string()
-        DAuthLogger.d("Response body: $rb")
-        val gson = Gson()
-        return gson.fromJson(rb,T::class.java)
+        val data = JSONObject(rb)
+        val ret = data.getInt("iRet")
+        val objStr = data.getString("data")
+        val msg = data.getString("sMsg")
+        DAuthLogger.e("接口返回：$msg")
+        if (T::class.java == java.io.File::class.java) {
+            return downloadFileFromResponse(response) as T
+        } else if (T::class == Unit::class) {
+            return Unit as T
+        }
+
+        var contentType = response.headers["Content-Type"]
+
+        if(contentType == null) {
+            contentType = JsonMediaType
+        }
+        if(ret == 0) {
+            try {
+                return if (isJsonMime(contentType)) {
+                    val gson = Gson()
+                    gson.fromJson(objStr, T::class.java)
+                } else if (contentType.equals(String.Companion::class.java)) {
+                    response.body.toString() as T
+                } else {
+                    DAuthLogger.e("Fill in more types!")
+                    return null
+                }
+            } catch (e: java.lang.Exception) {
+                DAuthLogger.e("responseBody Serializer exception: $e")
+            }
+        } else {
+            DAuthLogger.e("http request response errorCode:$ret,errorMsg:$msg")
+        }
+        return null
     }
 
-
-    protected inline fun <reified T : Any?> request(requestConfig: RequestConfig, body: Any?) :String? {
+    protected inline fun <reified T : Any?> request(requestConfig: RequestConfig, body: Any?): T? {
         val httpUrl = baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
         var urlBuilder = httpUrl.newBuilder()
             .addPathSegments(requestConfig.path.trimStart('/'))
@@ -129,20 +165,13 @@ open class ApiClient(val baseUrl: String) {
         headers.forEach { header -> request.addHeader(header.key, header.value) }
 
         val realRequest = request.build()
-        val response: Response?
-        try {
-            response = client.newCall(realRequest).execute()
+        val response = client.newCall(realRequest).execute()
 
-            if (response.isSuccessful) {
-                return response.body?.string()
-            } else {
-                val errorMessage = response.message
-            }
-        } catch (e: Exception) {
-            DAuthLogger.e("网络异常, 请检查网络连接:$e")
+        return if (response.isSuccessful) {
+            responseBody(response, accept)
+        } else {
+            null
         }
-
-        return null
     }
 
 

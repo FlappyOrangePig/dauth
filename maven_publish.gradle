@@ -1,0 +1,40 @@
+apply plugin: 'maven-publish'
+
+def GROUP_ID = "com.cyberflow.dauthsdk"
+
+afterEvaluate { project ->
+    tasks.all { task ->
+        def taskName = task.name
+        if (taskName.startsWith("publish") && taskName.endsWith("Repository")) {
+            def dependent = "assemble"
+            task.dependsOn tasks.getByName(dependent)
+            println(taskName + " depends on " + dependent)
+        }
+
+    }
+}
+
+task sourceJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = GROUP_ID
+                artifactId = project.getName()
+                version = android.defaultConfig.versionName
+                from components.release
+                artifact sourceJar
+            }
+        }
+        repositories {
+            maven {
+                name "yxLocal"
+                url rootProject.file("./repo")
+            }
+        }
+    }
+}

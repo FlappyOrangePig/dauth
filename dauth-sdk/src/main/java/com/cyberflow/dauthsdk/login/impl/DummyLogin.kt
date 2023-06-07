@@ -154,7 +154,7 @@ class DummyLogin internal constructor() : ILoginApi, IWalletApi by WalletHolder.
         confirmPwd: String
     ): Boolean {
         var isSuccess = false
-        val map = HashMap<String, String?>()
+        val map = HashMap<String, String>()
         val userType = LoginConst.ACCOUNT_TYPE_OF_OWN
         map[LoginConst.ACCOUNT] = account
         map[LoginConst.USER_TYPE] = userType
@@ -230,7 +230,7 @@ class DummyLogin internal constructor() : ILoginApi, IWalletApi by WalletHolder.
                     RequestApi().queryWallet(accessToken, authId)
                 }
 
-                if (queryWalletRes.address.isNullOrEmpty()) {
+                if (queryWalletRes?.address.isNullOrEmpty()) {
                     val code = withContext(Dispatchers.IO) {
                         createWallet("123456")
                     }
@@ -238,7 +238,7 @@ class DummyLogin internal constructor() : ILoginApi, IWalletApi by WalletHolder.
                         val bindWalletRes = withContext(Dispatchers.IO) {
                             RequestApi().bindWallet(accessToken, userId)
                         }
-                        if (bindWalletRes.iRet == 0) {
+                        if (bindWalletRes?.iRet == 0) {
                             DAuthLogger.d("绑定钱包成功")
                         }
                         loginCode = 0
@@ -301,11 +301,10 @@ class DummyLogin internal constructor() : ILoginApi, IWalletApi by WalletHolder.
         var isSend = false
         val map = HashMap<String, String>()
         map[LoginConst.ACCOUNT] = email
-        val sign = SignUtils.sign(map)
-        val body = SendEmailVerifyCodeParam(email, sign)
+        val body = SendEmailVerifyCodeParam(email)
 
         val response = RequestApi().sendEmailVerifyCode(body)
-        if (response.iRet == 0) {
+        if (response?.iRet == 0) {
             isSend = true
             DAuthLogger.d("发送邮箱验证码成功")
         } else {
