@@ -1,41 +1,41 @@
 {
   "project_info": {
-    "project_number": "535517245452",
-    "project_id": "zinc-hall-386414",
-    "storage_bucket": "zinc-hall-386414.appspot.com"
+    "project_number": "209392989758",
+    "project_id": "dauth-407cc",
+    "storage_bucket": "dauth-407cc.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:535517245452:android:5e9f2fcc451b73a44dbe29",
+        "mobilesdk_app_id": "1:209392989758:android:ff3e5956735a945f03436f",
         "android_client_info": {
-          "package_name": "com.cyberflow.dauthsdk"
+          "package_name": "com.infras.dauth"
         }
       },
       "oauth_client": [
         {
-          "client_id": "535517245452-2qnvgf1sp5vgb9ra6ouelgnedllj4iqs.apps.googleusercontent.com",
+          "client_id": "209392989758-ch43blo1gufaivntoi1030p19rf2rpq1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.cyberflow.dauthsdk",
+            "package_name": "com.infras.dauth",
             "certificate_hash": "e5d3d955894aacd37602d70a3d6202d3b6410ce3"
           }
         },
         {
-          "client_id": "535517245452-2qnvgf1sp5vgb9ra6ouelgnedllj4iqs.apps.googleusercontent.com",
+          "client_id": "209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBXysakpoTgkGrRdp1y1mWIivADf7iS7sw"
+          "current_key": "AIzaSyCYWSg3PWtZWEYVsUOadcT5PX-PtSG84lY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "535517245452-2qnvgf1sp5vgb9ra6ouelgnedllj4iqs.apps.googleusercontent.com",
+              "client_id": "209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

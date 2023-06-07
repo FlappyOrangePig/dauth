@@ -1,7 +1,10 @@
 package com.cyberflow.dauthsdk.login.twitter
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.util.Log
+import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
@@ -38,6 +41,15 @@ class TwitterLoginManager() {
 
     }
 
+    fun initTwitterSDK(context: Context, sdkConfig: SdkConfig) {
+        val config = TwitterConfig.Builder(context)
+            .logger(DefaultLogger(Log.DEBUG))
+            .twitterAuthConfig(TwitterAuthConfig(sdkConfig.appId, sdkConfig.appKey))
+            .debug(true)
+            .build()
+        Twitter.initialize(config)
+
+    }
 
     fun twitterLoginAuth(activity: Activity, callback: Callback<TwitterSession>?) {
 
