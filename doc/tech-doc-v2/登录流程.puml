@@ -13,12 +13,12 @@ note right: loginWithType(type:Int)
 note right: login()
 
 |core-sdk|
-if (有钱包) is (Y) then
+if (有钱包) is (N) then
     |app|
     :调SDK结果：登录失败-钱包未创建;
     :省略，参见注册流程;
     stop
-else (N)
+else (Y)
     |core-sdk|
     :获取本地私钥签名私钥;
     :构造验证本地签名私钥的消息json;

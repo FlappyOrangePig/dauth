@@ -14,6 +14,7 @@ import com.cyberflow.dauthsdk.login.model.LoginRes
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
+import java.math.BigInteger
 
 private const val TAG = "MainActivity"
 private const val TWITTER_REQUEST_CODE = 140
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity(), OnActivityResultListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DAuthLogger.d("MainActivity onCreate")
         mainBinding = ActivityMainBinding.inflate(LayoutInflater.from(this))
 
         setContentView(binding.root)
@@ -57,6 +59,7 @@ class MainActivity : AppCompatActivity(), OnActivityResultListener {
             RegisterActivity.launch(this)
         }
         initView()
+        //testWeb3j()
     }
 
     private fun initView() {
@@ -94,5 +97,22 @@ class MainActivity : AppCompatActivity(), OnActivityResultListener {
         }
     }
 
+    private fun testWeb3j() {
+        val sdk = DAuthSDK.instance
+        val address = sdk.queryWalletAddress()
+        DAuthLogger.d("address=$address")
+        val balance = sdk.queryWalletBalance()
+        DAuthLogger.d("balance=$balance")
+        val to = "0x386F221660f58157aa05C107dDae69295316d82D"
+        val amount = BigInteger("10")
+        val estimateGas = sdk.estimateGas(to, amount)
+        DAuthLogger.d("estimateGas=$estimateGas")
+        val gasUsed = sdk.sendTransaction(to, amount)
+        DAuthLogger.d("gasUsed=$gasUsed")
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        DAuthLogger.d("MainActivity onDestroy")
+    }
 }

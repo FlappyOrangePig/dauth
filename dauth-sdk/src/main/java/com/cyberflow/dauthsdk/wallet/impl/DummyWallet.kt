@@ -1,6 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import android.content.Context
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import kotlinx.coroutines.runBlocking
@@ -20,7 +21,9 @@ class DummyWallet internal constructor(): IWalletApi {
     }
 
     override fun queryWalletAddress(): String {
-        return CredentialsUtil.loadCredentials().address
+        return CredentialsUtil.loadCredentials().address.also {
+            DAuthLogger.i("queryWalletAddress $it")
+        }
     }
 
     override fun queryWalletBalance(): BigInteger? {
@@ -32,6 +35,8 @@ class DummyWallet internal constructor(): IWalletApi {
             } else {
                 null
             }
+        }.also {
+            DAuthLogger.i("queryWalletBalance $it")
         }
     }
 
@@ -39,10 +44,17 @@ class DummyWallet internal constructor(): IWalletApi {
         val address = queryWalletAddress()
         return runBlocking {
             Web3Manager.estimateGas(address, toUserId, amount)
+        }.also {
+            DAuthLogger.d("estimateGas from=$address to=$toUserId amount=$amount result=$it")
         }
     }
 
-    override fun sendTransaction(toAddress: String, amount: BigInteger) {
-        Web3Manager.sendTransaction(toAddress, amount)
+    override fun sendTransaction(toAddress: String, amount: BigInteger):String? {
+        DAuthLogger.d("sendTransaction $toAddress $amount")
+        return runBlocking {
+            Web3Manager.sendTransaction(toAddress, amount)
+        }.also {
+            DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it")
+        }
     }
 }

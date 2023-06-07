@@ -40,5 +40,5 @@ interface IWalletApi {
      * @param toAddress 目标地址
      * @param amount 交易金额
      */
-    fun sendTransaction(toAddress: String, amount: BigInteger)
+    fun sendTransaction(toAddress: String, amount: BigInteger): String?
 }
