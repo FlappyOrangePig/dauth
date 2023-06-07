@@ -34,22 +34,22 @@ class GoogleLoginManager : IWalletApi by WalletHolder.walletApi {
     }
 
     //Google sdk init
-    private fun signInClient(activity: Activity): GoogleSignInClient {
-        var serverClientId = ""
+    private fun signInClient(activity: Activity): GoogleSignInClient? {
         try {
             val applicationInfo = activity.packageManager.getApplicationInfo(activity.packageName,
                 PackageManager.GET_META_DATA)
             val metaData = applicationInfo.metaData
-            serverClientId = metaData.getString("com.google.android.gms.games.APP_ID").orEmpty()
+            val serverClientId = metaData.getString("com.google.android.gms.games.APP_ID").orEmpty()
+            //requestIdToken需要使用Web客户端ID才能成功，不要使用安卓ClientID
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(serverClientId)
+                .requestEmail()
+                .build()
+            return GoogleSignIn.getClient(activity, gso)
         } catch (e: NameNotFoundException) {
             e.printStackTrace()
         }
-        //requestIdToken需要使用Web客户端ID才能成功，不要使用安卓ClientID
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(serverClientId)
-            .requestEmail()
-            .build()
-        return GoogleSignIn.getClient(activity, gso)
+       return null
     }
 
     //登录
@@ -57,7 +57,7 @@ class GoogleLoginManager : IWalletApi by WalletHolder.walletApi {
 
         val code = checkGooglePlayServiceExist(activity)
         onCheckGooglePlayServices(activity, code)
-        val signInIntent: Intent = signInClient(activity).signInIntent
+        val signInIntent: Intent = signInClient(activity)!!.signInIntent
 
         activity.startActivityForResult(signInIntent, REQUEST_CODE)
     }
@@ -82,50 +82,4 @@ class GoogleLoginManager : IWalletApi by WalletHolder.walletApi {
         return status
     }
 
-      suspend fun onActivityResult(data: Intent?): Int {
-        var loginResCode = 10000
-        try {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account: GoogleSignInAccount? = task.getResult(ApiException::class.java)
-            // Signed in successfully, show authenticated UI.
-            val accountId = account?.id.toString()
-            val accountIdToken = account?.idToken.toString()
-            DAuthLogger.e("account:$account, accountId:$accountId ,accountIdToken: $accountIdToken")
-
-            val authorizeParam = AuthorizeToken2Param(
-                access_token = null,
-                refresh_token = null,
-                AUTH_TYPE_OF_GOOGLE,
-                commonHeader = null,
-                id_token = accountIdToken
-            )
-            withContext(Dispatchers.IO) {
-                val authExchangedTokenRes = RequestApi().authorizeExchangedToken(authorizeParam)
-                if (authExchangedTokenRes?.iRet == 0) {
-                    val didToken = authExchangedTokenRes.data?.did_token.orEmpty()
-                    val googleUserInfo = JwtDecoder().decoded(didToken)
-                    val accessToken = authExchangedTokenRes.data?.d_access_token.orEmpty()
-                    val authId = googleUserInfo.sub.orEmpty()
-                    val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
-                    LoginPrefs(context).setAccessToken(accessToken)
-                    LoginPrefs(context).setAuthID(authId)
-                    //没有钱包  返回errorCode
-                    if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                        loginResCode = 10001
-                    } else {
-                        // 该邮箱绑定过钱包
-                        loginResCode = 0
-                        DAuthLogger.d("该google账号已绑定钱包，直接进入主页")
-                    }
-                } else {
-                    loginResCode = 100001
-                    DAuthLogger.e("app第三方认证登录失败 errCode == $loginResCode")
-                }
-            }
-
-        } catch (e: ApiException) {
-            DAuthLogger.e(" google signInResult:failed code=" + e.statusCode)
-        }
-        return loginResCode
-    }
 }

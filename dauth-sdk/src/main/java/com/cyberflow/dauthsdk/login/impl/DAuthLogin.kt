@@ -7,6 +7,7 @@ import com.cyberflow.dauthsdk.login.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.ILoginApi
 import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.const.LoginConst
 import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT
 import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT_TYPE_OF_EMAIL
@@ -32,8 +33,16 @@ import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.*
+import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
+import com.google.gson.Gson
+import com.twitter.sdk.android.core.*
+import com.twitter.sdk.android.core.models.User
+import kotlinx.coroutines.*
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
@@ -45,6 +54,10 @@ private const val TWITTER_REQUEST_CODE = 140
 private const val GOOGLE_REQUEST_CODE = 9001
 private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
+private const val AUTH_TYPE_OF_GOOGLE = "30"
+private const val TYPE_OF_TWITTER = "110"
+private const val USER_TYPE = "user_type"
+private const val USER_DATA = "user_data"
 
 class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
@@ -57,16 +70,16 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     }
 
     override suspend fun loginApi(account: String, passWord: String): Int? {
-        val map = HashMap<String, String>()
-        map[USER_TYPE] = ACCOUNT_TYPE_OF_OWN
-        map[ACCOUNT] = account
-        map[PASSWORD] = passWord
-        val sign = SignUtils.sign(map)
+//        val map = HashMap<String, String>()
+//        map[USER_TYPE] = ACCOUNT_TYPE_OF_OWN
+//        map[ACCOUNT] = account
+//        map[PASSWORD] = passWord
+//        val sign = SignUtils.sign(map)
         val loginParam = LoginParam(
             ACCOUNT_TYPE_OF_OWN.toInt(),
             account = account,
             password = passWord,
-            sign = sign
+//            sign = sign
         )
 
         val loginRes = RequestApi().login(loginParam)
@@ -135,27 +148,17 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param activity
      */
 
-    override fun loginWithTypeApi(type: String, activity: Activity) {
+    override suspend fun loginWithTypeApi(type: String, activity: Activity) {
         when (type) {
             LoginType.GOOGLE -> {
-                GoogleLoginManager.instance.googleSignInAuth(activity)
+                val intent = Intent(activity, ThirdPartyResultActivity::class.java)
+                intent.putExtra("type", 0)
+                activity.startActivityForResult(intent, GOOGLE_REQUEST_CODE)
             }
             LoginType.TWITTER -> {
-                TwitterLoginManager.instance.twitterLoginAuth(
-                    activity, object : Callback<TwitterSession>() {
-                        override fun success(result: Result<TwitterSession>?) {
-                            val token = result?.data?.authToken
-                            val userId = result?.data?.userId
-
-                            DAuthLogger.d("twitter login success")
-                        }
-
-                        override fun failure(exception: TwitterException?) {
-                            DAuthLogger.e("twitter login failed:$exception")
-                        }
-
-                    }
-                )
+                val intent = Intent(activity, ThirdPartyResultActivity::class.java)
+                intent.putExtra("type", 1)
+                activity.startActivityForResult(intent, TWITTER_REQUEST_CODE)
             }
         }
     }
@@ -334,6 +337,75 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      */
     override fun bindEmailApi(email: String, verifyCode: String) {
 
+    }
+
+    override suspend fun thirdPartyCallbackApi(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ): Int? {
+
+        return withContext(Dispatchers.IO) {
+            var code: Int? = -1
+            when (requestCode) {
+
+                GOOGLE_REQUEST_CODE -> {
+                    code = googleAuthLogin(data)
+                }
+
+                TWITTER_REQUEST_CODE -> {
+                    code = TwitterLoginManager.instance.twitterAuthLogin()
+                }
+            }
+            code
+        }
+    }
+
+    private fun getGoogleIdToken(data: Intent?) : String {
+
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        val account: GoogleSignInAccount? = task.getResult(ApiException::class.java)
+        // Signed in successfully, show authenticated UI.
+        val accountId = account?.id.toString()
+        val accountIdToken = account?.idToken.toString()
+        DAuthLogger.e("account:$account, accountId:$accountId ,accountIdToken: $accountIdToken")
+        return accountIdToken
+    }
+
+    private suspend fun  googleAuthLogin(data: Intent?) : Int {
+        val accountIdToken = getGoogleIdToken(data)
+        var loginResCode: Int
+        val authorizeParam = AuthorizeToken2Param(
+            access_token = null,
+            refresh_token = null,
+            AUTH_TYPE_OF_GOOGLE,
+            commonHeader = null,
+            id_token = accountIdToken
+        )
+        withContext(Dispatchers.IO) {
+            val authExchangedTokenRes = RequestApi().authorizeExchangedToken(authorizeParam)
+            if (authExchangedTokenRes?.iRet == 0) {
+                val didToken = authExchangedTokenRes.data?.did_token.orEmpty()
+                val googleUserInfo = JwtDecoder().decoded(didToken)
+                val accessToken = authExchangedTokenRes.data?.d_access_token.orEmpty()
+                val authId = googleUserInfo.sub.orEmpty()
+                val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
+                LoginPrefs(context).setAccessToken(accessToken)
+                LoginPrefs(context).setAuthID(authId)
+                //没有钱包  返回errorCode
+                if (queryWalletRes?.data?.address.isNullOrEmpty()) {
+                    loginResCode = 10001
+                } else {
+                    // 该邮箱绑定过钱包
+                    loginResCode = 0
+                    DAuthLogger.d("该google账号已绑定钱包，直接进入主页")
+                }
+            } else {
+                loginResCode = 100001
+                DAuthLogger.e("app第三方认证登录失败 errCode == $loginResCode")
+            }
+        }
+        return loginResCode
     }
 
 

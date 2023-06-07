@@ -3,14 +3,17 @@ package com.cyberflow.dauthsdk.login
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import com.cyberflow.dauthsdk.login.api.ILoginApi
 import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.impl.DAuthLifeCycle
 import com.cyberflow.dauthsdk.login.impl.LoginHolder
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 
@@ -22,6 +25,7 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
         val instance by lazy {
             DAuthSDK()
         }
+        var callback: ThirdPartyCallback? = null
     }
 
     private var _context: Context? = null
@@ -52,8 +56,8 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
      * @param type 第三方账号类型 GOOGLE TWITTER FACEBOOK
      * @param activity
      */
-    fun loginWithType(type: String, activity: Activity) {
-       loginWithTypeApi(type, activity)
+    suspend fun loginWithType(type: String, activity: Activity) {
+        loginWithTypeApi(type, activity)
     }
 
     /**
@@ -117,5 +121,12 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
      */
     fun bindEmail(email: String, verifyCode: String) {
         bindEmailApi(email, verifyCode)
+    }
+
+    /**
+     * 第三方登录回调
+     */
+    suspend fun thirdPartyCallback(requestCode: Int, resultCode: Int, data: Intent?) :Int? {
+        return thirdPartyCallbackApi(requestCode, resultCode, data)
     }
 }

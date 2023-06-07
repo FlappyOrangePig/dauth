@@ -16,7 +16,7 @@ private const val USER_DATA = "user_data"
 class JavaScriptMethods constructor( private val activity: AppCompatActivity){
 
     @JavascriptInterface
-    fun postAddress(data:String?) {
+    suspend fun postAddress(data: String?) {
         try {
             DAuthLogger.d("回调js返回的钱包地址:$data")
             val gson = Gson()
@@ -25,7 +25,7 @@ class JavaScriptMethods constructor( private val activity: AppCompatActivity){
             val userData = DAuthUser()
             userData.openid = openId
             val userDataStr = gson.toJson(userData)
-            val map = HashMap<String,String>()
+            val map = HashMap<String, String>()
             map[USER_TYPE] = TYPE_OF_WALLET_AUTH
             map[USER_DATA] = userDataStr
             val sign = SignUtils.sign(map)
@@ -35,8 +35,9 @@ class JavaScriptMethods constructor( private val activity: AppCompatActivity){
                 user_data = userDataStr
             )
             RequestApi().authorizeExchangedToken(body)
+
             activity.finish()
-        }catch (e: JsonIOException) {
+        } catch (e: JsonIOException) {
             DAuthLogger.e("JavaScriptMethods JsonIOException:$e")
         }
     }
