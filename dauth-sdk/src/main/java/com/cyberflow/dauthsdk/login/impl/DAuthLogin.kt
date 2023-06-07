@@ -1,6 +1,9 @@
 package com.cyberflow.dauthsdk.login.impl
 
 import android.app.Activity
+import android.content.Intent
+import androidx.lifecycle.lifecycleScope
+import com.cyberflow.dauthsdk.login.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.ILoginApi
 import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
@@ -35,12 +38,18 @@ import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
 import com.twitter.sdk.android.core.TwitterSession
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
+
+private const val TWITTER_REQUEST_CODE = 140
+private const val GOOGLE_REQUEST_CODE = 9001
+private const val GOOGLE = "GOOGLE"
+private const val TWITTER = "TWITTER"
 
 class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
+
+    private val context get() = (DAuthSDK.instance).context
+
     companion object {
         val instance by lazy {
             DAuthLogin()
@@ -49,12 +58,12 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
     override suspend fun loginApi(account: String, passWord: String): Int? {
         val map = HashMap<String, String>()
-        map[LoginConst.USER_TYPE] = LoginConst.ACCOUNT_TYPE_OF_OWN
-        map[LoginConst.ACCOUNT] = account
-        map[LoginConst.PASSWORD] = passWord
+        map[USER_TYPE] = ACCOUNT_TYPE_OF_OWN
+        map[ACCOUNT] = account
+        map[PASSWORD] = passWord
         val sign = SignUtils.sign(map)
         val loginParam = LoginParam(
-            LoginConst.ACCOUNT_TYPE_OF_OWN.toInt(),
+            ACCOUNT_TYPE_OF_OWN.toInt(),
             account = account,
             password = passWord,
             sign = sign
@@ -88,7 +97,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     private suspend fun loginAuth(codeChallengeCode: String, didToken: String): String {
         val map = HashMap<String, String>()
         var code = ""
-        map[USER_TYPE] = "10"
+        map[USER_TYPE] = ACCOUNT_TYPE_OF_EMAIL
         map[CODE_CHALLENGE] = codeChallengeCode
         map[CODE_CHALLENGE_METHOD] = SIGN_METHOD
         val sign = SignUtils.sign(map)
@@ -113,13 +122,9 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
         code: String,
         didToken: String?
     ): TokenAuthenticationRes? {
-        val map = HashMap<String, String>()
-        map[CODE_VERIFIER] = codeVerifier
-        map[AUTH_CODE] = code
-        val sign = SignUtils.sign(map)
         var tokenAuthenticationRes: TokenAuthenticationRes? = null
         runBlocking {
-            val body = TokenAuthenticationParam(codeVerifier, code, sign)
+            val body = TokenAuthenticationParam(codeVerifier, code)
             tokenAuthenticationRes = RequestApi().ownOauth2Token(body, didToken)
         }
         return tokenAuthenticationRes
@@ -201,75 +206,60 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
         account: String,
         verifyCode: String,
         type: Int
-    ): Int {
-        var loginCode : Int = -1
+    ): Int? {
+        var loginResCode: Int? = -1
         val map = HashMap<String, String>()
         map[USER_TYPE] = type.toString()
         map[VERIFY_CODE] = verifyCode
-        if (type == 10) {
+        if (type == ACCOUNT_TYPE_OF_EMAIL.toInt()) {
             map[ACCOUNT] = account
             val sign = SignUtils.sign(map)
             val loginParam = LoginParam(type, sign, account = account, verify_code = verifyCode)
-            val loginRes = withContext(Dispatchers.IO) {
-                RequestApi().login(loginParam)
-            }
-            if (loginRes?.iRet == 0) {
-                val data = loginRes.data
-                val userInfo = JwtDecoder().decoded(data.did_token.orEmpty())
+            withContext(Dispatchers.IO) {
+                val loginRes = RequestApi().login(loginParam)
+                if (loginRes?.iRet == 0) {
+                    val data = loginRes.data
+                    val userInfo = JwtDecoder().decoded(data.did_token.orEmpty())
 
-                val didToken = loginRes.data.did_token
-                //DAuth 授权接口测试获取临时code
-                val codeVerifier = JwtChallengeCode().generateCodeVerifier()
-                val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
-                DAuthLogger.d("codeVerify == $codeVerifier")
+                    val didToken = loginRes.data.did_token
+                    val codeVerifier = JwtChallengeCode().generateCodeVerifier()
+                    val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
+                    DAuthLogger.d("codeVerify == $codeVerifier")
 
-                val code = withContext(Dispatchers.IO) {
-                    //DAuth 授权接口测试获取code
-                    loginAuth(codeChallenge, didToken.orEmpty())
-                }
-
-                val tokenAuthenticationRes = withContext(Dispatchers.IO) {
-                    //DAuth 授权接口测试获取token
-                    getDAuthToken(codeVerifier, code, didToken)
-                }
-
-                val accessToken = tokenAuthenticationRes?.data?.access_token.orEmpty()
-                val authIdToken = tokenAuthenticationRes?.data?.id_token.orEmpty()
-                val userId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
-                val authId = userInfo.sub.orEmpty()
-
-                val queryWalletRes = withContext(Dispatchers.IO) {
-                    RequestApi().queryWallet(accessToken, authId)
-                }
-
-                if (queryWalletRes?.address.isNullOrEmpty()) {
-                    val code = withContext(Dispatchers.IO) {
-                        createWallet("123456")
+                    val loginCode = loginAuth(codeChallenge, didToken.orEmpty())
+                    val tokenAuthenticationRes = getDAuthToken(codeVerifier, loginCode, didToken)
+                    val accessToken = tokenAuthenticationRes?.data?.access_token.orEmpty()
+                    val authIdToken = tokenAuthenticationRes?.data?.id_token.orEmpty()
+                    val userId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
+                    val authId = userInfo.sub.orEmpty()     //查询用户信息时用
+                    LoginPrefs(context).setAccessToken(accessToken)
+                    LoginPrefs(context).setAuthID(userId)
+                    val queryWalletRes = withContext(Dispatchers.IO) {
+                        RequestApi().queryWallet(accessToken, userId)
                     }
-                    if (code == 0) { //绑定钱包
-                        val bindWalletRes = withContext(Dispatchers.IO) {
-                            RequestApi().bindWallet(accessToken, userId)
-                        }
-                        if (bindWalletRes?.iRet == 0) {
-                            DAuthLogger.d("绑定钱包成功")
-                        }
-                        loginCode = 0
+
+                    if (queryWalletRes?.data?.address.isNullOrEmpty()) {
+                        // 该邮箱没有钱包
+                        loginResCode = 10001
+                    } else {
+                        // 该邮箱绑定过钱包
+                        loginResCode = 0
+                        DAuthLogger.e("该邮箱绑定过钱包直接进入主页")
                     }
 
                 } else {
-                    loginCode = -1
+                    //1000032  验证码已失效
+                    loginResCode = loginRes?.iRet
                 }
-
             }
-
-        } else {        //TODO 手机号登录
-            map[LoginConst.PHONE] = account
-            val sign = SignUtils.sign(map)
-            val loginParam = LoginParam(type, sign, phone = account, verify_code = verifyCode)
+        } else {    //TODO 手机号登录
 
         }
-        return loginCode
+
+        return loginResCode
     }
+
+
 
     override fun logoutApi(openUid: String) {
         val map = HashMap<String, String>()
@@ -307,7 +297,6 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     /**
      * @param email 邮箱
      */
-
     override suspend fun sendEmailVerifyCodeApi(email: String): Boolean {
         var isSend = false
         val map = HashMap<String, String>()
@@ -323,6 +312,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
         }
 
         return isSend
+
     }
 
     /**
@@ -345,5 +335,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     override fun bindEmailApi(email: String, verifyCode: String) {
 
     }
+
+
 
 }

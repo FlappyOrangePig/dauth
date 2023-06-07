@@ -1,22 +1,26 @@
 package com.cyberflow.dauthsdk.login.twitter
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.cyberflow.dauthsdk.login.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
-import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.SignUtils
-import com.cyberflow.dauthsdk.login.utils.ThreadPoolUtils
+import com.cyberflow.dauthsdk.login.utils.*
+import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.wallet.api.IWalletApi
+import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.gson.Gson
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
 import com.twitter.sdk.android.core.identity.TwitterLoginButton
 import com.twitter.sdk.android.core.internal.CommonUtils
 import com.twitter.sdk.android.core.models.User
+import kotlinx.coroutines.*
 
 private const val CONSUMER_KEY = "tfCWoaQgJqsbAsYNKFM8r2rI3"
 private const val CONSUMER_SECRET = "hUbRMtwQNgyaxRMCDaYRoezV9Z7xGoJk4i3kseFSFP4mfr3b9v"
@@ -25,10 +29,10 @@ private const val TYPE_OF_TWITTER = "110"
 private const val USER_TYPE = "user_type"
 private const val USER_DATA = "user_data"
 
-class TwitterLoginManager() {
+class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
 
     private var callback: Callback<TwitterSession>? = null
-
+    private val context get() = (DAuthSDK.instance).context
     @Volatile
 
     var authClient: TwitterAuthClient? = null
@@ -94,47 +98,68 @@ class TwitterLoginManager() {
 
     }
 
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    @SuppressLint("SuspiciousIndentation")
+    suspend fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Int {
+        var loginResCode = -1
         if (requestCode == twitterAuthClient?.requestCode) {
             twitterAuthClient?.onActivityResult(requestCode, resultCode, data)
             val twitterApiClient = TwitterCore.getInstance().apiClient
             val call = twitterApiClient.accountService.verifyCredentials(false, true, true)
-            call.enqueue(object : Callback<User>() {
-                override fun success(result: Result<User>?) {
-                    val twitterUserInfo = result?.data
-                    val userData = DAuthUser()
-                    userData.email = twitterUserInfo?.email
-                    userData.openid = twitterUserInfo?.idStr
-                    userData.nickname = twitterUserInfo?.screenName
-                    userData.head_img_url = twitterUserInfo?.profileImageUrl
-                    val gson = Gson()
-                    val userDataStr = gson.toJson(userData)
-                    val map = HashMap<String, String?>()
-                    map[USER_TYPE] = TYPE_OF_TWITTER
-                    map[USER_DATA] = userDataStr
-                    val sign = SignUtils.sign(map)
-                    val body = AuthorizeToken2Param(
-                        access_token = null,
-                        refresh_token = null,
-                        user_type = TYPE_OF_TWITTER,
-                        sign,
-                        commonHeader = null,
-                        id_token = null,
-                        userDataStr
-                    )
 
-                    ThreadPoolUtils.execute {
-                        RequestApi().authorizeExchangedToken(body)
+               call.enqueue(object : Callback<User>() {
+                   override fun success(result: Result<User>?) {
+                       val twitterUserInfo = result?.data
+                       val userData = DAuthUser()
+                       userData.email = twitterUserInfo?.email
+                       userData.openid = twitterUserInfo?.idStr
+                       userData.head_img_url = twitterUserInfo?.profileImageUrl
+                       userData.nickname = twitterUserInfo?.screenName
+                       val gson = Gson()
+                       val userDataStr = gson.toJson(userData)
+
+                       val body = AuthorizeToken2Param(
+                           access_token = null,
+                           refresh_token = null,
+                           user_type = TYPE_OF_TWITTER,
+                           commonHeader = null,
+                           id_token = null,
+                           user_data = userDataStr
+                       )
+
+                       CoroutineScope(Dispatchers.IO).launch {
+                           val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
+
+                           if (authorizeToken2Res?.iRet == 0) {
+                               val didToken = authorizeToken2Res.data?.did_token.orEmpty()
+                               val googleUserInfo = JwtDecoder().decoded(didToken)
+                               val accessToken = authorizeToken2Res.data?.d_access_token.orEmpty()
+                               val authId = googleUserInfo.sub.orEmpty()
+                               val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
+                               LoginPrefs(context).setAccessToken(accessToken)
+                               LoginPrefs(context).setAuthID(authId)
+                               //没有钱包  返回errorCode
+                               if (queryWalletRes?.data?.address.isNullOrEmpty()) {
+                                   loginResCode = 10001
+                               } else {
+                                   // 该邮箱绑定过钱包
+                                   loginResCode = 0
+                                   DAuthLogger.d("该google账号已绑定钱包，直接进入主页")
+                               }
+                           } else {
+                               loginResCode = 100001
+                               DAuthLogger.e("app第三方认证登录失败 errCode == $loginResCode")
+                           }
+                       }
+                   }
+
+                    override fun failure(exception: TwitterException?) {
+                        DAuthLogger.e("twitter 授权失败")
                     }
-                    DAuthLogger.d("get twitter userinfo==$twitterUserInfo")
-                }
+                })
+            }
 
-                override fun failure(exception: TwitterException?) {
-                    DAuthLogger.e("twitter auth exception:$exception")
-                }
 
-            })
-        }
+        return loginResCode
     }
 
 }

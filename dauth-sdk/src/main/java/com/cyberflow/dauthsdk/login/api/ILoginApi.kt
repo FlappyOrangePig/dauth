@@ -1,6 +1,7 @@
 package com.cyberflow.dauthsdk.login.api
 
 import android.app.Activity
+import android.content.Intent
 import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
@@ -27,7 +28,7 @@ interface ILoginApi {
     /**
      * 手机号或邮箱登录
      */
-    suspend fun loginByMobileOrEmailApi(account: String, verifyCode: String, type: Int) : Int
+    suspend fun loginByMobileOrEmailApi(account: String, verifyCode: String, type: Int) : Int?
 
 
     /**
@@ -66,4 +67,6 @@ interface ILoginApi {
      * @param verifyCode 邮箱验证码
      */
     fun bindEmailApi(email: String, verifyCode: String)
+
+//    suspend fun handleThirdPartyLogin(requestCode: Int, resultCode: Int, data: Intent?): Int
 }

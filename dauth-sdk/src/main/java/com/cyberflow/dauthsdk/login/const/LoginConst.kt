@@ -20,4 +20,5 @@ object LoginConst {
     const val CONFIRM_PASSWORD = "confirm_password"
     const val OPEN_UID = "openudid"
     const val ACCESS_TOKEN = "access_token"
+    const val ACCOUNT_TYPE_OF_GOOGLE = "30"
 }

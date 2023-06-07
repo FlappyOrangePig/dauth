@@ -19,6 +19,10 @@
         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
         <meta-data android:name="com.twitter.sdk.android.CONSUMER_KEY" android:value="@string/CONSUMER_KEY"/>
         <meta-data android:name="com.twitter.sdk.android.CONSUMER_SECRET" android:value="@string/CONSUMER_SECRET"/>
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/google_play_service_id" />
+
         <activity
             android:theme="@style/Theme.client"
             android:name="com.cyberflow.dauthsdk.LoginActivity"

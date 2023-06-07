@@ -13,7 +13,7 @@ interface IWalletApi {
      * 创建成功则表示注册成功并成功登录，此时也可以绑定其他信息（可选）。
      * @return 0=成功
      */
-    fun createWallet(passcode:String?): Int
+    suspend fun createWallet(passcode:String?): Int?
 
     /**
      * 查询钱包地址

@@ -29,7 +29,7 @@ data class AuthorizeToken2Param (
     val refresh_token: String? = null,
     /* 登录来源 */
     val user_type: String,
-    val sign: String,
+    val sign: String ?= null,
     val commonHeader: CommonHeader? = null,
     /* id_token */
     val id_token: String? = null,

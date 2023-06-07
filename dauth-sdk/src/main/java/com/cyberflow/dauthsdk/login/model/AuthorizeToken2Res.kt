@@ -24,10 +24,10 @@ data class AuthorizeToken2Res(
     var data: Data? = null
 ) : BaseResponse() {
     class Data {
-        val did_token: kotlin.String? = null
-        val d_access_token: kotlin.String? = null
-        val d_refresh_token: kotlin.String? = null
-        val d_expire_in: kotlin.Long? = null
+        val did_token: String? = null
+        val d_access_token: String? = null
+        val d_refresh_token: String? = null
+        val d_expire_in: Long? = null
     }
 }
 

@@ -18,7 +18,7 @@ class DAuthWallet internal constructor() : IWalletApi {
     override fun initWallet(context: Context) {
     }
 
-    override fun createWallet(passcode: String?): Int {
+    override suspend fun createWallet(passcode: String?): Int {
         TODO("Not yet implemented")
     }
 

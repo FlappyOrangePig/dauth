@@ -27,7 +27,7 @@ data class TokenAuthenticationParam(
     /* dauth或第三方的code */
     val code: String,
 
-    val sign: String,
+    val sign: String? = null,
     /* grand_type */
     val grant_type: Int? = null,
     val redirect_uri: String? = null,
