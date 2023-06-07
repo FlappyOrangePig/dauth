@@ -36,14 +36,6 @@ subprojects {
                 }
                 kotlinOptions { jvmTarget = '1.8' }
                 buildFeatures { viewBinding = true }
-                signingConfigs {
-                    /*release {
-                        storeFile project.rootProject.file("signing-keys/debug.jks")
-                        storePassword ''
-                        keyAlias ''
-                        keyPassword ''
-                    }*/
-                }
                 buildTypes {
                     release {
                         minifyEnabled false

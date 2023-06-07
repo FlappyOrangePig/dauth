@@ -20,6 +20,25 @@ android {
             jniLibs.srcDirs = ['libs']
         }
     }
+    signingConfigs {
+        release {
+            storeFile project.rootProject.file("signing-keys/dauth.jks")
+            storePassword 'dauth123'
+            keyAlias 'dauth'
+            keyPassword 'dauth123'
+        }
+        debug {
+            storeFile project.rootProject.file("signing-keys/dauth.jks")
+            storePassword 'dauth123'
+            keyAlias 'dauth'
+            keyPassword 'dauth123'
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
 }
 
 dependencies {
