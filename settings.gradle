@@ -7,7 +7,7 @@ pluginManagement {
     }
     resolutionStrategy {
         eachPlugin {
-            println("构建使用插件" + requested.id.id)
+            println("build use plugin" + requested.id.id)
         }
     }
 }
@@ -16,13 +16,23 @@ dependencyResolutionManagement {
     repositories {
         maven {
             allowInsecureProtocol true
-            url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+            url 'http://maven.aliyun.com/nexus/content/groups/public/'
+        }
+        maven {
+            url new File(rootProject.getProjectDir(), "repo")
+        }
+        maven {
+            allowInsecureProtocol true
+            url MAVEN_RELEASE_URL
+        }
+        maven {
+            allowInsecureProtocol true
+            url MAVEN_SNAPSHOT_URL
+        }
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
         maven { url 'https://maven.fabric.io/public' }
-        // maven { url 'http://developer.huawei.com/repo'} //如果需要使用华为推送HMS，则需要加上此句
-
     }
 }
 rootProject.name = "dauth"

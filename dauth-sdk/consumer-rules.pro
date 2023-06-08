@@ -1,7 +1,6 @@
--keep class com.cyberflow.dauthsdk.login.model.** { *; }
--keep class com.cyberflow.dauthsdk.login.impl.** { *; }
-### web3j
-
+########################################
+# web3j
+########################################
 #Java8 rules
 -dontwarn java8.util.**
 
@@ -24,3 +23,8 @@
 #Don't warn about Web3j's java.lang.SafeVarargs
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
+
+########################################
+# DAuth
+########################################
+-keep class com.cyberflow.dauthsdk.** { *; }

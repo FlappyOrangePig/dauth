@@ -1,12 +1,10 @@
 apply plugin: 'maven-publish'
 
-def GROUP_ID = "com.cyberflow.dauthsdk"
-
 afterEvaluate { project ->
     tasks.all { task ->
         def taskName = task.name
         if (taskName.startsWith("publish") && taskName.endsWith("Repository")) {
-            def dependent = "assemble"
+            def dependent = "assembleRelease"
             task.dependsOn tasks.getByName(dependent)
             println(taskName + " depends on " + dependent)
         }
@@ -20,10 +18,14 @@ task sourceJar(type: Jar) {
 }
 
 afterEvaluate {
+    //加载资源
+    Properties properties = new Properties()
+    InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream()
+    properties.load(inputStream)
     publishing {
         publications {
             release(MavenPublication) {
-                groupId = GROUP_ID
+                groupId = "com.cyberflow.dauthsdk"
                 artifactId = project.getName()
                 version = android.defaultConfig.versionName
                 from components.release
@@ -31,6 +33,24 @@ afterEvaluate {
             }
         }
         repositories {
+            maven {
+                name "yxRelease"
+                url MAVEN_RELEASE_URL
+                credentials {
+                    username = properties.MAVEN_USER
+                    password = properties.MAVEN_PASSWORD
+                }
+                allowInsecureProtocol = true
+            }
+            maven {
+                name "yxSnapshot"
+                url MAVEN_SNAPSHOT_URL
+                credentials {
+                    username = properties.MAVEN_USER
+                    password = properties.MAVEN_PASSWORD
+                }
+                allowInsecureProtocol = true
+            }
             maven {
                 name "yxLocal"
                 url rootProject.file("./repo")

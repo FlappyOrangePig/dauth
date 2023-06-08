@@ -14,6 +14,8 @@ android {
     namespace 'com.cyberflow.dauth'
     defaultConfig {
         applicationId "com.infras.dauth"
+
+        versionName '1.0.0'
     }
     sourceSets {
         main {
@@ -51,11 +53,12 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
-    implementation project(':dauth-sdk')
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    //debugImplementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
+    debugImplementation project(':dauth-sdk')
+
     // 协程Android支持库
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
     // 协程Java8支持库
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4"
     // lifecycle对于协程的扩展封装

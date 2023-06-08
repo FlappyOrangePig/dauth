@@ -1,18 +1,18 @@
 package com.cyberflow.dauthsdk.login
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.login.api.ILoginApi
 import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
-import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.impl.DAuthLifeCycle
 import com.cyberflow.dauthsdk.login.impl.LoginHolder
-import com.cyberflow.dauthsdk.login.model.*
+import com.cyberflow.dauthsdk.login.model.BindPhoneParam
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
-import com.twitter.sdk.android.core.*
 
 
 class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
@@ -33,12 +33,13 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
      * 所有后续SDK的方法都应在SDK初始化成功之后调用
      */
     fun initSDK(context: Context, config: SdkConfig) {
-        val appContext = context.applicationContext
+        val appContext = context.applicationContext as Application
         this._context = appContext
         this._config = config
         //Twitter初始化
         TwitterLoginManager.instance.initTwitterSDK(context, config)
         initWallet(appContext)
+        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
         DAuthLogger.i("init sdk")
     }
 
