@@ -108,7 +108,7 @@ open class ApiClient(val baseUrl: String) {
             try {
                 return if (isJsonMime(contentType)) {
                     val gson = Gson()
-                    gson.fromJson(objStr, T::class.java)
+                    gson.fromJson(data.toString(), T::class.java)
                 } else if (contentType.equals(String.Companion::class.java)) {
                     response.body.toString() as T
                 } else {
@@ -119,6 +119,9 @@ open class ApiClient(val baseUrl: String) {
                 DAuthLogger.e("responseBody Serializer exception: $e")
             }
         } else {
+            val gson = Gson()
+            return gson.fromJson(data.toString(), T::class.java)
+
             DAuthLogger.e("http request response errorCode:$ret,errorMsg:$msg")
         }
         return null

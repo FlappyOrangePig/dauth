@@ -2,4 +2,5 @@
     <string name="app_name">dauth-demo</string>
     <string name="CONSUMER_KEY">tfCWoaQgJqsbAsYNKFM8r2rI3</string>
     <string name="CONSUMER_SECRET">hUbRMtwQNgyaxRMCDaYRoezV9Z7xGoJk4i3kseFSFP4mfr3b9v</string>
+    <string name="google_play_service_id">209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com</string>
 </resources>

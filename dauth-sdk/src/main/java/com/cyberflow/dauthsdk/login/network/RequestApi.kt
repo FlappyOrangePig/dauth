@@ -18,7 +18,7 @@ import com.cyberflow.dauthsdk.login.infrastructure.MultiValueMap
 import com.cyberflow.dauthsdk.login.infrastructure.RequestConfig
 import com.cyberflow.dauthsdk.login.infrastructure.RequestMethod
 import com.cyberflow.dauthsdk.login.model.*
-import com.cyberflow.dauthsdk.login.response.BaseResponseBody
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -66,15 +66,16 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body  下面authorize和token 接口，需要严格按照oauth协议标准定义字段, Oauth2 request authorize
      * @return AuthorizeRes
      */
-    fun authorize(body: AuthorizeParam): AuthorizeRes? {
+    fun authorize(body: AuthorizeParam, didToken: String): AuthorizeRes? {
         val localVariableBody: Any = body
         val localVariableQuery: MultiValueMap = mapOf()
-
-        val contentHeaders: Map<String, String> = mapOf()
+        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val contentIdHeaders: Map<String, String> = mapOf("Authorization" to didToken)
         val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
         localVariableHeaders.putAll(acceptsHeaders)
+        localVariableHeaders.putAll(contentIdHeaders)
 
         val localVariableConfig = RequestConfig(
             RequestMethod.POST,
@@ -266,26 +267,14 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param access_token 访问资源凭证,有效期短,过期需要刷新
      * @param authid 用户id
      */
-    fun queryWallet(accessToken: String, authId: String, ): QueryWalletRes? {
-        val map = HashMap<String,String>()
-        map[LoginConst.ACCESS_TOKEN] = accessToken
-        map["authId"] = authId
-        val sign = SignUtils.sign(map)
-        val body = QueryWalletParam(accessToken, authId, sign)
+    fun queryWallet(accessToken: String, authId: String): QueryWalletRes? {
+        val body = QueryWalletParam(accessToken, authId)
         val localVariableConfig = setCommonParams("/wallet/v1/query")
         val response = request<QueryWalletRes>(localVariableConfig, body)
         return response
     }
 
-    fun bindWallet(accessToken: String, authId: String): BaseResponse? {
-        val bindWalletParam = BindWalletParam(
-            accessToken,
-            authId,
-            "0xff00",
-            11,
-            "0xff",
-            "0x"
-        )
+    fun bindWallet(bindWalletParam: BindWalletParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/wallet/v1/bind")
         val response = request<BaseResponse>(
             localVariableConfig,
@@ -318,6 +307,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
+        DAuthLogger.d("调用了ownOauth2Token")
         val response = request<TokenAuthenticationRes>(
             localVariableConfig,
             body

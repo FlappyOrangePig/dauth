@@ -1,6 +1,8 @@
 package com.cyberflow.dauthsdk
 
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +14,14 @@ import java.math.BigInteger
 
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        fun launch(context : Context) {
+            val intent = Intent(context, MainActivity::class.java)
+            context.startActivity(intent)
+        }
+    }
+
     private var mainBinding: ActivityMainLayoutBinding?  = null
     private val binding: ActivityMainLayoutBinding get() = mainBinding!!
 

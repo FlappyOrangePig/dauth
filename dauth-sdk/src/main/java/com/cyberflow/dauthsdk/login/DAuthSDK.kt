@@ -71,8 +71,8 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
      * @param verifyCode 验证码
      * @param type  10(邮箱) 60(手机)
      */
-    suspend fun loginByMobileOrEmail(account: String, verifyCode: String, type: Int) {
-        loginByMobileOrEmailApi(account, verifyCode, type)
+    suspend fun loginByMobileOrEmail(account: String, verifyCode: String, type: Int) : Int? {
+        return loginByMobileOrEmailApi(account, verifyCode, type)
     }
 
 
