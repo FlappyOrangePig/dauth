@@ -44,7 +44,7 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
     fun initTwitterSDK(context: Context, sdkConfig: SdkConfig) {
         val config = TwitterConfig.Builder(context)
             .logger(DefaultLogger(Log.DEBUG))
-            .twitterAuthConfig(TwitterAuthConfig(sdkConfig.appId, sdkConfig.appKey))
+            .twitterAuthConfig(TwitterAuthConfig(sdkConfig.twitterConsumerKey, sdkConfig.twitterConsumerSecret))
             .debug(true)
             .build()
         Twitter.initialize(config)

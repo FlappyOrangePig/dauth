@@ -22,13 +22,11 @@ class DAuthWallet internal constructor() : IWalletApi {
         TODO("Not yet implemented")
     }
 
-    override fun queryWalletAddress(): String {
-        return runBlocking {
-            Web3Manager.invokeGetAcc().orEmpty()
-        }
+    override suspend fun queryWalletAddress(): String {
+        return Web3Manager.invokeGetAcc().orEmpty()
     }
 
-    override fun queryWalletBalance(): BigInteger? {
+    override suspend fun queryWalletBalance(): BigInteger? {
         return runBlocking {
             //val address = WalletPrefs(context).getWalletAddress()
             val address = queryWalletAddress()
@@ -41,14 +39,14 @@ class DAuthWallet internal constructor() : IWalletApi {
         }
     }
 
-    override fun estimateGas(toUserId: String, amount: BigInteger): BigInteger? {
+    override suspend fun estimateGas(toUserId: String, amount: BigInteger): BigInteger? {
         runBlocking{
 
         }
         return null
     }
 
-    override fun sendTransaction(toAddress: String, amount: BigInteger): String? {
+    override suspend fun sendTransaction(toAddress: String, amount: BigInteger): String? {
         runBlocking {
             val address = queryWalletAddress()
             val queryAddress = toAddress
