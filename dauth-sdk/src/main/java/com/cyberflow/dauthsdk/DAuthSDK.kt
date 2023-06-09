@@ -27,7 +27,7 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
     private var _context: Context? = null
     internal val context get() = _context ?: throw RuntimeException("please call initSDK() first")
     private var _config: SdkConfig? = null
-    private val config get() = _config ?: throw RuntimeException("please call initSDK() first")
+    internal val config get() = _config ?: throw RuntimeException("please call initSDK() first")
 
     override fun initSDK(context: Context, config: SdkConfig) {
         val appContext = context.applicationContext as Application

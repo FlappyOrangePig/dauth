@@ -11,23 +11,23 @@ object DAuthLogger {
         if (isOpenLog) block.invoke("[tid=${Thread.currentThread().id}]$log")
     }
 
-    fun i(msg: String) {
-        log(msg) { log -> Log.i(TAG, log) }
+    fun i(msg: String, tag: String = TAG) {
+        log(msg) { log -> Log.i(tag, log) }
     }
 
-    fun d(msg: String) {
-        log(msg) { log -> Log.d(TAG, log) }
+    fun d(msg: String, tag: String = TAG) {
+        log(msg) { log -> Log.d(tag, log) }
     }
 
-    fun e(msg: String) {
-        log(msg) { log -> Log.e(TAG, log) }
+    fun e(msg: String, tag: String = TAG) {
+        log(msg) { log -> Log.e(tag, log) }
     }
 
-    fun v(msg: String) {
-        log(msg) { log -> Log.v(TAG, log) }
+    fun v(msg: String, tag: String = TAG) {
+        log(msg) { log -> Log.v(tag, log) }
     }
 
-    fun w(msg: String) {
-        log(msg) { log -> Log.w(TAG, log) }
+    fun w(msg: String, tag: String = TAG) {
+        log(msg) { log -> Log.w(tag, log) }
     }
 }

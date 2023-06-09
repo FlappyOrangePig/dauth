@@ -7,8 +7,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import kotlinx.coroutines.launch
 
 import java.math.BigInteger
 
@@ -30,37 +32,27 @@ class MainActivity : AppCompatActivity() {
         mainBinding = ActivityMainLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         initView()
-        //testWeb3j()
     }
 
     private fun initView() {
         binding.btnQueryBalance.setOnClickListener {
-            val balance = DAuthSDK.instance.queryWalletBalance()
-            Toast.makeText(this,"钱包余额：$balance",Toast.LENGTH_LONG).show()
+            lifecycleScope.launch {
+                val balance = DAuthSDK.instance.queryWalletBalance()
+                Toast.makeText(it.context,"钱包余额：$balance",Toast.LENGTH_LONG).show()
+            }
         }
         binding.btnGas.setOnClickListener {
-            val gas = DAuthSDK.instance.estimateGas(testAddress, BigInteger("100"))
-            Toast.makeText(this,"gas费预估：$gas",Toast.LENGTH_LONG).show()
+            lifecycleScope.launch {
+                val gas = DAuthSDK.instance.estimateGas(testAddress, BigInteger("100"))
+                Toast.makeText(it.context,"gas费预估：$gas",Toast.LENGTH_LONG).show()
+            }
         }
         binding.btnSendTransaction.setOnClickListener {
-
-            val result = DAuthSDK.instance.sendTransaction(testAddress, BigInteger("100000000000000"))
-            Toast.makeText(this,"转账结果：${result.toString()}",Toast.LENGTH_LONG).show()
+            lifecycleScope.launch {
+                val result = DAuthSDK.instance.sendTransaction(testAddress, BigInteger("100000000000000"))
+                Toast.makeText(it.context,"转账结果：${result.toString()}",Toast.LENGTH_LONG).show()
+            }
         }
-    }
-
-    private fun testWeb3j() {
-        val sdk = DAuthSDK.instance
-        val address = sdk.queryWalletAddress()
-        DAuthLogger.d("address=$address")
-        val balance = sdk.queryWalletBalance()
-        DAuthLogger.d("balance=$balance")
-        val to = "0x386F221660f58157aa05C107dDae69295316d82D"
-        val amount = BigInteger("10")
-        val estimateGas = sdk.estimateGas(to, amount)
-        DAuthLogger.d("estimateGas=$estimateGas")
-        val gasUsed = sdk.sendTransaction(to, amount)
-        DAuthLogger.d("gasUsed=$gasUsed")
     }
 
     override fun onDestroy() {

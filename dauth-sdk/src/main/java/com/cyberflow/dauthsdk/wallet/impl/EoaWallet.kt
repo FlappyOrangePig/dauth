@@ -9,11 +9,14 @@ import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.math.BigInteger
 
-class DummyWallet internal constructor(): IWalletApi {
+/**
+ * 模拟钱包实现类。
+ * 在AA钱包开发完成前先创建假数据。
+ */
+class EoaWallet internal constructor(): IWalletApi {
     private val context get() = (DAuthSDK.instance).context
     override fun initWallet(context: Context) {
 
@@ -40,40 +43,32 @@ class DummyWallet internal constructor(): IWalletApi {
         return code
     }
 
-    override fun queryWalletAddress(): String {
+    override suspend fun queryWalletAddress(): String {
         return CredentialsUtil.loadCredentials().address.also {
             DAuthLogger.i("queryWalletAddress $it")
         }
     }
 
-    override fun queryWalletBalance(): BigInteger? {
-        return runBlocking {
-            val address = queryWalletAddress()
-            if (address.isNotEmpty()) {
-                val big = Web3Manager.getBalance(address)
-                big
-            } else {
-                null
-            }
-        }.also {
-            DAuthLogger.i("queryWalletBalance $it")
-        }
+    override suspend fun queryWalletBalance(): BigInteger? {
+        val address = queryWalletAddress()
+        return if (address.isNotEmpty()) {
+            val big = Web3Manager.getBalance(address)
+            big
+        } else {
+            null
+        }.also { DAuthLogger.i("queryWalletBalance $it") }
     }
 
-    override fun estimateGas(toUserId: String, amount: BigInteger): BigInteger? {
+    override suspend fun estimateGas(toUserId: String, amount: BigInteger): BigInteger? {
         val address = queryWalletAddress()
-        return runBlocking {
-            Web3Manager.estimateGas(address, toUserId, amount)
-        }.also {
+        return Web3Manager.estimateGas(address, toUserId, amount).also {
             DAuthLogger.d("estimateGas from=$address to=$toUserId amount=$amount result=$it")
         }
     }
 
-    override fun sendTransaction(toAddress: String, amount: BigInteger):String? {
+    override suspend fun sendTransaction(toAddress: String, amount: BigInteger):String? {
         DAuthLogger.d("sendTransaction $toAddress $amount")
-        return runBlocking {
-            Web3Manager.sendTransaction(toAddress, amount)
-        }.also {
+        return Web3Manager.sendTransaction(toAddress, amount).also {
             DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it")
         }
     }

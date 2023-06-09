@@ -9,6 +9,12 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        DAuthSDK.instance.initSDK(this, SdkConfig(CONSUMER_KEY, CONSUMER_SECRET,""))
+
+        val config = SdkConfig().apply {
+            twitterConsumerKey = CONSUMER_KEY
+            twitterConsumerSecret = CONSUMER_SECRET
+            web3RpcUrl = "https://rpc.sepolia.org/"
+        }
+        DAuthSDK.instance.initSDK(this, config = config)
     }
 }
