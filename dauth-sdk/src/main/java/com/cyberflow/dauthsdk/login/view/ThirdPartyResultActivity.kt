@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.cyberflow.dauthsdk.DAuthSDK
+import com.cyberflow.dauthsdk.login.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -18,9 +18,6 @@ import kotlinx.coroutines.launch
 
 class ThirdPartyResultActivity : AppCompatActivity()   {
 
-//    companion object {
-//        var callback: ThirdPartyCallback? = null
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +30,9 @@ class ThirdPartyResultActivity : AppCompatActivity()   {
                 TwitterLoginManager.instance.twitterLoginAuth(this@ThirdPartyResultActivity,
                     object : Callback<TwitterSession>() {
                     override fun success(result: Result<TwitterSession>?) {
+                        val authToken = result?.data?.authToken
+                        val userId = result?.data?.userId
+                        val userName = result?.data?.userName
                         DAuthLogger.e("twitter授权成功")
 
                     }

@@ -47,7 +47,7 @@ data class CreateAccountParam (
     val uuid: String,
 
     /* 检验参数 */
-    val sign: String,
+    val sign: String? = null,
 
     /* 是否登录 0不登陆 1登录 */
     val is_login: Int,

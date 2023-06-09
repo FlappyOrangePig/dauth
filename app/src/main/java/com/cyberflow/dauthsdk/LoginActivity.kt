@@ -6,8 +6,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
+import com.cyberflow.dauthsdk.login.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
-import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import kotlinx.coroutines.launch
@@ -16,11 +16,12 @@ import kotlinx.coroutines.launch
 private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
 private const val FACEBOOK = "FACEBOOK"
+private const val ACCOUNT_TYPE_OF_EMAIL = 10
 
 class LoginActivity : AppCompatActivity() {
     var loginBinding: ActivityLoginLayoutBinding?  = null
     private val binding: ActivityLoginLayoutBinding get() = loginBinding!!
-    private var thirdPartyCallback : ThirdPartyCallback? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
@@ -76,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.ivWallet.setOnClickListener {
-            WalletWebViewActivity.launch(this, false)
+            DAuthSDK.instance.link2EOAWallet(this)
         }
 
         binding.tvSendCode.setOnClickListener {

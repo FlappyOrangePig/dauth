@@ -3,9 +3,9 @@ package com.cyberflow.dauthsdk.login.api
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
+import com.cyberflow.dauthsdk.login.model.SdkConfig
 
 interface ILoginApi {
 
@@ -25,7 +25,7 @@ interface ILoginApi {
      * @param passWord 密码
      * @param confirmPwd 确认密码
      */
-    fun createDAuthAccount(account: String, passWord: String, confirmPwd: String) : Boolean
+    suspend fun createDAuthAccount(account: String, passWord: String, confirmPwd: String) : Int?
 
     /**
      * 手机号或邮箱登录
@@ -74,4 +74,6 @@ interface ILoginApi {
      * 第三方授权登录回调
      */
     suspend fun thirdPartyCallback(requestCode: Int, resultCode: Int, data: Intent?): Int?
+
+    fun link2EOAWallet(context: Context)
 }

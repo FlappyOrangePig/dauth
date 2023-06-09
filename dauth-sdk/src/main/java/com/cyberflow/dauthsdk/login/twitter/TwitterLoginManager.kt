@@ -3,9 +3,8 @@ package com.cyberflow.dauthsdk.login.twitter
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.cyberflow.dauthsdk.DAuthSDK
-import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
-import com.cyberflow.dauthsdk.login.impl.DAuthLogin
+import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.login.model.SdkConfig
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
@@ -34,11 +33,9 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
     var authClient: TwitterAuthClient? = null
 
     companion object {
-
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             TwitterLoginManager()
         }
-
     }
 
     fun initTwitterSDK(context: Context, sdkConfig: SdkConfig) {
@@ -48,44 +45,29 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
             .debug(true)
             .build()
         Twitter.initialize(config)
-
     }
 
     fun twitterLoginAuth(activity: Activity, callback: Callback<TwitterSession>?) {
-
         this.callback = callback
-
         checkCallback(callback)
-
         twitterAuthClient?.authorize(activity, callback)
     }
 
 
     private val twitterAuthClient: TwitterAuthClient?
         get() {
-
             if (authClient == null) {
-
                 synchronized(TwitterLoginButton::class.java) {
-
                     if (authClient == null) {
-
                         authClient = TwitterAuthClient()
-
                     }
-
                 }
-
             }
-
             return authClient
-
         }
 
     private fun checkCallback(callback: Callback<*>?) {
-
         if (callback == null) {
-
             CommonUtils.logOrThrowIllegalStateException(
                 TwitterCore.TAG,
                 "Callback must not be null, did you call setCallback?"
@@ -94,7 +76,7 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
 
     }
 
-    suspend fun twitterAuth(): String? = suspendCancellableCoroutine {
+    private suspend fun twitterAuth(): String? = suspendCancellableCoroutine {
         val userData = DAuthUser()
         val twitterApiClient = TwitterCore.getInstance().apiClient
         val call = twitterApiClient.accountService.verifyCredentials(false, true, true)

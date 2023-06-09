@@ -11,18 +11,13 @@
  */
 package com.cyberflow.dauthsdk.login.network
 
-import android.os.Parcel
-import com.cyberflow.dauthsdk.login.const.LoginConst
 import com.cyberflow.dauthsdk.login.infrastructure.ApiClient
 import com.cyberflow.dauthsdk.login.infrastructure.MultiValueMap
 import com.cyberflow.dauthsdk.login.infrastructure.RequestConfig
 import com.cyberflow.dauthsdk.login.infrastructure.RequestMethod
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.google.gson.Gson
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Response
 
@@ -125,7 +120,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @return AuthorizeToken2Res
      */
 
-    suspend fun authorizeExchangedToken(body: AuthorizeToken2Param): AuthorizeToken2Res? {
+     fun authorizeExchangedToken(body: AuthorizeToken2Param): AuthorizeToken2Res? {
 
         val localVariableConfig = setCommonParams("/account/v1/sociallogin/exchangedtoken")
 

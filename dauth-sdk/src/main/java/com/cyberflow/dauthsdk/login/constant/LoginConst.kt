@@ -1,4 +1,4 @@
-package com.cyberflow.dauthsdk.login.const
+package com.cyberflow.dauthsdk.login.constant
 
 object LoginConst {
     const val CODE_VERIFIER = "code_verifier"
@@ -21,4 +21,10 @@ object LoginConst {
     const val OPEN_UID = "openudid"
     const val ACCESS_TOKEN = "access_token"
     const val ACCOUNT_TYPE_OF_GOOGLE = "30"
+    const val TWITTER = "TWITTER"
+    const val FACEBOOK = "FACEBOOK"
+    const val GOOGLE = "GOOGLE"
+    const val EMAIL = "EMAIL"
+    const val MOBILE = "MOBILE"
+    const val OWN_ACCOUNT = "OWN_ACCOUNT"
 }

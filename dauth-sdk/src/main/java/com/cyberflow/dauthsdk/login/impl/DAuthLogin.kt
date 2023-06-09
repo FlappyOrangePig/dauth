@@ -4,32 +4,29 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import com.cyberflow.dauthsdk.DAuthSDK
+import com.cyberflow.dauthsdk.login.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.ILoginApi
-import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
+import com.cyberflow.dauthsdk.login.model.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
-import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT
-import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT_TYPE_OF_EMAIL
-import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT_TYPE_OF_OWN
-import com.cyberflow.dauthsdk.login.const.LoginConst.CODE_CHALLENGE
-import com.cyberflow.dauthsdk.login.const.LoginConst.CODE_CHALLENGE_METHOD
-import com.cyberflow.dauthsdk.login.const.LoginConst.CONFIRM_PASSWORD
-import com.cyberflow.dauthsdk.login.const.LoginConst.IS_LOGIN
-import com.cyberflow.dauthsdk.login.const.LoginConst.OPEN_UID
-import com.cyberflow.dauthsdk.login.const.LoginConst.PASSWORD
-import com.cyberflow.dauthsdk.login.const.LoginConst.PHONE
-import com.cyberflow.dauthsdk.login.const.LoginConst.PHONE_AREA_CODE
-import com.cyberflow.dauthsdk.login.const.LoginConst.SEX
-import com.cyberflow.dauthsdk.login.const.LoginConst.SIGN_METHOD
-import com.cyberflow.dauthsdk.login.const.LoginConst.USER_TYPE
-import com.cyberflow.dauthsdk.login.const.LoginConst.UUID
-import com.cyberflow.dauthsdk.login.const.LoginConst.VERIFY_CODE
-import com.cyberflow.dauthsdk.login.constant.LoginType
+import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT
+import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
+import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
+import com.cyberflow.dauthsdk.login.constant.LoginConst.CODE_CHALLENGE
+import com.cyberflow.dauthsdk.login.constant.LoginConst.CODE_CHALLENGE_METHOD
+import com.cyberflow.dauthsdk.login.constant.LoginConst.OPEN_UID
+import com.cyberflow.dauthsdk.login.constant.LoginConst.PHONE
+import com.cyberflow.dauthsdk.login.constant.LoginConst.PHONE_AREA_CODE
+import com.cyberflow.dauthsdk.login.constant.LoginConst.SIGN_METHOD
+import com.cyberflow.dauthsdk.login.constant.LoginConst.USER_TYPE
+import com.cyberflow.dauthsdk.login.constant.LoginConst.VERIFY_CODE
+import com.cyberflow.dauthsdk.login.constant.LoginConst.GOOGLE
+import com.cyberflow.dauthsdk.login.constant.LoginConst.TWITTER
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
+import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -141,12 +138,12 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
     override suspend fun loginWithType(type: String, activity: Activity) {
         when (type) {
-            LoginType.GOOGLE -> {
+            GOOGLE -> {
                 val intent = Intent(activity, ThirdPartyResultActivity::class.java)
                 intent.putExtra("type", 0)
                 activity.startActivityForResult(intent, GOOGLE_REQUEST_CODE)
             }
-            LoginType.TWITTER -> {
+            TWITTER -> {
                 val intent = Intent(activity, ThirdPartyResultActivity::class.java)
                 intent.putExtra("type", 1)
                 activity.startActivityForResult(intent, TWITTER_REQUEST_CODE)
@@ -160,35 +157,27 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param confirmPwd 确认密码
      */
 
-    override fun createDAuthAccount(
+    override suspend fun createDAuthAccount(
         account: String,
         passWord: String,
         confirmPwd: String
-    ): Boolean {
-        var isSuccess = false
-        val map = HashMap<String, String>()
-        val userType = ACCOUNT_TYPE_OF_OWN
-        map[ACCOUNT] = account
-        map[USER_TYPE] = userType
-        map[UUID] = "123456"
-        map[IS_LOGIN] = "1"
-        map[SEX] = "0"
-        map[PASSWORD] = passWord
-        map[CONFIRM_PASSWORD] = confirmPwd
-        val sign = SignUtils.sign(map)
-        val createAccountParam = CreateAccountParam(
-            userType, "123456", sign, 1,
-            passWord, confirm_password = confirmPwd, sex = 0, account = account
-        )
-        val feature = ThreadPoolUtils.submit {
-            val createAccountRes = RequestApi().createAccount(createAccountParam)
-            if (createAccountRes?.iRet == 0) {
-                isSuccess = true
-            }
+    ): Int? {
+        var code: Int?
+        withContext(Dispatchers.IO) {
+            val createAccountParam = CreateAccountParam(
+                ACCOUNT_TYPE_OF_OWN,
+                "123456",
+                is_login = 1,
+                password = passWord,
+                confirm_password = confirmPwd,
+                sex = 0,
+                account = account
+            )
 
+            val createAccountRes = RequestApi().createAccount(createAccountParam)
+            code = createAccountRes?.iRet
         }
-        val f = feature.get()
-        return isSuccess
+        return code
     }
 
     /**
@@ -403,6 +392,8 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
         return loginResCode
     }
 
-
+    override fun link2EOAWallet(context: Context) {
+        WalletWebViewActivity.launch(context, false)
+    }
 
 }
