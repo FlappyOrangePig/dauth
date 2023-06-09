@@ -2,23 +2,14 @@ package com.cyberflow.dauthsdk.login.google
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
-import com.cyberflow.dauthsdk.login.DAuthSDK
-import com.cyberflow.dauthsdk.login.model.*
-import com.cyberflow.dauthsdk.login.network.RequestApi
-import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.ApiException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 private const val REQUEST_CODE = 9001
@@ -26,7 +17,7 @@ private const val TAG = "GoogleLoginManager"
 private const val AUTH_TYPE_OF_GOOGLE = "30"
 private const val USER_TYPE = "user_type"
 class GoogleLoginManager : IWalletApi by WalletHolder.walletApi {
-    private val context get() = (DAuthSDK.instance).context
+
     companion object {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             GoogleLoginManager()

@@ -5,19 +5,14 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.cyberflow.dauthsdk.login.DAuthSDK
-import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
+import com.cyberflow.dauthsdk.DAuthSDK
 import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
-import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
 import com.twitter.sdk.android.core.TwitterSession
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -39,10 +34,12 @@ class ThirdPartyResultActivity : AppCompatActivity()   {
                     object : Callback<TwitterSession>() {
                     override fun success(result: Result<TwitterSession>?) {
                         DAuthLogger.e("twitter授权成功")
+
                     }
 
                     override fun failure(exception: TwitterException?) {
                         DAuthLogger.e("twitter授权失败:$exception")
+                        finish()
                     }
 
                 })
@@ -60,6 +57,7 @@ class ThirdPartyResultActivity : AppCompatActivity()   {
             resultIntent.putExtra("code", code)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
+            DAuthLogger.i("ThirdPartyResultActivity finish")
         }
         DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
 

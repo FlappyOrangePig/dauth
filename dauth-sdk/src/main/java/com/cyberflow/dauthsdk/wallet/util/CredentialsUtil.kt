@@ -1,6 +1,6 @@
 package com.cyberflow.dauthsdk.wallet.util
 
-import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Bip39Wallet
