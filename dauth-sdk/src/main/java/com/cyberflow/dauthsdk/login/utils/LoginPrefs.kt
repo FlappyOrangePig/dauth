@@ -2,7 +2,6 @@ package com.cyberflow.dauthsdk.login.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.cyberflow.dauthsdk.login.DAuthSDK
 
 private const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
 private const val ACCESS_TOKEN = "access_token"

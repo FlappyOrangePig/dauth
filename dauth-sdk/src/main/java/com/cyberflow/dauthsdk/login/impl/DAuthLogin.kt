@@ -1,21 +1,18 @@
 package com.cyberflow.dauthsdk.login.impl
 
 import android.app.Activity
+import android.app.Application
+import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.lifecycleScope
-import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.ILoginApi
-import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
+import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
-import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
-import com.cyberflow.dauthsdk.login.const.LoginConst
 import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT
 import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.const.LoginConst.ACCOUNT_TYPE_OF_OWN
-import com.cyberflow.dauthsdk.login.const.LoginConst.AUTH_CODE
 import com.cyberflow.dauthsdk.login.const.LoginConst.CODE_CHALLENGE
 import com.cyberflow.dauthsdk.login.const.LoginConst.CODE_CHALLENGE_METHOD
-import com.cyberflow.dauthsdk.login.const.LoginConst.CODE_VERIFIER
 import com.cyberflow.dauthsdk.login.const.LoginConst.CONFIRM_PASSWORD
 import com.cyberflow.dauthsdk.login.const.LoginConst.IS_LOGIN
 import com.cyberflow.dauthsdk.login.const.LoginConst.OPEN_UID
@@ -28,7 +25,6 @@ import com.cyberflow.dauthsdk.login.const.LoginConst.USER_TYPE
 import com.cyberflow.dauthsdk.login.const.LoginConst.UUID
 import com.cyberflow.dauthsdk.login.const.LoginConst.VERIFY_CODE
 import com.cyberflow.dauthsdk.login.constant.LoginType
-import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
@@ -39,29 +35,18 @@ import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
-import com.google.gson.Gson
-import com.twitter.sdk.android.core.*
-import com.twitter.sdk.android.core.models.User
-import kotlinx.coroutines.*
-import com.twitter.sdk.android.core.Callback
-import com.twitter.sdk.android.core.Result
-import com.twitter.sdk.android.core.TwitterException
-import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.*
 
 
 private const val TWITTER_REQUEST_CODE = 140
 private const val GOOGLE_REQUEST_CODE = 9001
-private const val GOOGLE = "GOOGLE"
-private const val TWITTER = "TWITTER"
 private const val AUTH_TYPE_OF_GOOGLE = "30"
-private const val TYPE_OF_TWITTER = "110"
-private const val USER_TYPE = "user_type"
-private const val USER_DATA = "user_data"
 
 class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
-    private val context get() = (DAuthSDK.instance).context
+    val context get() = (DAuthSDK.instance).context
+    private var _context: Context? = null
+    private var _config: SdkConfig? = null
 
     companion object {
         val instance by lazy {
@@ -69,17 +54,23 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
         }
     }
 
-    override suspend fun loginApi(account: String, passWord: String): Int? {
-//        val map = HashMap<String, String>()
-//        map[USER_TYPE] = ACCOUNT_TYPE_OF_OWN
-//        map[ACCOUNT] = account
-//        map[PASSWORD] = passWord
-//        val sign = SignUtils.sign(map)
+    override fun initSDK(context: Context, config: SdkConfig) {
+        val appContext = context.applicationContext as Application
+        this._context = appContext
+        this._config = config
+        //Twitter初始化
+        TwitterLoginManager.instance.initTwitterSDK(context, config)
+        initWallet(appContext)
+        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
+        DAuthLogger.i("init sdk")
+    }
+
+
+    override suspend fun login(account: String, passWord: String): Int? {
         val loginParam = LoginParam(
             ACCOUNT_TYPE_OF_OWN.toInt(),
             account = account,
             password = passWord,
-//            sign = sign
         )
 
         val loginRes = RequestApi().login(loginParam)
@@ -148,7 +139,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param activity
      */
 
-    override suspend fun loginWithTypeApi(type: String, activity: Activity) {
+    override suspend fun loginWithType(type: String, activity: Activity) {
         when (type) {
             LoginType.GOOGLE -> {
                 val intent = Intent(activity, ThirdPartyResultActivity::class.java)
@@ -169,7 +160,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param confirmPwd 确认密码
      */
 
-    override fun createDAuthAccountApi(
+    override fun createDAuthAccount(
         account: String,
         passWord: String,
         confirmPwd: String
@@ -205,7 +196,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param verifyCode 验证码
      * @param type  10(邮箱) 60(手机)
      */
-    override suspend fun loginByMobileOrEmailApi(
+    override suspend fun loginByMobileOrEmail(
         account: String,
         verifyCode: String,
         type: Int
@@ -264,7 +255,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
 
 
-    override fun logoutApi(openUid: String) {
+    override fun logout(openUid: String) {
         val map = HashMap<String, String>()
         map[OPEN_UID] = openUid
         val sign = SignUtils.sign(map)
@@ -278,7 +269,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * 重置密码
      */
 
-    override fun setRecoverPasswordApi(callback: ResetPwdCallback) {
+    override fun setRecoverPassword(callback: ResetPwdCallback) {
 
     }
 
@@ -286,7 +277,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param phone 手机号
      * @param areaCode  区号
      */
-    override fun sendPhoneVerifyCodeApi(phone: String, areaCode: String) {
+    override fun sendPhoneVerifyCode(phone: String, areaCode: String) {
         val map = HashMap<String, String>()
         map[PHONE] = phone
         map[PHONE_AREA_CODE] = areaCode
@@ -300,7 +291,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     /**
      * @param email 邮箱
      */
-    override suspend fun sendEmailVerifyCodeApi(email: String): Boolean {
+    override suspend fun sendEmailVerifyCode(email: String): Boolean {
         var isSend = false
         val map = HashMap<String, String>()
         map[ACCOUNT] = email
@@ -325,7 +316,7 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      *  phone_area_code(区号)
      *  verify_code(验证码)
      */
-    override fun bindPhoneApi(bindParams: BindPhoneParam) {
+    override fun bindPhone(bindParams: BindPhoneParam) {
         ThreadPoolUtils.execute {
             RequestApi().bindPhone(bindParams)
         }
@@ -335,11 +326,11 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param email 邮箱
      * @param verifyCode 邮箱验证码
      */
-    override fun bindEmailApi(email: String, verifyCode: String) {
+    override fun bindEmail(email: String, verifyCode: String) {
 
     }
 
-    override suspend fun thirdPartyCallbackApi(
+    override suspend fun thirdPartyCallback(
         requestCode: Int,
         resultCode: Int,
         data: Intent?
@@ -362,13 +353,17 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     }
 
     private fun getGoogleIdToken(data: Intent?) : String {
-
-        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        val account: GoogleSignInAccount? = task.getResult(ApiException::class.java)
-        // Signed in successfully, show authenticated UI.
-        val accountId = account?.id.toString()
-        val accountIdToken = account?.idToken.toString()
-        DAuthLogger.e("account:$account, accountId:$accountId ,accountIdToken: $accountIdToken")
+        var accountIdToken = ""
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            val account: GoogleSignInAccount? = task.getResult(ApiException::class.java)
+            // Signed in successfully, show authenticated UI.
+            val accountId = account?.id.toString()
+            accountIdToken = account?.idToken.toString()
+            DAuthLogger.e("account:$account, accountId:$accountId ,accountIdToken: $accountIdToken")
+        }catch (e: Exception) {
+            DAuthLogger.e("google sign failed:$e")
+        }
         return accountIdToken
     }
 

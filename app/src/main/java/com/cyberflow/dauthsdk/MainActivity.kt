@@ -8,14 +8,13 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
-import com.cyberflow.dauthsdk.login.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 
 import java.math.BigInteger
 
 
 class MainActivity : AppCompatActivity() {
-    private val testAddress = "0x7F0466E1e43A6d00d27C2111B0aa9BA0c52ACA5D"
+    private val testAddress = "0xA0590b28C219E6C26a93116D04C395A56E9135f5"
     companion object {
         fun launch(context : Context) {
             val intent = Intent(context, MainActivity::class.java)
@@ -44,7 +43,8 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this,"gas费预估：$gas",Toast.LENGTH_LONG).show()
         }
         binding.btnSendTransaction.setOnClickListener {
-           val result = DAuthSDK.instance.sendTransaction(testAddress, BigInteger("100"))
+
+            val result = DAuthSDK.instance.sendTransaction(testAddress, BigInteger("100000000000000"))
             Toast.makeText(this,"转账结果：${result.toString()}",Toast.LENGTH_LONG).show()
         }
     }

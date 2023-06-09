@@ -1,11 +1,10 @@
 package com.cyberflow.dauthsdk
 
 import android.app.Application
-import com.cyberflow.dauthsdk.login.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
 
-private const val CONSUMER_KEY = "tfCWoaQgJqsbAsYNKFM8r2rI3"
-private const val CONSUMER_SECRET = "hUbRMtwQNgyaxRMCDaYRoezV9Z7xGoJk4i3kseFSFP4mfr3b9v"
+private const val CONSUMER_KEY = "lolei76IdILu5LDW0OQsM3iGZ"
+private const val CONSUMER_SECRET = "wMKmwqPoYzDqy8mUumm9RnnOIAHWNe4q7XayYmi7QS32wDOcuo"
 class MyApplication : Application() {
 
     override fun onCreate() {

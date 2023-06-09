@@ -3,8 +3,9 @@ package com.cyberflow.dauthsdk.login.twitter
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.bean.SdkConfig
+import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
@@ -21,8 +22,6 @@ import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.*
 import kotlin.coroutines.resume
 
-private const val CONSUMER_KEY = "tfCWoaQgJqsbAsYNKFM8r2rI3"
-private const val CONSUMER_SECRET = "hUbRMtwQNgyaxRMCDaYRoezV9Z7xGoJk4i3kseFSFP4mfr3b9v"
 
 private const val TYPE_OF_TWITTER = "110"
 

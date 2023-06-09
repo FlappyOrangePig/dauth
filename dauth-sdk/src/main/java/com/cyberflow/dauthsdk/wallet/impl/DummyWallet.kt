@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import android.content.Context
-import com.cyberflow.dauthsdk.login.DAuthSDK
+import com.cyberflow.dauthsdk.DAuthSDK
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
