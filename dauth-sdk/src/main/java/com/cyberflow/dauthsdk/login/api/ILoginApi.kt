@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import com.cyberflow.dauthsdk.login.callback.BaseHttpCallback
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
 import com.cyberflow.dauthsdk.login.model.LoginRes
 
@@ -16,7 +17,7 @@ interface ILoginApi {
      * @param activity
      */
 
-    fun loginWithTypeApi(type: String, activity: Activity)
+    suspend fun loginWithTypeApi(type: String, activity: Activity)
 
     /**
      * @param account 自有账号（字母和数字组合）
@@ -68,5 +69,8 @@ interface ILoginApi {
      */
     fun bindEmailApi(email: String, verifyCode: String)
 
-//    suspend fun handleThirdPartyLogin(requestCode: Int, resultCode: Int, data: Intent?): Int
+    /**
+     * 第三方授权登录回调
+     */
+    suspend fun thirdPartyCallbackApi(requestCode: Int, resultCode: Int, data: Intent?): Int?
 }

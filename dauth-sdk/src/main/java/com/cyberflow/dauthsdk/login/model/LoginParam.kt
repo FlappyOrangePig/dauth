@@ -28,7 +28,7 @@ data class LoginParam(
     /* 账号类型 */
     val user_type: Int,
     /* 检验参数 */
-    val sign: String,
+    val sign: String? = null,
     val clientInHeader: ClientInHeader? = null,
     /* 手机号,手机号登录时必填 */
     val phone: String? = null,

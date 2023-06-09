@@ -27,7 +27,7 @@ import okhttp3.Call
 import okhttp3.Response
 
 
-private const val BASE_URL = "https://dauth-test.mimo.immo"
+private const val BASE_URL = "https://api-dev.infras.online"
 private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
 private const val CLIENT_SECRET = "4657*@cde"
 
@@ -125,7 +125,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @return AuthorizeToken2Res
      */
 
-    fun authorizeExchangedToken(body: AuthorizeToken2Param): AuthorizeToken2Res? {
+    suspend fun authorizeExchangedToken(body: AuthorizeToken2Param): AuthorizeToken2Res? {
 
         val localVariableConfig = setCommonParams("/account/v1/sociallogin/exchangedtoken")
 

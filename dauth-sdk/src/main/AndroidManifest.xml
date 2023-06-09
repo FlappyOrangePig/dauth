@@ -3,9 +3,16 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application>
-        <activity
-            android:theme="@style/Theme.client"
-            android:name=".login.view.DAuthActivity"/>
         <activity android:name=".login.view.WalletWebViewActivity"/>
+        <activity
+            android:theme="@style/AppTheme.Transparent"
+            android:name=".login.view.ThirdPartyResultActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
     </application>
 </manifest>

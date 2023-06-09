@@ -89,8 +89,6 @@ open class ApiClient(val baseUrl: String) {
         val body = response.body
         val rb = body?.string()
         val data = JSONObject(rb)
-        val ret = data.getInt("iRet")
-        val objStr = data.getString("data")
         val msg = data.getString("sMsg")
         DAuthLogger.e("接口返回：$msg")
         if (T::class.java == java.io.File::class.java) {
@@ -104,25 +102,18 @@ open class ApiClient(val baseUrl: String) {
         if(contentType == null) {
             contentType = JsonMediaType
         }
-        if(ret == 0) {
-            try {
-                return if (isJsonMime(contentType)) {
-                    val gson = Gson()
-                    gson.fromJson(data.toString(), T::class.java)
-                } else if (contentType.equals(String.Companion::class.java)) {
-                    response.body.toString() as T
-                } else {
-                    DAuthLogger.e("Fill in more types!")
-                    return null
-                }
-            } catch (e: java.lang.Exception) {
-                DAuthLogger.e("responseBody Serializer exception: $e")
+        try {
+            return if (isJsonMime(contentType)) {
+                val gson = Gson()
+                gson.fromJson(rb, T::class.java)
+            } else if (contentType.equals(String.Companion::class.java)) {
+                response.body.toString() as T
+            } else {
+                DAuthLogger.e("Fill in more types!")
+                return null
             }
-        } else {
-            val gson = Gson()
-            return gson.fromJson(data.toString(), T::class.java)
-
-            DAuthLogger.e("http request response errorCode:$ret,errorMsg:$msg")
+        } catch (e: java.lang.Exception) {
+            DAuthLogger.e("responseBody Serializer exception: $e")
         }
         return null
     }
