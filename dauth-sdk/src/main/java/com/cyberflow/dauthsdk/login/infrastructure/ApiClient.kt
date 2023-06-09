@@ -2,7 +2,7 @@ package com.cyberflow.dauthsdk.login.infrastructure
 
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
-import com.cyberflow.dauthsdk.wallet.impl.Web3Manager
+import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import com.google.gson.Gson
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -23,11 +23,6 @@ open class ApiClient(val baseUrl: String) {
         protected const val JsonMediaType = "application/json"
         protected const val FormDataMediaType = "multipart/form-data"
         protected const val XmlMediaType = "application/xml"
-
-        @JvmStatic
-        val client by lazy {
-            Web3Manager.okHttpClient
-        }
 
         @JvmStatic
         var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
@@ -163,7 +158,7 @@ open class ApiClient(val baseUrl: String) {
             headers.forEach { header -> request.addHeader(header.key, header.value) }
 
             val realRequest = request.build()
-            val response = client.newCall(realRequest).execute()
+            val response = HttpClient.client.newCall(realRequest).execute()
 
             return if (response.isSuccessful) {
                 responseBody(response, accept)

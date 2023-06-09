@@ -1,6 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import android.os.Build
+import com.cyberflow.dauthsdk.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.const.WalletConst
 import com.cyberflow.dauthsdk.wallet.sol.TestTemp
@@ -27,14 +28,14 @@ import java.util.concurrent.TimeUnit
 
 object Web3Manager {
 
-    // 苟建本地节点
-    private const val GOU_JIAN_URL = "http://172.16.13.155:8545/"
-
-    // sepolia测试节点，从https://sepolia.dev/#抄的
-    // chainId：11155111 (0xaa36a7)
-    private const val SEPOLIA_RPC_URL = "https://rpc.sepolia.org/"
-    val okHttpClient by lazy { getOkhttpClient() }
-    private val web3j by lazy { Web3j.build(HttpService(SEPOLIA_RPC_URL, okHttpClient)) }
+    private val web3j by lazy {
+        Web3j.build(
+            HttpService(
+                DAuthSDK.instance.config.web3RpcUrl,
+                HttpClient.client
+            )
+        )
+    }
 
     private suspend fun <S, T : Response<*>> Request<S, T>.await(): T? {
         val result = withContext(Dispatchers.IO) {

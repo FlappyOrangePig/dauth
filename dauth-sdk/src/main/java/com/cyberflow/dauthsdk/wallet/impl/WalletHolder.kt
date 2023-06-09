@@ -6,7 +6,7 @@ import com.cyberflow.dauthsdk.wallet.util.KeystoreUtil
 object WalletHolder {
     private const val DEBUG = true
     val walletApi: IWalletApi = if (DEBUG) {
-        DummyWallet()
+        EoaWallet()
     } else {
         DAuthWallet()
     }
