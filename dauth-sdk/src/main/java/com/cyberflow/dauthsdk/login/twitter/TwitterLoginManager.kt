@@ -3,14 +3,14 @@ package com.cyberflow.dauthsdk.login.twitter
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.wallet.api.IWalletApi
+import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.gson.Gson
 import com.twitter.sdk.android.core.*
@@ -20,7 +20,6 @@ import com.twitter.sdk.android.core.internal.CommonUtils
 import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.*
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 
 private const val TYPE_OF_TWITTER = "110"

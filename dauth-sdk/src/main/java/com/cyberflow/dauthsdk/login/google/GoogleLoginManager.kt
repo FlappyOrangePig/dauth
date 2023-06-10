@@ -4,14 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.wallet.api.IWalletApi
-import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient

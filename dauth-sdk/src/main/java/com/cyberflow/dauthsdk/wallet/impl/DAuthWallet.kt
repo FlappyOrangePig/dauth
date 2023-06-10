@@ -7,7 +7,7 @@ import com.cyberflow.dauthsdk.api.entity.GetAddressResult
 import com.cyberflow.dauthsdk.api.entity.GetBalanceResult
 import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.wallet.api.IWalletApi
+import com.cyberflow.dauthsdk.api.IWalletApi
 import kotlinx.coroutines.*
 import java.math.BigInteger
 

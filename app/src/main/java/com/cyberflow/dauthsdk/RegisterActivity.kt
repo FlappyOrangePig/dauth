@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import kotlinx.coroutines.launch
 
 class RegisterActivity: AppCompatActivity() {

@@ -3,7 +3,7 @@ package com.cyberflow.dauthsdk.wallet.impl
 import android.os.Build
 import com.cyberflow.dauthsdk.api.entity.EstimateGasResult
 import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.const.WalletConst
 import com.cyberflow.dauthsdk.wallet.sol.TestTemp

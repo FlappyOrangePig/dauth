@@ -2,12 +2,12 @@ package com.cyberflow.dauthsdk.wallet.impl
 
 import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
 import com.cyberflow.dauthsdk.api.entity.GetAddressResult
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.wallet.api.IWalletApi
+import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.util.KeystoreUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

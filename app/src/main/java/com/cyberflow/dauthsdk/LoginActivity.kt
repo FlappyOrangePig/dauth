@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
 import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch

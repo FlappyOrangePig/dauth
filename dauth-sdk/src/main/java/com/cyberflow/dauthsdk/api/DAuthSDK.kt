@@ -1,13 +1,13 @@
-package com.cyberflow.dauthsdk.login.api
+package com.cyberflow.dauthsdk.api
 
 
 import android.app.Application
 import android.content.Context
+import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.impl.DAuthLifeCycle
 import com.cyberflow.dauthsdk.login.impl.LoginHolder
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 
 

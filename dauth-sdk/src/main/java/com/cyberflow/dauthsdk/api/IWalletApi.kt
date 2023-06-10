@@ -1,4 +1,4 @@
-package com.cyberflow.dauthsdk.wallet.api
+package com.cyberflow.dauthsdk.api
 
 import android.content.Context
 import com.cyberflow.dauthsdk.api.entity.CreateWalletResult

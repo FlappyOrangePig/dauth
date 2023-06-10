@@ -3,9 +3,8 @@ package com.cyberflow.dauthsdk.login.impl
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.Intent
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
-import com.cyberflow.dauthsdk.login.api.ILoginApi
+import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.ILoginApi
 import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
@@ -28,12 +27,8 @@ import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
-import com.cyberflow.dauthsdk.wallet.api.IWalletApi
+import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
-import com.twitter.sdk.android.core.Callback
-import com.twitter.sdk.android.core.Result
-import com.twitter.sdk.android.core.TwitterException
-import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.*
 
 

@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk
 
 import android.app.Application
-import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.SdkConfig
 
 private const val CONSUMER_KEY = "lolei76IdILu5LDW0OQsM3iGZ"
