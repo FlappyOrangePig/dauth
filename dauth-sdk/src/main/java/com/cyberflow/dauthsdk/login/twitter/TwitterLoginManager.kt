@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.cyberflow.dauthsdk.login.api.DAuthSDK
-import com.cyberflow.dauthsdk.login.model.SdkConfig
+import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
@@ -20,9 +20,11 @@ import com.twitter.sdk.android.core.internal.CommonUtils
 import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.*
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 
 private const val TYPE_OF_TWITTER = "110"
+private const val USER_DATA = "user_data"
 
 class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
 
@@ -73,10 +75,9 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
                 "Callback must not be null, did you call setCallback?"
             )
         }
-
     }
 
-    private suspend fun twitterAuth(): String? = suspendCancellableCoroutine {
+    suspend fun twitterAuth(): String? = suspendCancellableCoroutine {
         val userData = DAuthUser()
         val twitterApiClient = TwitterCore.getInstance().apiClient
         val call = twitterApiClient.accountService.verifyCredentials(false, true, true)
@@ -104,7 +105,7 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
         var twitterUser :String? = null
 
         try {
-            twitterUser = TwitterLoginManager.instance.twitterAuth()
+            twitterUser = twitterAuth()
         }catch (e: Exception) {
             DAuthLogger.e("suspendCancellableCoroutine exception:$e")
         }
@@ -141,6 +142,24 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
             }
         }
         return loginResCode
+    }
+
+    suspend fun twitterLoginAuthAsync(activity: Activity): TwitterSession? = suspendCancellableCoroutine { continuation ->
+        val callback = object : Callback<TwitterSession>() {
+            override fun success(sessionResult: Result<TwitterSession>?) {
+                continuation.resume(sessionResult?.data)
+            }
+
+            override fun failure(exception: TwitterException?) {
+                DAuthLogger.e("Twitter auth failed.")
+            }
+        }
+
+        twitterLoginAuth(activity, callback)
+
+        continuation.invokeOnCancellation {
+
+        }
     }
 
 }

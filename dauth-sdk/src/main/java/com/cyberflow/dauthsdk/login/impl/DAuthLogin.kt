@@ -6,8 +6,9 @@ import android.content.Context
 import android.content.Intent
 import com.cyberflow.dauthsdk.login.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.ILoginApi
-import com.cyberflow.dauthsdk.login.model.SdkConfig
+import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
@@ -29,15 +30,12 @@ import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.common.api.ApiException
+import com.twitter.sdk.android.core.Callback
+import com.twitter.sdk.android.core.Result
+import com.twitter.sdk.android.core.TwitterException
+import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.*
 
-
-private const val TWITTER_REQUEST_CODE = 140
-private const val GOOGLE_REQUEST_CODE = 9001
-private const val AUTH_TYPE_OF_GOOGLE = "30"
 
 class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
@@ -57,7 +55,6 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
         this._config = config
         //Twitter初始化
         TwitterLoginManager.instance.initTwitterSDK(context, config)
-        initWallet(appContext)
         appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
         DAuthLogger.i("init sdk")
     }
@@ -136,19 +133,25 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      * @param activity
      */
 
-    override suspend fun loginWithType(type: String, activity: Activity) {
+    override suspend fun loginWithType(
+        type: String,
+        activity: Activity,
+        callback: ThirdPartyCallback?
+    ): Int {
+        var code = 0
         when (type) {
             GOOGLE -> {
-                val intent = Intent(activity, ThirdPartyResultActivity::class.java)
-                intent.putExtra("type", 0)
-                activity.startActivityForResult(intent, GOOGLE_REQUEST_CODE)
+                ThirdPartyResultActivity.launch(activity, callback)
             }
             TWITTER -> {
-                val intent = Intent(activity, ThirdPartyResultActivity::class.java)
-                intent.putExtra("type", 1)
-                activity.startActivityForResult(intent, TWITTER_REQUEST_CODE)
+                withContext(Dispatchers.IO) {
+                    TwitterLoginManager.instance.twitterLoginAuthAsync(activity)
+                    TwitterLoginManager.instance.twitterAuthLogin()
+                    DAuthLogger.e("code == $code")
+                }
             }
         }
+        return code
     }
 
     /**
@@ -317,79 +320,6 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
      */
     override fun bindEmail(email: String, verifyCode: String) {
 
-    }
-
-    override suspend fun thirdPartyCallback(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?
-    ): Int? {
-
-        return withContext(Dispatchers.IO) {
-            var code: Int? = -1
-            when (requestCode) {
-
-                GOOGLE_REQUEST_CODE -> {
-                    code = googleAuthLogin(data)
-                }
-
-                TWITTER_REQUEST_CODE -> {
-                    code = TwitterLoginManager.instance.twitterAuthLogin()
-                }
-            }
-            code
-        }
-    }
-
-    private fun getGoogleIdToken(data: Intent?) : String {
-        var accountIdToken = ""
-        try {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account: GoogleSignInAccount? = task.getResult(ApiException::class.java)
-            // Signed in successfully, show authenticated UI.
-            val accountId = account?.id.toString()
-            accountIdToken = account?.idToken.toString()
-            DAuthLogger.e("account:$account, accountId:$accountId ,accountIdToken: $accountIdToken")
-        }catch (e: Exception) {
-            DAuthLogger.e("google sign failed:$e")
-        }
-        return accountIdToken
-    }
-
-    private suspend fun  googleAuthLogin(data: Intent?) : Int {
-        val accountIdToken = getGoogleIdToken(data)
-        var loginResCode: Int
-        val authorizeParam = AuthorizeToken2Param(
-            access_token = null,
-            refresh_token = null,
-            AUTH_TYPE_OF_GOOGLE,
-            commonHeader = null,
-            id_token = accountIdToken
-        )
-        withContext(Dispatchers.IO) {
-            val authExchangedTokenRes = RequestApi().authorizeExchangedToken(authorizeParam)
-            if (authExchangedTokenRes?.iRet == 0) {
-                val didToken = authExchangedTokenRes.data?.did_token.orEmpty()
-                val googleUserInfo = JwtDecoder().decoded(didToken)
-                val accessToken = authExchangedTokenRes.data?.d_access_token.orEmpty()
-                val authId = googleUserInfo.sub.orEmpty()
-                val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
-                LoginPrefs(context).setAccessToken(accessToken)
-                LoginPrefs(context).setAuthID(authId)
-                //没有钱包  返回errorCode
-                if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                    loginResCode = 10001
-                } else {
-                    // 该邮箱绑定过钱包
-                    loginResCode = 0
-                    DAuthLogger.d("该google账号已绑定钱包，直接进入主页")
-                }
-            } else {
-                loginResCode = 100001
-                DAuthLogger.e("app第三方认证登录失败 errCode == $loginResCode")
-            }
-        }
-        return loginResCode
     }
 
     override fun link2EOAWallet(context: Context) {

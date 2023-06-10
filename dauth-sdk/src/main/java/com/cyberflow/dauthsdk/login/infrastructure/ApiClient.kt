@@ -114,61 +114,54 @@ open class ApiClient(val baseUrl: String) {
     }
 
     protected inline fun <reified T : Any?> request(requestConfig: RequestConfig, body: Any?): T? {
-        try {
-            val httpUrl =
-                baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
-            var urlBuilder = httpUrl.newBuilder()
-                .addPathSegments(requestConfig.path.trimStart('/'))
-
-            requestConfig.query.forEach { query ->
-                query.value.forEach { queryValue ->
-                    urlBuilder = urlBuilder.addQueryParameter(query.key, queryValue)
-                }
+        var response: Response? = null
+        var result: T? = null
+        val httpUrl =
+            baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
+        val urlBuilder = httpUrl.newBuilder()
+            .addPathSegments(requestConfig.path.trimStart('/'))
+        requestConfig.query.forEach { query ->
+            query.value.forEach { queryValue ->
+                urlBuilder.addQueryParameter(query.key, queryValue)
             }
-
-            val url = urlBuilder.build()
-            val headers = defaultHeaders + requestConfig.headers
-
-            if ((headers[ContentType] ?: "") == "") {
-                throw IllegalStateException("Missing Content-Type header. This is required.")
-            }
-
-            if ((headers[Accept] ?: "") == "") {
-                throw IllegalStateException("Missing Accept header. This is required.")
-            }
-
-            // TODO: support multiple contentType,accept options here.
-            val contentType = (headers[ContentType] as String).substringBefore(";")
-                .lowercase(Locale.ROOT)
-            val accept = (headers[Accept] as String).substringBefore(";")
-                .lowercase(Locale.ROOT)
-
-            val request: Request.Builder = when (requestConfig.method) {
-                RequestMethod.DELETE -> Request.Builder().url(url).delete()
-                RequestMethod.GET -> Request.Builder().url(url)
-                RequestMethod.HEAD -> Request.Builder().url(url).head()
-                RequestMethod.PATCH -> Request.Builder().url(url)
-                    .patch(requestBody(body, contentType))
-                RequestMethod.PUT -> Request.Builder().url(url).put(requestBody(body, contentType))
-                RequestMethod.POST -> Request.Builder().url(url)
-                    .post(requestBody(body, contentType))
-                RequestMethod.OPTIONS -> Request.Builder().url(url).method("OPTIONS", null)
-            }
-
-            headers.forEach { header -> request.addHeader(header.key, header.value) }
-
-            val realRequest = request.build()
-            val response = HttpClient.client.newCall(realRequest).execute()
-
-            return if (response.isSuccessful) {
-                responseBody(response, accept)
-            } else {
-                null
-            }
-        }catch (e: Exception) {
-            DAuthLogger.e("request exception : $e")
         }
-        return null
+        val url = urlBuilder.build()
+        val headers = defaultHeaders + requestConfig.headers
+        if ((headers[ContentType] ?: "") == "") {
+            throw IllegalStateException("Missing Content-Type header. This is required.")
+        }
+        if ((headers[Accept] ?: "") == "") {
+            throw IllegalStateException("Missing Accept header. This is required.")
+        }
+        val contentType = (headers[ContentType] as String).substringBefore(";")
+            .lowercase(Locale.ROOT)
+        val accept = (headers[Accept] as String).substringBefore(";")
+            .lowercase(Locale.ROOT)
+        val requestBuilder: Request.Builder = when (requestConfig.method) {
+            RequestMethod.DELETE -> Request.Builder().url(url).delete()
+            RequestMethod.GET -> Request.Builder().url(url)
+            RequestMethod.HEAD -> Request.Builder().url(url).head()
+            RequestMethod.PATCH -> Request.Builder().url(url)
+                .patch(requestBody(body, contentType))
+            RequestMethod.PUT -> Request.Builder().url(url).put(requestBody(body, contentType))
+            RequestMethod.POST -> Request.Builder().url(url)
+                .post(requestBody(body, contentType))
+            RequestMethod.OPTIONS -> Request.Builder().url(url).method("OPTIONS", null)
+        }
+        headers.forEach { header -> requestBuilder.addHeader(header.key, header.value) }
+        try {
+            val realRequest = requestBuilder.build()
+            response = HttpClient.client.newCall(realRequest).execute()
+            if (response.isSuccessful) {
+                result = responseBody(response, accept)
+            }
+        } catch (e: Exception) {
+            DAuthLogger.e("request exception: $e")
+        } finally {
+            response?.close()
+        }
+
+        return result
     }
 
 
