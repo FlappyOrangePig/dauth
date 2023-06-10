@@ -6,10 +6,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
+import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
 import com.cyberflow.dauthsdk.login.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import kotlinx.coroutines.launch
 
 
@@ -40,7 +40,7 @@ class LoginActivity : AppCompatActivity() {
                     MainActivity.launch(this@LoginActivity)
                 } else if (code == 10001) {     //该邮箱没有钱包 调用创建钱包接口
                     val createWalletCode = DAuthSDK.instance.createWallet("Tt123456")
-                    if(createWalletCode == 0) {
+                    if(createWalletCode is CreateWalletResult.Success) {
                         MainActivity.launch(this@LoginActivity)
                     }
                 } else {
@@ -115,7 +115,7 @@ class LoginActivity : AppCompatActivity() {
     private fun handleCreateWallet() {
         lifecycleScope.launch {
             val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
-            if (createWalletRes == 0) {
+            if (createWalletRes is CreateWalletResult.Success) {
                 MainActivity.launch(this@LoginActivity)
             }
         }

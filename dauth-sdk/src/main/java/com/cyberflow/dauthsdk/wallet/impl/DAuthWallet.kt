@@ -1,10 +1,13 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import android.content.Context
-import android.util.Log
+import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
+import com.cyberflow.dauthsdk.api.entity.EstimateGasResult
+import com.cyberflow.dauthsdk.api.entity.GetAddressResult
+import com.cyberflow.dauthsdk.api.entity.GetBalanceResult
+import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.api.IWalletApi
-import com.cyberflow.dauthsdk.wallet.util.KeystoreUtil
 import kotlinx.coroutines.*
 import java.math.BigInteger
 
@@ -18,35 +21,35 @@ class DAuthWallet internal constructor() : IWalletApi {
     override fun initWallet(context: Context) {
     }
 
-    override suspend fun createWallet(passcode: String?): Int {
-        TODO("Not yet implemented")
+    override suspend fun createWallet(passcode: String?): CreateWalletResult {
+        return CreateWalletResult.CreateWalletFailure
     }
 
-    override suspend fun queryWalletAddress(): String {
-        return Web3Manager.invokeGetAcc().orEmpty()
-    }
-
-    override suspend fun queryWalletBalance(): BigInteger? {
-        return runBlocking {
-            //val address = WalletPrefs(context).getWalletAddress()
-            val address = queryWalletAddress()
-            if (address.isNotEmpty()) {
-                val big = Web3Manager.getBalance(address)
-                big
-            } else {
-                null
-            }
+    override suspend fun queryWalletAddress(): GetAddressResult {
+        val address = Web3Manager.invokeGetAcc().orEmpty()
+        return if (address.isEmpty()) {
+            GetAddressResult.Failure
+        } else {
+            GetAddressResult.Success(address)
         }
     }
 
-    override suspend fun estimateGas(toUserId: String, amount: BigInteger): BigInteger? {
-        runBlocking{
-
+    override suspend fun queryWalletBalance(): GetBalanceResult {
+        val addressResult = queryWalletAddress()
+        if (addressResult !is GetAddressResult.Success){
+            return GetBalanceResult.Failure
         }
-        return null
+        val address = addressResult.address
+        return Web3Manager.getBalance(address).takeIf {
+            address.isNotEmpty()
+        }?.let { GetBalanceResult.Success(it) } ?: GetBalanceResult.Failure
     }
 
-    override suspend fun sendTransaction(toAddress: String, amount: BigInteger): String? {
+    override suspend fun estimateGas(toUserId: String, amount: BigInteger): EstimateGasResult {
+        return EstimateGasResult.Failure
+    }
+
+    override suspend fun sendTransaction(toAddress: String, amount: BigInteger): SendTransactionResult {
         runBlocking {
             val address = queryWalletAddress()
             val queryAddress = toAddress
@@ -59,7 +62,7 @@ class DAuthWallet internal constructor() : IWalletApi {
                 DAuthLogger.d("tx: $tx")
             }
         }
-        return null
+        return SendTransactionResult.CannotFetchTransactionCount
     }
 
 }

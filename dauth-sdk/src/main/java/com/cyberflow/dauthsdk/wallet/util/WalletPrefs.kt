@@ -2,7 +2,6 @@ package com.cyberflow.dauthsdk.wallet.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import org.web3j.crypto.Bip39Wallet
 
 private const val FILE_WALLET_INFO = "FILE_WALLET_INFO"
 private const val KEY_WALLET_FILE_NAME = "KEY_WALLET_FILE_NAME"

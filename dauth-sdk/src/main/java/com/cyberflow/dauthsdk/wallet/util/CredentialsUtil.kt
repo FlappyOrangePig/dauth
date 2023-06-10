@@ -9,6 +9,7 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.MnemonicUtils
 import org.web3j.crypto.WalletUtils
 import java.io.File
+import java.lang.IllegalStateException
 
 /**
  * 凭据工具类
@@ -19,8 +20,6 @@ object CredentialsUtil {
     private val config get() = DAuthSDK.instance.config
     private val useTestNetwork get() = config.useTestNetwork
     private val useInnerAccount get() = config.useInnerTestAccount
-    // 测试每次都创建，正式版本使用sp保存
-    private const val ALWAYS_CREATE_WALLET = false
     private const val PASSWORD = ""
     private const val MNEMONIC = "nominee video milk cake style decide blind sponsor rabbit mule dutch vanish"
     private const val WALLECT_ADDRESS = "0xd3Ca5938af1Cce97A4B45ea775E8a291eF53BA8C"
@@ -49,41 +48,44 @@ object CredentialsUtil {
         return r
     }
 
-    private fun getWalletFile(): File {
-        val finalFileName = if (ALWAYS_CREATE_WALLET) {
-            createWallet().filename
+    private fun getWalletFile(forceCreateWallet: Boolean): File {
+        val pref = WalletPrefs(context)
+
+        val (createWallet, fileNameInPreference) = if (forceCreateWallet) {
+            true to ""
         } else {
-            val pref = WalletPrefs(context)
-            val walletFileName = pref.getWalletFileName()
-            walletFileName.ifEmpty {
-                createWallet().filename.also {
-                    pref.setWallet(it)
-                }
-            }
+            val fileNameExists = pref.getWalletFileName()
+            fileNameExists.isEmpty() to fileNameExists
         }
-        DAuthLogger.d("getWalletFile finalFileName=$finalFileName")
+
+        if (!createWallet && fileNameInPreference.isEmpty()) {
+            throw IllegalStateException("cannot happen")
+        }
+
+        val finalFileName = if (createWallet) {
+            val createFileName = createWallet().filename.orEmpty()
+            pref.setWallet(createFileName)
+            createFileName
+        } else {
+            if (fileNameInPreference.isEmpty()) {
+                throw IllegalStateException("cannot happen: fileNameInPreference is empty")
+            }
+            fileNameInPreference
+        }
+
+        DAuthLogger.d("getWalletFile $finalFileName")
         return File(safeGetKeyDirectory(), finalFileName)
     }
 
     /**
      * 加载凭据
+     * @param forceCreateWallet 强制创建钱包
      */
-    fun loadCredentials(): Credentials {
-        val f = getWalletFile()
+    fun loadCredentials(forceCreateWallet: Boolean): Credentials {
+        val f = getWalletFile(forceCreateWallet)
         val r = WalletUtils.loadCredentials(PASSWORD, f)
         DAuthLogger.d("loadCredentials finalFileName=${r.address}")
         return r
-    }
-
-    private fun createWalletFileFromMnemonic(mnemonic: String, password: String): String {
-        val wallet = WalletUtils.generateBip39WalletFromMnemonic(
-            password,
-            mnemonic,
-            safeGetKeyDirectory()
-        )
-
-        DAuthLogger.d("createWalletFileFromMnemonic, mnemonic=$mnemonic")
-        return wallet.filename
     }
 
     /**

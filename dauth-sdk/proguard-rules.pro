@@ -25,3 +25,5 @@
 
 -keep class com.cyberflow.dauthsdk.login.** { *; }
 -keep class com.cyberflow.dauthsdk.wallet.api.** { *; }
+
+-keep class com.cyberflow.dauthsdk.api.** { *; }
