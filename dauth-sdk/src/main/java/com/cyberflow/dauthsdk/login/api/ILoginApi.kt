@@ -2,10 +2,9 @@ package com.cyberflow.dauthsdk.login.api
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
-import com.cyberflow.dauthsdk.login.model.SdkConfig
 
 interface ILoginApi {
 
@@ -18,7 +17,11 @@ interface ILoginApi {
      * @param activity
      */
 
-    suspend fun loginWithType(type: String, activity: Activity)
+    suspend fun loginWithType(
+        type: String,
+        activity: Activity,
+        callback: ThirdPartyCallback? = null
+    ): Int?
 
     /**
      * @param account 自有账号（字母和数字组合）
@@ -70,10 +73,6 @@ interface ILoginApi {
      */
     fun bindEmail(email: String, verifyCode: String)
 
-    /**
-     * 第三方授权登录回调
-     */
-    suspend fun thirdPartyCallback(requestCode: Int, resultCode: Int, data: Intent?): Int?
 
     fun link2EOAWallet(context: Context)
 }

@@ -43,21 +43,20 @@ class RegisterActivity: AppCompatActivity() {
                 lifecycleScope.launch {
                     val code =
                         DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
-                    if(code == 0) {
-                        MainActivity.launch(this@RegisterActivity)
-                    } else {
-                        Toast.makeText(this@RegisterActivity,
-                            "创建自有账号失败 errorCode: $code",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
+                    if(code != null) {
+                        if(code == 0) {
+                            MainActivity.launch(this@RegisterActivity)
+                        } else {
+                            Toast.makeText(this@RegisterActivity,
+                                "创建自有账号失败 errorCode: $code",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-
                 }
             } else {
                 Toast.makeText(this, "请输入账号或密码", Toast.LENGTH_SHORT).show()
             }
-
         }
     }
 }

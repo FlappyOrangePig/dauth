@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnSendTransaction.setOnClickListener {
             lifecycleScope.launch {
-                val result = DAuthSDK.instance.sendTransaction(testAddress, BigInteger("100000000000000"))
+                val result = DAuthSDK.instance.sendTransaction(testAddress, BigInteger("1000000000"))
                 Toast.makeText(it.context,"转账结果：${result.toString()}",Toast.LENGTH_LONG).show()
             }
         }

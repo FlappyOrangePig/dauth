@@ -34,18 +34,17 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginByMobileOrEmail(
                     account,
                     password,
-                    ACCOUNT_TYPE_OF_EMAIL.toInt()
+                    ACCOUNT_TYPE_OF_EMAIL
                 )
-                if (code == 0) {
-                    MainActivity.launch(this@LoginActivity)
-                } else if (code == 10001) {     //该邮箱没有钱包 调用创建钱包接口
-                    val createWalletCode = DAuthSDK.instance.createWallet("Tt123456")
-                    if(createWalletCode is CreateWalletResult.Success) {
-                        MainActivity.launch(this@LoginActivity)
+                when (code) {
+                    0 -> MainActivity.launch(this@LoginActivity)
+                    10001 -> {
+                        val createWalletCode = DAuthSDK.instance.createWallet("Tt123456")
+//                        if (createWalletCode == 0) {
+//                            MainActivity.launch(this@LoginActivity)
+//                        }
                     }
-                } else {
-                    //1000032 验证码已过期
-                    DAuthLogger.d("login return code == $code")
+                    else -> DAuthLogger.d("login return code == $code")
                 }
             }
 
@@ -63,16 +62,29 @@ class LoginActivity : AppCompatActivity() {
 
     private fun initView() {
         binding.ivGoogle.setOnClickListener {
-            thirdPartyCallback()
             lifecycleScope.launch {
-                DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
+                DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity, object: ThirdPartyCallback {
+                    override fun onResult(code: Int?) {
+                        DAuthLogger.e("谷歌授权登录返回code:$code")
+                        when (code) {
+                            0 -> handleLoginSuccess()
+                            10001 -> handleCreateWallet()
+                            else -> handleLoginFailure(code)
+                        }
+                    }
+
+                })
             }
         }
 
         binding.ivTwitter.setOnClickListener {
-            thirdPartyCallback()
             lifecycleScope.launch {
-                DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
+                val code = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
+                when (code) {
+                    0 -> handleLoginSuccess()
+                    10001 -> handleCreateWallet()
+                    else -> handleLoginFailure(code)
+                }
             }
         }
 
@@ -94,18 +106,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
 
-    }
-
-    private fun thirdPartyCallback() {
-        DAuthSDK.callback = object : ThirdPartyCallback {
-            override fun onResult(code: Int?) {
-                when (code) {
-                    0 -> handleLoginSuccess()
-                    10001 -> handleCreateWallet()
-                    else -> handleLoginFailure(code)
-                }
-            }
-        }
     }
 
     private fun handleLoginSuccess() {
