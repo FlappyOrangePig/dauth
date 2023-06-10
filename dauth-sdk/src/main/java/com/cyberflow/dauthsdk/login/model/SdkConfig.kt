@@ -1,4 +1,4 @@
-package com.cyberflow.dauthsdk.login.api.bean
+package com.cyberflow.dauthsdk.login.model
 
 class SdkConfig {
 

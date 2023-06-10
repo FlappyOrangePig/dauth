@@ -20,5 +20,8 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+#-keep class com.cyberflow.dauthsdk.login.** { *; }
+#-renamesourcefileattribute SourceFile
+
 -keep class com.cyberflow.dauthsdk.login.** { *; }
 -keep class com.cyberflow.dauthsdk.wallet.api.** { *; }

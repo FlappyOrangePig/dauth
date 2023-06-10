@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import android.content.Context
-import com.cyberflow.dauthsdk.DAuthSDK
+import com.cyberflow.dauthsdk.login.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -30,8 +30,8 @@ class EoaWallet internal constructor(): IWalletApi {
         val authId = LoginPrefs(context).getAuthId()
         val bindWalletParam = BindWalletParam(
             accessToken, authId, "0x11", 11,
-            "0xff",
-            "0x"
+            "0x00",
+            "0x00"
         )
         withContext(Dispatchers.IO) {
             val response = RequestApi().bindWallet(bindWalletParam)

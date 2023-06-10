@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
+import com.cyberflow.dauthsdk.login.api.DAuthSDK
+import kotlinx.coroutines.launch
 
 class RegisterActivity: AppCompatActivity() {
     private var _binding: ActivityRegisterLayoutBinding?= null
@@ -37,7 +40,20 @@ class RegisterActivity: AppCompatActivity() {
             val password = binding.edtPassword.text.toString()
             val ensurePassword = binding.edtEnsurePassword.text.toString()
             if(account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
-                 DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
+                lifecycleScope.launch {
+                    val code =
+                        DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
+                    if(code == 0) {
+                        MainActivity.launch(this@RegisterActivity)
+                    } else {
+                        Toast.makeText(this@RegisterActivity,
+                            "创建自有账号失败 errorCode: $code",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    }
+
+                }
             } else {
                 Toast.makeText(this, "请输入账号或密码", Toast.LENGTH_SHORT).show()
             }
