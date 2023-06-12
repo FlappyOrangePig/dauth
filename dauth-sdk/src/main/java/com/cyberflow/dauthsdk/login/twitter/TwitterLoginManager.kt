@@ -4,13 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.gson.Gson
 import com.twitter.sdk.android.core.*
@@ -25,10 +25,10 @@ import kotlin.coroutines.resume
 private const val TYPE_OF_TWITTER = "110"
 private const val USER_DATA = "user_data"
 
-class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
+class TwitterLoginManager private constructor() {
 
     private var callback: Callback<TwitterSession>? = null
-    private val context get() = (DAuthSDK.instance).context
+    private val context get() = DAuthSDK.impl.context
     @Volatile
 
     var authClient: TwitterAuthClient? = null

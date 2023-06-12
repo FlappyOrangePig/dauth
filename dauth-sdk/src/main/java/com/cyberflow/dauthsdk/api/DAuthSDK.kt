@@ -3,20 +3,21 @@ package com.cyberflow.dauthsdk.api
 
 import android.app.Application
 import android.content.Context
-import com.cyberflow.dauthsdk.login.api.SdkConfig
-import com.cyberflow.dauthsdk.login.impl.DAuthLifeCycle
-import com.cyberflow.dauthsdk.login.impl.LoginHolder
-import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
+import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 
 
-class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
-    IWalletApi by WalletHolder.walletApi {
+class DAuthSDK private constructor(
+    private val loginApi: ILoginApi,
+    private val walletApi: IWalletApi
+) : IDAuthApi, ILoginApi by loginApi,
+    IWalletApi by walletApi {
 
     companion object {
-        val instance by lazy {
-            DAuthSDK()
+        val instance: IDAuthApi get() = impl
+        val impl: DAuthSDK by lazy {
+            DAuthSDK(DAuthLogin.instance, WalletHolder.walletApi)
         }
     }
 
@@ -26,13 +27,20 @@ class DAuthSDK private constructor() : ILoginApi by LoginHolder.loginApi,
     internal val config get() = _config ?: throw RuntimeException("please call initSDK() first")
 
     override fun initSDK(context: Context, config: SdkConfig) {
+        DAuthLogger.i("init sdk")
         val appContext = context.applicationContext as Application
         this._context = appContext
         this._config = config
-        //Twitter初始化
-        TwitterLoginManager.instance.initTwitterSDK(context, config)
+        initializeCheck()
+        loginApi.initSDK(context, config)
         initWallet(appContext)
-        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
-        DAuthLogger.i("init sdk")
+        DAuthLogger.i("init sdk ok")
+    }
+
+    private fun initializeCheck() {
+        context
+        if (config.chains.isEmpty()) {
+            throw IllegalArgumentException("must add a chain at least")
+        }
     }
 }

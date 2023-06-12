@@ -16,8 +16,8 @@ import java.lang.IllegalStateException
  */
 object CredentialsUtil {
 
-    private val context get() = (DAuthSDK.instance as DAuthSDK).context
-    private val config get() = DAuthSDK.instance.config
+    private val context get() = DAuthSDK.impl.context
+    private val config get() = DAuthSDK.impl.config
     private val useTestNetwork get() = config.useTestNetwork
     private val useInnerAccount get() = config.useInnerTestAccount
     private const val PASSWORD = ""

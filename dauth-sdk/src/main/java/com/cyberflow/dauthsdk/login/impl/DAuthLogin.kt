@@ -5,7 +5,8 @@ import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.ILoginApi
-import com.cyberflow.dauthsdk.login.api.SdkConfig
+import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT
@@ -13,45 +14,58 @@ import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
 import com.cyberflow.dauthsdk.login.constant.LoginConst.CODE_CHALLENGE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.CODE_CHALLENGE_METHOD
+import com.cyberflow.dauthsdk.login.constant.LoginConst.GOOGLE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.OPEN_UID
 import com.cyberflow.dauthsdk.login.constant.LoginConst.PHONE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.PHONE_AREA_CODE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.SIGN_METHOD
+import com.cyberflow.dauthsdk.login.constant.LoginConst.TWITTER
 import com.cyberflow.dauthsdk.login.constant.LoginConst.USER_TYPE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.VERIFY_CODE
-import com.cyberflow.dauthsdk.login.constant.LoginConst.GOOGLE
-import com.cyberflow.dauthsdk.login.constant.LoginConst.TWITTER
-import com.cyberflow.dauthsdk.login.model.*
+import com.cyberflow.dauthsdk.login.model.AuthorizeParam
+import com.cyberflow.dauthsdk.login.model.BindPhoneParam
+import com.cyberflow.dauthsdk.login.model.CreateAccountParam
+import com.cyberflow.dauthsdk.login.model.LoginParam
+import com.cyberflow.dauthsdk.login.model.LogoutParam
+import com.cyberflow.dauthsdk.login.model.SendEmailVerifyCodeParam
+import com.cyberflow.dauthsdk.login.model.SendPhoneVerifyCodeParam
+import com.cyberflow.dauthsdk.login.model.TokenAuthenticationParam
+import com.cyberflow.dauthsdk.login.model.TokenAuthenticationRes
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
-import com.cyberflow.dauthsdk.login.utils.*
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.login.utils.JwtChallengeCode
+import com.cyberflow.dauthsdk.login.utils.JwtDecoder
+import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.login.utils.SignUtils
+import com.cyberflow.dauthsdk.login.utils.ThreadPoolUtils
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
-import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
+private const val FIX_TWITTER_JS_ISSUE  = false
 
-class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
+class DAuthLogin : ILoginApi {
 
-    val context get() = (DAuthSDK.instance).context
-    private var _context: Context? = null
-    private var _config: SdkConfig? = null
+    private val context get() = DAuthSDK.impl.context
 
     companion object {
-        val instance by lazy {
+        val instance: ILoginApi by lazy {
             DAuthLogin()
         }
     }
 
     override fun initSDK(context: Context, config: SdkConfig) {
-        val appContext = context.applicationContext as Application
-        this._context = appContext
-        this._config = config
-        //Twitter初始化
+        DAuthLogger.i("DAuthLogin init sdk")
+        // Twitter初始化
         TwitterLoginManager.instance.initTwitterSDK(context, config)
-        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
-        DAuthLogger.i("init sdk")
+        if (FIX_TWITTER_JS_ISSUE) {
+            val appContext = context.applicationContext as Application
+            appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
+        }
     }
 
 

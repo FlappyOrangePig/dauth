@@ -40,7 +40,7 @@ object Web3Manager {
     private val web3j by lazy {
         Web3j.build(
             HttpService(
-                DAuthSDK.instance.config.web3RpcUrl,
+                DAuthSDK.impl.config.chains.first().rpcUrl,
                 HttpClient.client
             )
         )

@@ -1,4 +1,4 @@
-package com.cyberflow.dauthsdk.login.api
+package com.cyberflow.dauthsdk.api
 
 class SdkConfig {
 
@@ -37,7 +37,7 @@ class SdkConfig {
      * Gou 's local node
      * http://172.16.13.155:8545/
      */
-    var web3RpcUrl: String? = "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+    var chains: List<ChainInfo> = emptyList()
 
     /**
      * Twitter key
@@ -58,4 +58,10 @@ class SdkConfig {
      * 创建Bip44密钥对时，是否使用测试网络
      */
     var useTestNetwork: Boolean = false
+
+    class ChainInfo(
+        val info: Any,
+        val rpcUrl: String
+    )
 }
+

@@ -2,7 +2,6 @@ package com.cyberflow.dauthsdk.api
 
 import android.app.Activity
 import android.content.Context
-import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
