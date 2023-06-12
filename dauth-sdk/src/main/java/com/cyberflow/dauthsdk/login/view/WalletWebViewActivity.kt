@@ -10,6 +10,8 @@ import com.cyberflow.dauthsdk.login.viewmodel.WalletWebViewViewModel
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.WebView
 import androidx.activity.viewModels
+import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.callback.WalletCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.USER_TYPE
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
@@ -19,9 +21,6 @@ import com.cyberflow.dauthsdk.login.utils.*
 private const val TAG = "X5WebViewActivity"
 private const val H5_URL = "https://wallet.51ailike.com/#/login"
 private const val WEB_VIEW_ACTIVITY_EXTRA = "WEB_VIEW_ACTIVITY_EXTRA"
-private const val TYPE_OF_WALLET_AUTH = "20"
-private const val USER_TYPE = "user_type"
-private const val USER_DATA = "user_data"
 
 class WalletWebViewActivity : AppCompatActivity() {
     private var _binding: ActivityWebviewBinding? = null
@@ -30,13 +29,16 @@ class WalletWebViewActivity : AppCompatActivity() {
     private val viewModel: WalletWebViewViewModel by viewModels()
 
     companion object {
-        fun launch(context: Context, isFinish: Boolean) {
+        private var callback: WalletCallback? = null
+
+        fun launch(context: Context, isFinish: Boolean, callback: WalletCallback) {
             val intent = Intent(context, WalletWebViewActivity::class.java)
             intent.putExtra(WEB_VIEW_ACTIVITY_EXTRA, isFinish)
+            this.callback = callback
             context.startActivity(intent)
         }
-
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,20 +52,19 @@ class WalletWebViewActivity : AppCompatActivity() {
         val mContainer = binding.webViewContainer
         mContainer.addView(webView)
         viewModel.initWebViewClient(webView)
-        webView.addJavascriptInterface(JavaScriptMethods(this, object : WalletCallback {
+        webView.addJavascriptInterface(JavaScriptMethods(this
+            ,
+            object : WalletCallback {
             override fun onResult(walletInfo: String) {
-                val map = HashMap<String, String>()
-                map[USER_TYPE] = TYPE_OF_WALLET_AUTH
-                map[USER_DATA] = walletInfo
-                val sign = SignUtils.sign(map)
-                val body = AuthorizeToken2Param(
-                    user_type = TYPE_OF_WALLET_AUTH,
-                    sign = sign,
-                    user_data = walletInfo
-                )
-                RequestApi().authorizeExchangedToken(body)
+                callback?.onResult(walletInfo)
+//                val body = AuthorizeToken2Param(
+//                    user_type = TYPE_OF_WALLET_AUTH,
+//                    user_data = walletInfo
+//                )
+//                val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
             }
-        }), "android")
+        }
+        ), "android")
         webView.loadUrl(H5_URL)
     }
 

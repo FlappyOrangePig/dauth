@@ -18,11 +18,17 @@ package com.cyberflow.dauthsdk.login.model
  * @param sign 检验参数
  */
 data class ResetByPasswordParam (
-    /* 用户id */
-    val openudid: String,
-    /* 检验参数 */
-    val sign: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+    // 账号类型
+    val user_type: Int?,
+    // 手机号,根据手机号重置密码时必填
+    val phone: String? = null,
+    // 手机区号,根据手机号重置密码时必填
+    val phone_area_code: String? = null,
+    // 邮箱账号,根据邮箱重置密码时必填
+    val account: String? = null,
+    // 密码,账号登录时必填
+    val verify_code: String? = null,
+    val password: String,
 ) {
 
 }

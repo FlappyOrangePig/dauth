@@ -84,6 +84,18 @@
         app:layout_constraintTop_toBottomOf="@id/iv_google"
         android:layout_marginTop="20dp"/>
 
+    <TextView
+        android:id="@+id/tv_switch_mobile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="手机号登录"
+        app:layout_constraintEnd_toEndOf="@id/edt_account"
+        app:layout_constraintTop_toTopOf="@id/edt_account"
+        app:layout_constraintBottom_toBottomOf="@id/edt_account"
+        android:layout_marginEnd="10dp"
+        android:textColor="@color/black"/>
+
     <ImageView
         android:id="@+id/iv_wallet"
         android:layout_width="30dp"

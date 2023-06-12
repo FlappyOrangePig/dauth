@@ -29,7 +29,6 @@ data class SendPhoneVerifyCodeParam (
     /* 手机区号 */
     val phone_area_code: String,
     /* 检验参数 */
-    val sign: String,
      val accessTokenInHeader: AccessTokenInHeader? = null
 ) : BaseResponse(){
 

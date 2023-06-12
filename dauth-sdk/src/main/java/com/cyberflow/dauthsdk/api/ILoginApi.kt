@@ -47,7 +47,7 @@ interface ILoginApi {
      * @param phone 手机号
      * @param areaCode  区号
      */
-    fun sendPhoneVerifyCode(phone: String, areaCode: String)
+    suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean
 
     /**
      * @param email 邮箱
@@ -73,11 +73,7 @@ interface ILoginApi {
     /**
      * EOA钱包授权登录
      */
-    fun link2EOAWallet(context: Context) : Int?
-
-    /**
-     * @param
-     */
+    suspend fun link2EOAWallet(context: Context) : Int?
 
 
 }

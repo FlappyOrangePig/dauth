@@ -250,7 +250,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return LoginRes
      */
-    fun login(body: LoginParam): LoginRes? {
+    suspend fun login(body: LoginParam): LoginRes? {
 
         val localVariableConfig = setCommonParams("/account/v1/login")
 
@@ -462,14 +462,9 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun sendPhoneVerifyCode(body: SendPhoneVerifyCodeParam): Any {
-
+    suspend fun sendPhoneVerifyCode(body: SendPhoneVerifyCodeParam) = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/phoneverifycode/send")
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
-        return false
+        request<BaseResponse>(localVariableConfig, body)
     }
 
     /**

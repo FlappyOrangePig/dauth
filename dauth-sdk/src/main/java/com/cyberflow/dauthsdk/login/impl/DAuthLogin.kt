@@ -8,6 +8,8 @@ import com.cyberflow.dauthsdk.api.ILoginApi
 import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
+import com.cyberflow.dauthsdk.login.callback.WalletCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
@@ -21,15 +23,7 @@ import com.cyberflow.dauthsdk.login.constant.LoginConst.SIGN_METHOD
 import com.cyberflow.dauthsdk.login.constant.LoginConst.TWITTER
 import com.cyberflow.dauthsdk.login.constant.LoginConst.USER_TYPE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.VERIFY_CODE
-import com.cyberflow.dauthsdk.login.model.AuthorizeParam
-import com.cyberflow.dauthsdk.login.model.BindPhoneParam
-import com.cyberflow.dauthsdk.login.model.CreateAccountParam
-import com.cyberflow.dauthsdk.login.model.LoginParam
-import com.cyberflow.dauthsdk.login.model.LogoutParam
-import com.cyberflow.dauthsdk.login.model.SendEmailVerifyCodeParam
-import com.cyberflow.dauthsdk.login.model.SendPhoneVerifyCodeParam
-import com.cyberflow.dauthsdk.login.model.TokenAuthenticationParam
-import com.cyberflow.dauthsdk.login.model.TokenAuthenticationRes
+import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -50,8 +44,10 @@ import kotlinx.coroutines.withContext
 
 private const val GOOGLE_REQUEST_CODE = 9004
 private const val TWITTER_REQUEST_CODE = 140
-class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
-private const val FIX_TWITTER_JS_ISSUE  = false
+private const val FIX_TWITTER_JS_ISSUE = false
+private const val TYPE_OF_WALLET_AUTH = "20"
+private const val USER_TYPE = "user_type"
+private const val USER_DATA = "user_data"
 
 class DAuthLogin : ILoginApi {
 
@@ -220,57 +216,59 @@ class DAuthLogin : ILoginApi {
         type: Int
     ): Int? {
         var loginResCode: Int? = -1
-        val map = HashMap<String, String>()
-        map[USER_TYPE] = type.toString()
-        map[VERIFY_CODE] = verifyCode
-        if (type == ACCOUNT_TYPE_OF_EMAIL.toInt()) {
-            map[ACCOUNT] = account
-            val sign = SignUtils.sign(map)
-            val loginParam = LoginParam(type, sign, account = account, verify_code = verifyCode)
-            withContext(Dispatchers.IO) {
-                val loginRes = RequestApi().login(loginParam)
-                if (loginRes?.iRet == 0) {
-                    val data = loginRes.data
-                    val userInfo = JwtDecoder().decoded(data.did_token.orEmpty())
-
-                    val didToken = loginRes.data.did_token
-                    val codeVerifier = JwtChallengeCode().generateCodeVerifier()
-                    val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
-                    DAuthLogger.d("codeVerify == $codeVerifier")
-
-                    val loginCode = loginAuth(codeChallenge, didToken.orEmpty())
-                    val tokenAuthenticationRes = getDAuthToken(codeVerifier, loginCode, didToken)
-                    val accessToken = tokenAuthenticationRes?.data?.access_token.orEmpty()
-                    val authIdToken = tokenAuthenticationRes?.data?.id_token.orEmpty()
-                    val userId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
-                    val authId = userInfo.sub.orEmpty()     //查询用户信息时用
-                    LoginPrefs(context).setAccessToken(accessToken)
-                    LoginPrefs(context).setAuthID(userId)
-                    val queryWalletRes = withContext(Dispatchers.IO) {
-                        RequestApi().queryWallet(accessToken, userId)
-                    }
-
-                    if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                        // 该邮箱没有钱包
-                        loginResCode = 10001
-                    } else {
-                        // 该邮箱绑定过钱包
-                        loginResCode = 0
-                        DAuthLogger.e("该邮箱绑定过钱包直接进入主页")
-                    }
-
-                } else {
-                    //1000032  验证码已失效
-                    loginResCode = loginRes?.iRet
-                }
-            }
+        loginResCode = if (type == ACCOUNT_TYPE_OF_EMAIL.toInt()) {
+            val loginParam = LoginParam(type, account = account, verify_code = verifyCode)
+            mobileOrEmailCommonReq(loginParam)
         } else {    //TODO 手机号登录
-
+            val loginParam = LoginParam(type, phone = account, verify_code = verifyCode, phone_area_code = "86")
+            mobileOrEmailCommonReq(loginParam)
         }
 
         return loginResCode
     }
 
+    private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam): Int? {
+        var loginCode: Int? = null
+        withContext(Dispatchers.IO) {
+            val loginRes = RequestApi().login(loginParam)
+            if (loginRes?.iRet == 0) {
+                val data = loginRes.data
+                val userInfo = JwtDecoder().decoded(data.did_token.orEmpty())
+
+                val didToken = loginRes.data.did_token
+                val codeVerifier = JwtChallengeCode().generateCodeVerifier()
+                val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
+                DAuthLogger.d("codeVerify == $codeVerifier")
+
+                val loginAuthCode = loginAuth(codeChallenge, didToken.orEmpty())
+                val tokenAuthenticationRes =
+                    getDAuthToken(codeVerifier, loginAuthCode, didToken)
+                val accessToken = tokenAuthenticationRes?.data?.access_token.orEmpty()
+                val authIdToken = tokenAuthenticationRes?.data?.id_token.orEmpty()
+                val userId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
+                val authId = userInfo.sub.orEmpty()     //查询用户信息时用
+                LoginPrefs(context).setAccessToken(accessToken)
+                LoginPrefs(context).setAuthID(userId)
+                val queryWalletRes = withContext(Dispatchers.IO) {
+                    RequestApi().queryWallet(accessToken, userId)
+                }
+
+                if (queryWalletRes?.data?.address.isNullOrEmpty()) {
+                    // 该邮箱没有钱包
+                    loginCode = 200001
+                } else {
+                    // 该邮箱绑定过钱包
+                    loginCode = 0
+                    DAuthLogger.e("该邮箱绑定过钱包直接进入主页")
+                }
+
+            } else {
+                //1000032  验证码已失效
+                loginCode = loginRes?.iRet
+            }
+        }
+        return loginCode
+    }
 
 
     override fun logout(openUid: String) {
@@ -295,15 +293,18 @@ class DAuthLogin : ILoginApi {
      * @param phone 手机号
      * @param areaCode  区号
      */
-    override fun sendPhoneVerifyCode(phone: String, areaCode: String) {
-        val map = HashMap<String, String>()
-        map[PHONE] = phone
-        map[PHONE_AREA_CODE] = areaCode
-        val sign = SignUtils.sign(map)
-        val body = SendPhoneVerifyCodeParam(openudid = null, phone, areaCode, sign)
-        ThreadPoolUtils.execute {
-            RequestApi().sendPhoneVerifyCode(body)
+    override suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean {
+        var isSend = false
+
+        val body = SendPhoneVerifyCodeParam(openudid = null, phone, areaCode)
+        val response = RequestApi().sendPhoneVerifyCode(body)
+        if (response?.iRet == 0) {
+            isSend = true
+            DAuthLogger.d("发送手机验证码成功")
+        } else {
+            DAuthLogger.e("发送手机验证码失败：${response?.sMsg}")
         }
+        return isSend
     }
 
     /**
@@ -348,9 +349,18 @@ class DAuthLogin : ILoginApi {
 
     }
 
-    override fun link2EOAWallet(context: Context) : Int? {
-        WalletWebViewActivity.launch(context, false)
-        return 0
+    override suspend fun link2EOAWallet(context: Context): Int = suspendCancellableCoroutine { continuation ->
+        val callback = object : WalletCallback {
+            override fun onResult(walletInfo: String) {
+                val body = AuthorizeToken2Param(
+                    user_type = TYPE_OF_WALLET_AUTH,
+                    user_data = walletInfo
+                )
+                val code = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
+                continuation.resume(code, onCancellation = null)
+            }
+        }
+        WalletWebViewActivity.launch(context, false, callback)
     }
 
 }

@@ -17,7 +17,7 @@ import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.launch
 
 
-private const val GOOGLE_REQUEST_CODE = 9001
+private const val GOOGLE_REQUEST_CODE = 9004
 private const val TWITTER_REQUEST_CODE = 140
 
 class ThirdPartyResultActivity : AppCompatActivity() {
@@ -62,42 +62,44 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        var code = -1
         lifecycleScope.launch {
-            val code = GoogleLoginManager.instance.googleAuthLogin(data)
-            dispatchResult(code)
-            finish()
-        when(requestCode) {
-            GOOGLE_REQUEST_CODE -> {
-                lifecycleScope.launch {
-                    val code = GoogleLoginManager.instance.googleAuthLogin(data)
-                    callback?.onResult(code)
-                    finish()
+            when (requestCode) {
+                GOOGLE_REQUEST_CODE -> {
+                    lifecycleScope.launch {
+                        code = GoogleLoginManager.instance.googleAuthLogin(data)
+                        dispatchResult(code)
+                        finish()
+                    }
+                }
+
+                TWITTER_REQUEST_CODE -> {
+                    lifecycleScope.launch {
+                         code = TwitterLoginManager.instance.twitterAuthLogin(
+                                requestCode,
+                                resultCode,
+                                data
+                            )
+                        dispatchResult(code)
+                        finish()
+                    }
                 }
             }
 
-            TWITTER_REQUEST_CODE -> {
-                lifecycleScope.launch {
-                    val code =
-                        TwitterLoginManager.instance.twitterAuthLogin(requestCode, resultCode, data)
-                    callback?.onResult(code)
-                    finish()
-                }
-            }
-
+            DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
         }
-        DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
+    }
+    private fun dispatchResult(code: Int) {
+        DAuthLogger.e("third platform result code == $code")
+        callback?.let {
+            it.onResult(code)
+            callback = null
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         DAuthLogger.d("ThirdPartyResultActivity onDestroy")
         dispatchResult(Integer.MAX_VALUE)
-    }
-
-    private fun dispatchResult(code: Int) {
-        callback?.let {
-            it.onResult(code)
-            callback = null
-        }
     }
 }

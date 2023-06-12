@@ -72,7 +72,7 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
                 when (code) {
                     0 -> handleLoginSuccess()
-                    10001 -> handleCreateWallet()
+                    200001 -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
@@ -83,14 +83,22 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
                 when (code) {
                     0 -> handleLoginSuccess()
-                    10001 -> handleCreateWallet()
+                    200001 -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
         }
 
         binding.ivWallet.setOnClickListener {
-            val code = DAuthSDK.instance.link2EOAWallet(this)
+            lifecycleScope.launch {
+                val code = DAuthSDK.instance.link2EOAWallet(this@LoginActivity)
+                DAuthLogger.d("EOA钱包登录返回code:$code")
+                when(code) {
+                    0 -> MainActivity.launch(this@LoginActivity)
+                    200001 -> handleCreateWallet()
+                    else -> handleLoginFailure(code)
+                }
+            }
         }
 
         binding.tvSendCode.setOnClickListener {
@@ -104,6 +112,10 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, "验证码发送失败", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+
+        binding.tvSwitchMobile.setOnClickListener {
+            LoginByMobileActivity.launch(this)
         }
 
     }
