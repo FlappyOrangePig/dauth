@@ -33,6 +33,8 @@ class SdkConfig {
      * sepolia test
      * chainId：11155111 (0xaa36a7)
      * https://rpc.sepolia.org/
+     * 民间USDT地址
+     * 0x6175a8471C2122f778445e7E07A164250a19E661
      *
      * Gou 's local node
      * http://172.16.13.155:8545/
@@ -61,7 +63,9 @@ class SdkConfig {
 
     class ChainInfo(
         val info: Any,
-        val rpcUrl: String
+        val rpcUrl: String,
+        val usdtAddress: String,
+        val nftAddress: String,
     )
 }
 

@@ -5,9 +5,17 @@ plugins {
 
 android {
     namespace 'com.cyberflow.dauthsdk'
+    ndkVersion '22.1.7171670'
 
     defaultConfig {
         versionName versions.version_name
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.26.4"
+        }
     }
 }
 

@@ -17,7 +17,9 @@ class MyApplication : Application() {
             chains = arrayListOf(
                 SdkConfig.ChainInfo(
                     info = "sepolia test network",
-                    rpcUrl = "https://rpc.sepolia.org/"
+                    rpcUrl = "https://rpc.sepolia.org/",
+                    usdtAddress = "0x6175a8471C2122f778445e7E07A164250a19E661",
+                    nftAddress = ""
                 )
             )
         }
