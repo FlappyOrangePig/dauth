@@ -21,14 +21,14 @@ dependencyResolutionManagement {
         maven {
             url new File(rootProject.getProjectDir(), "repo")
         }
-        maven {
-            allowInsecureProtocol true
-            url MAVEN_RELEASE_URL
-        }
-        maven {
-            allowInsecureProtocol true
-            url MAVEN_SNAPSHOT_URL
-        }
+//        maven {
+//            allowInsecureProtocol true
+//            url MAVEN_RELEASE_URL
+//        }
+//        maven {
+//            allowInsecureProtocol true
+//            url MAVEN_SNAPSHOT_URL
+//        }
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }

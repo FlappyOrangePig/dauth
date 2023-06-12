@@ -7,7 +7,6 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.ILoginApi
 import com.cyberflow.dauthsdk.login.api.SdkConfig
 import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
-import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
@@ -28,10 +27,14 @@ import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
+import com.twitter.sdk.android.core.Callback
+import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.*
 
-
+private const val GOOGLE_REQUEST_CODE = 9004
+private const val TWITTER_REQUEST_CODE = 140
 class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
     val context get() = (DAuthSDK.instance).context
@@ -45,13 +48,13 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
     }
 
     override fun initSDK(context: Context, config: SdkConfig) {
-        val appContext = context.applicationContext as Application
-        this._context = appContext
-        this._config = config
-        //Twitter初始化
-        TwitterLoginManager.instance.initTwitterSDK(context, config)
-        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
-        DAuthLogger.i("init sdk")
+//        val appContext = context.applicationContext as Application
+//        this._context = appContext
+//        this._config = config
+//        //Twitter初始化
+//        TwitterLoginManager.instance.initTwitterSDK(context, config)
+//        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
+//        DAuthLogger.i("init sdk")
     }
 
 
@@ -130,23 +133,35 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
     override suspend fun loginWithType(
         type: String,
-        activity: Activity,
-        callback: ThirdPartyCallback?
-    ): Int {
-        var code = 0
+        activity: Activity
+    ): Int? = suspendCancellableCoroutine {
         when (type) {
             GOOGLE -> {
-                ThirdPartyResultActivity.launch(activity, callback)
+                ThirdPartyResultActivity.launch(
+                    GOOGLE_REQUEST_CODE,
+                    activity,
+                    object : ThirdPartyCallback {
+                        override fun onResult(code: Int?) {
+                            DAuthLogger.d("google 授权登录code：$code")
+                            it.resume(code, onCancellation = null)
+                        }
+                    })
             }
             TWITTER -> {
-                withContext(Dispatchers.IO) {
-                    TwitterLoginManager.instance.twitterLoginAuthAsync(activity)
-                    TwitterLoginManager.instance.twitterAuthLogin()
-                    DAuthLogger.e("code == $code")
-                }
+                ThirdPartyResultActivity.launch(
+                    TWITTER_REQUEST_CODE,
+                    activity,
+                    object : ThirdPartyCallback {
+                        override fun onResult(code: Int?) {
+                            DAuthLogger.d("twitter 授权登录code：$code")
+                            it.resume(code, onCancellation = null)
+                        }
+                    })
+            }
+            else -> {
+                it.resume(null, onCancellation = null) // Handle unsupported type or other cases
             }
         }
-        return code
     }
 
     /**
@@ -317,8 +332,9 @@ class DAuthLogin : ILoginApi, IWalletApi by WalletHolder.walletApi {
 
     }
 
-    override fun link2EOAWallet(context: Context) {
+    override fun link2EOAWallet(context: Context) : Int? {
         WalletWebViewActivity.launch(context, false)
+        return 0
     }
 
 }

@@ -18,11 +18,7 @@ interface ILoginApi {
      * @param activity
      */
 
-    suspend fun loginWithType(
-        type: String,
-        activity: Activity,
-        callback: ThirdPartyCallback? = null
-    ): Int?
+    suspend fun loginWithType(type: String, activity: Activity) : Int?
 
     /**
      * @param account 自有账号（字母和数字组合）
@@ -75,5 +71,14 @@ interface ILoginApi {
     fun bindEmail(email: String, verifyCode: String)
 
 
-    fun link2EOAWallet(context: Context)
+    /**
+     * EOA钱包授权登录
+     */
+    fun link2EOAWallet(context: Context) : Int?
+
+    /**
+     * @param
+     */
+
+
 }

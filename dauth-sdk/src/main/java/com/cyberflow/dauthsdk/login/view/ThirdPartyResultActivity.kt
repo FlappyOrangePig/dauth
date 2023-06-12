@@ -5,17 +5,28 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
+import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.twitter.sdk.android.core.Callback
+import com.twitter.sdk.android.core.Result
+import com.twitter.sdk.android.core.TwitterException
+import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.launch
 
+
+private const val GOOGLE_REQUEST_CODE = 9001
+private const val TWITTER_REQUEST_CODE = 140
 
 class ThirdPartyResultActivity : AppCompatActivity() {
     companion object {
         private var callback: ThirdPartyCallback? = null
-        fun launch(context: Context, callback: ThirdPartyCallback?) {
+        private const val EXTRA_REQUEST_CODE = "EXTRA_REQUEST_CODE"
+        fun launch(requestCode: Int, context: Context, callback: ThirdPartyCallback) {
             val intent = Intent(context, ThirdPartyResultActivity::class.java)
+            intent.putExtra(EXTRA_REQUEST_CODE, requestCode)
             this.callback = callback
             context.startActivity(intent)
         }
@@ -24,18 +35,53 @@ class ThirdPartyResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DAuthLogger.d("ThirdPartyResultActivity onCreate")
-        GoogleLoginManager.instance.googleSignInAuth(this)
+        when (getIntentExtra()) {
+            GOOGLE_REQUEST_CODE -> {
+                GoogleLoginManager.instance.googleSignInAuth(this)
+            }
+            TWITTER_REQUEST_CODE -> {
+                TwitterLoginManager.instance.twitterLoginAuth(
+                    this,
+                    object : Callback<TwitterSession>() {
+                        override fun success(result: Result<TwitterSession>?) {
+                            DAuthLogger.e("twitter授权成功")
+                        }
+
+                        override fun failure(exception: TwitterException?) {
+                            DAuthLogger.e("twitter授权失败：$exception")
+                        }
+
+                    })
+            }
+        }
+    }
+
+    private fun getIntentExtra() : Int {
+       return intent.getIntExtra(EXTRA_REQUEST_CODE,0)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        lifecycleScope.launch {
-            val code = GoogleLoginManager.instance.googleAuthLogin(data)
-            callback?.onResult(code)
-            finish()
+        when(requestCode) {
+            GOOGLE_REQUEST_CODE -> {
+                lifecycleScope.launch {
+                    val code = GoogleLoginManager.instance.googleAuthLogin(data)
+                    callback?.onResult(code)
+                    finish()
+                }
+            }
+
+            TWITTER_REQUEST_CODE -> {
+                lifecycleScope.launch {
+                    val code =
+                        TwitterLoginManager.instance.twitterAuthLogin(requestCode, resultCode, data)
+                    callback?.onResult(code)
+                    finish()
+                }
+            }
+
         }
         DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
-
     }
 
     override fun onDestroy() {

@@ -66,7 +66,6 @@
         app:layout_constraintTop_toBottomOf="@id/edt_verify_code"
         android:layout_marginTop="50dp"
         android:text="Reset Password"
-        android:background="@drawable/refuse_btn_shape"
         android:textAllCaps="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

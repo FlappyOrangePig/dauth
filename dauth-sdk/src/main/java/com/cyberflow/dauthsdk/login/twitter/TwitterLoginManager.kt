@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.login.twitter
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.api.SdkConfig
@@ -10,8 +11,6 @@ import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.*
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.api.IWalletApi
-import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.google.gson.Gson
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
@@ -23,9 +22,8 @@ import kotlin.coroutines.resume
 
 
 private const val TYPE_OF_TWITTER = "110"
-private const val USER_DATA = "user_data"
 
-class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
+class TwitterLoginManager {
 
     private var callback: Callback<TwitterSession>? = null
     private val context get() = (DAuthSDK.instance).context
@@ -76,8 +74,10 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
         }
     }
 
-    suspend fun twitterAuth(): String? = suspendCancellableCoroutine {
+    private suspend fun twitterAuth(requestCode: Int, resultCode: Int, data: Intent?): String? =
+        suspendCancellableCoroutine {
         val userData = DAuthUser()
+        twitterAuthClient?.onActivityResult(requestCode, resultCode, data)
         val twitterApiClient = TwitterCore.getInstance().apiClient
         val call = twitterApiClient.accountService.verifyCredentials(false, true, true)
         call.enqueue(object : Callback<User>() {
@@ -99,12 +99,11 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
         })
     }
 
-    suspend fun twitterAuthLogin(): Int {
+    suspend fun twitterAuthLogin(requestCode: Int, resultCode: Int, data: Intent?): Int {
         var loginResCode = -1
         var twitterUser :String? = null
-
         try {
-            twitterUser = twitterAuth()
+            twitterUser = twitterAuth(requestCode, resultCode, data)
         }catch (e: Exception) {
             DAuthLogger.e("suspendCancellableCoroutine exception:$e")
         }
@@ -141,24 +140,6 @@ class TwitterLoginManager(): IWalletApi by WalletHolder.walletApi {
             }
         }
         return loginResCode
-    }
-
-    suspend fun twitterLoginAuthAsync(activity: Activity): TwitterSession? = suspendCancellableCoroutine { continuation ->
-        val callback = object : Callback<TwitterSession>() {
-            override fun success(sessionResult: Result<TwitterSession>?) {
-                continuation.resume(sessionResult?.data)
-            }
-
-            override fun failure(exception: TwitterException?) {
-                DAuthLogger.e("Twitter auth failed.")
-            }
-        }
-
-        twitterLoginAuth(activity, callback)
-
-        continuation.invokeOnCancellation {
-
-        }
     }
 
 }

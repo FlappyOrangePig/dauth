@@ -2,6 +2,8 @@ package com.cyberflow.dauthsdk.login.utils
 
 import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
+import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
+import com.cyberflow.dauthsdk.login.callback.WalletCallback
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.model.WalletRes
@@ -13,8 +15,7 @@ import com.google.gson.JsonIOException
 private const val TYPE_OF_WALLET_AUTH = "20"
 private const val USER_TYPE = "user_type"
 private const val USER_DATA = "user_data"
-class JavaScriptMethods constructor( private val activity: AppCompatActivity){
-
+class JavaScriptMethods constructor( private val activity: AppCompatActivity, private val callback: WalletCallback){
     @JavascriptInterface
     suspend fun postAddress(data: String?) {
         try {
