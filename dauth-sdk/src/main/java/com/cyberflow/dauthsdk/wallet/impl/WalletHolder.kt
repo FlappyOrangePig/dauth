@@ -35,7 +35,7 @@ object WalletHolder {
 
 private class WalletWrapper(private val walletApi: IWalletApi) : IWalletApi by walletApi {
 
-    private val context get() = DAuthSDK.instance.context
+    private val context get() = DAuthSDK.impl.context
 
     override suspend fun createWallet(passcode: String?): CreateWalletResult {
         val createWalletResult = walletApi.createWallet(passcode)

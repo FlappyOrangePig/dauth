@@ -22,11 +22,12 @@ import kotlin.coroutines.resume
 
 
 private const val TYPE_OF_TWITTER = "110"
+private const val USER_DATA = "user_data"
 
-class TwitterLoginManager {
+class TwitterLoginManager private constructor() {
 
     private var callback: Callback<TwitterSession>? = null
-    private val context get() = (DAuthSDK.instance).context
+    private val context get() = DAuthSDK.impl.context
     @Volatile
 
     var authClient: TwitterAuthClient? = null

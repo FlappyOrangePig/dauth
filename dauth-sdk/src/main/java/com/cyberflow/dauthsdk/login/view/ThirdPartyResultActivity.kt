@@ -62,6 +62,10 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        lifecycleScope.launch {
+            val code = GoogleLoginManager.instance.googleAuthLogin(data)
+            dispatchResult(code)
+            finish()
         when(requestCode) {
             GOOGLE_REQUEST_CODE -> {
                 lifecycleScope.launch {
@@ -87,5 +91,13 @@ class ThirdPartyResultActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         DAuthLogger.d("ThirdPartyResultActivity onDestroy")
+        dispatchResult(Integer.MAX_VALUE)
+    }
+
+    private fun dispatchResult(code: Int) {
+        callback?.let {
+            it.onResult(code)
+            callback = null
+        }
     }
 }

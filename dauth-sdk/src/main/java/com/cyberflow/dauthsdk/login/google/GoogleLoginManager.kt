@@ -24,7 +24,7 @@ private const val REQUEST_CODE = 9001
 private const val AUTH_TYPE_OF_GOOGLE = "30"
 
 class GoogleLoginManager {
-    val context get() = (DAuthSDK.instance).context
+    val context get() = DAuthSDK.impl.context
     companion object {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             GoogleLoginManager()
