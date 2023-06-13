@@ -2,9 +2,9 @@ package com.cyberflow.dauthsdk.api
 
 import android.app.Activity
 import android.content.Context
-import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
-import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
+import com.cyberflow.dauthsdk.login.model.AccountRes
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
+import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
 
 interface ILoginApi {
 
@@ -41,7 +41,7 @@ interface ILoginApi {
     /**
      * 重置密码
      */
-    fun setRecoverPassword(callback: ResetPwdCallback)
+    suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): Boolean
 
     /**
      * @param phone 手机号
@@ -75,5 +75,15 @@ interface ILoginApi {
      */
     suspend fun link2EOAWallet(context: Context) : Int?
 
+    /**
+     * 设置密码
+     * @param passWord
+     */
+    suspend fun setPassword(passWord: String) : Int?
 
+    /**
+     * 根据邮箱查询用户
+     * @param email
+     */
+    suspend fun queryAccountByEmail(email: String) : AccountRes?
 }

@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
@@ -55,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnGas.setOnClickListener {
             lifecycleScope.launch {
-                val gas = DAuthSDK.instance.estimateGas(testAddress, BigInteger("100000"))
+                val gas = DAuthSDK.instance.estimateGas(testAddress, BigInteger("1000"))
                 var result: String? = null
 
                 when (gas) {
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnSendTransaction.setOnClickListener {
             lifecycleScope.launch {
                 val transactionResult =
-                    DAuthSDK.instance.sendTransaction(testAddress, BigInteger("1000000000"))
+                    DAuthSDK.instance.sendTransaction(testAddress, BigInteger("1000"))
                 var result: String? = null
 
                 when (transactionResult) {
@@ -82,10 +84,41 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this@MainActivity, "转账结果：$result", Toast.LENGTH_LONG).show()
             }
         }
+
+        binding.btnSetPwd.setOnClickListener {
+            showInputDialog(this)
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         DAuthLogger.d("MainActivity onDestroy")
+    }
+
+    private fun showInputDialog(context: Context) {
+        val inputEditText = EditText(context)
+
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("Enter Password")
+            .setView(inputEditText)
+            .setPositiveButton("OK") { _, _ ->
+                lifecycleScope.launch {
+                    val password = inputEditText.text.toString()
+                    val responseCode = DAuthSDK.instance.setPassword(password)
+                    if (responseCode == 0) {
+                        Toast.makeText(this@MainActivity, "密码设置成功", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "密码设置失败 errorCode == $responseCode",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
     }
 }

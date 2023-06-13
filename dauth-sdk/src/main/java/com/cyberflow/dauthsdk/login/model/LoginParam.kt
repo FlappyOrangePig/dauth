@@ -22,6 +22,7 @@ package com.cyberflow.dauthsdk.login.model
  * @param account 邮箱账号或自定义账号,账号登录时必填
  * @param password 密码,账号登录时必填
  * @param verify_code 验证码,手机号或邮箱登录时必填
+ * @param is_register 是否注册 0-不注册仅登录 1-不存在则注册并登录
  * @param sign 检验参数
  */
 data class LoginParam(
@@ -39,7 +40,9 @@ data class LoginParam(
     /* 密码,账号登录时必填 */
     val password: String? = null,
     /* 验证码,手机号或邮箱登录时必填 */
-    val verify_code: String? = null
+    val verify_code: String? = null,
+    // 是否注册 0-不注册仅登录 1-不存在则注册并登录
+    val is_register: Int? = null
 ) {
 
 }

@@ -3,6 +3,7 @@ package com.cyberflow.dauthsdk
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -114,8 +115,16 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        binding.tvSwitchMobile.setOnClickListener {
-            LoginByMobileActivity.launch(this)
+        binding.tvSwitchPwd.setOnClickListener {
+            binding.tvSendCode.visibility = View.GONE
+        }
+
+        binding.btnQueryAccount.setOnClickListener {
+            val email = binding.edtAccount.text.toString()
+            lifecycleScope.launch {
+                val accountRes = DAuthSDK.instance.queryAccountByEmail(email)
+                DAuthLogger.d("用户信息：${accountRes?.data?.address}")
+            }
         }
 
     }

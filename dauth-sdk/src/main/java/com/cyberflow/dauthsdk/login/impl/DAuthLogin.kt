@@ -5,9 +5,7 @@ import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.ILoginApi
-import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.api.SdkConfig
-import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.callback.WalletCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT
@@ -17,12 +15,9 @@ import com.cyberflow.dauthsdk.login.constant.LoginConst.CODE_CHALLENGE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.CODE_CHALLENGE_METHOD
 import com.cyberflow.dauthsdk.login.constant.LoginConst.GOOGLE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.OPEN_UID
-import com.cyberflow.dauthsdk.login.constant.LoginConst.PHONE
-import com.cyberflow.dauthsdk.login.constant.LoginConst.PHONE_AREA_CODE
 import com.cyberflow.dauthsdk.login.constant.LoginConst.SIGN_METHOD
 import com.cyberflow.dauthsdk.login.constant.LoginConst.TWITTER
 import com.cyberflow.dauthsdk.login.constant.LoginConst.USER_TYPE
-import com.cyberflow.dauthsdk.login.constant.LoginConst.VERIFY_CODE
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
@@ -34,21 +29,17 @@ import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.login.utils.ThreadPoolUtils
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
-import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
-import com.twitter.sdk.android.core.Callback
-import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 private const val GOOGLE_REQUEST_CODE = 9004
 private const val TWITTER_REQUEST_CODE = 140
 private const val FIX_TWITTER_JS_ISSUE = false
 private const val TYPE_OF_WALLET_AUTH = "20"
-private const val USER_TYPE = "user_type"
-private const val USER_DATA = "user_data"
-
+private const val IS_REGISTER = 1       //如果账号不存在则注册并登录
+private const val AREA_CODE = "86"      //手机区号
+private const val VERIFY_CODE_LENGTH = 4
 class DAuthLogin : ILoginApi {
 
     private val context get() = DAuthSDK.impl.context
@@ -125,16 +116,14 @@ class DAuthLogin : ILoginApi {
      * 自有账号授权登录获取token
      */
 
-    private fun getDAuthToken(
+    private suspend fun getDAuthToken(
         codeVerifier: String,
         code: String,
         didToken: String?
     ): TokenAuthenticationRes? {
         var tokenAuthenticationRes: TokenAuthenticationRes? = null
-        runBlocking {
-            val body = TokenAuthenticationParam(codeVerifier, code)
-            tokenAuthenticationRes = RequestApi().ownOauth2Token(body, didToken)
-        }
+        val body = TokenAuthenticationParam(codeVerifier, code)
+        tokenAuthenticationRes = RequestApi().ownOauth2Token(body, didToken)
         return tokenAuthenticationRes
     }
 
@@ -217,17 +206,37 @@ class DAuthLogin : ILoginApi {
     ): Int? {
         var loginResCode: Int? = -1
         loginResCode = if (type == ACCOUNT_TYPE_OF_EMAIL.toInt()) {
-            val loginParam = LoginParam(type, account = account, verify_code = verifyCode)
+            var loginParam : LoginParam? = null
+            loginParam = if(verifyCode.length == VERIFY_CODE_LENGTH) {
+                LoginParam(
+                    type,
+                    account = account,
+                    verify_code = verifyCode,
+                    is_register = IS_REGISTER
+                )
+            } else {
+                LoginParam(
+                    type,
+                    account = account,
+                    password = verifyCode,
+                    is_register = IS_REGISTER
+                )
+            }
             mobileOrEmailCommonReq(loginParam)
         } else {    //TODO 手机号登录
-            val loginParam = LoginParam(type, phone = account, verify_code = verifyCode, phone_area_code = "86")
+            val loginParam = LoginParam(
+                type,
+                phone = account,
+                verify_code = verifyCode,
+                phone_area_code = AREA_CODE
+            )
             mobileOrEmailCommonReq(loginParam)
         }
 
         return loginResCode
     }
 
-    private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam): Int? {
+    private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam?): Int? {
         var loginCode: Int? = null
         withContext(Dispatchers.IO) {
             val loginRes = RequestApi().login(loginParam)
@@ -236,6 +245,7 @@ class DAuthLogin : ILoginApi {
                 val userInfo = JwtDecoder().decoded(data.did_token.orEmpty())
 
                 val didToken = loginRes.data.did_token
+                LoginPrefs(context).setDidToken(didToken.orEmpty())
                 val codeVerifier = JwtChallengeCode().generateCodeVerifier()
                 val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
                 DAuthLogger.d("codeVerify == $codeVerifier")
@@ -285,8 +295,12 @@ class DAuthLogin : ILoginApi {
      * 重置密码
      */
 
-    override fun setRecoverPassword(callback: ResetPwdCallback) {
-
+    override suspend fun setRecoverPassword(params: ResetByPasswordParam): Boolean {
+        val response = RequestApi().resetByPassword(params)
+        if(response?.iRet == 0) {
+           return true
+        }
+        return false
     }
 
     /**
@@ -361,6 +375,18 @@ class DAuthLogin : ILoginApi {
             }
         }
         WalletWebViewActivity.launch(context, false, callback)
+    }
+
+    override suspend fun setPassword(passWord: String): Int? {
+        val didToken = LoginPrefs(context).getDidToken()
+        val setPasswordParam = SetPasswordParam()
+        setPasswordParam.password = passWord
+        return RequestApi().setPassword(setPasswordParam, didToken)?.iRet
+    }
+
+    override suspend fun queryAccountByEmail(email: String): AccountRes? {
+        val body = QueryByEMailParam(email)
+        return RequestApi().queryByEMail(body)
     }
 
 }

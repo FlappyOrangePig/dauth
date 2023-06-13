@@ -22,11 +22,12 @@ import okhttp3.Call
 import okhttp3.Response
 
 
-private const val BASE_URL = "https://api-dev.infras.online"
+private const val BASE_TEST_URL = "https://api-dev.infras.online"
+private const val BASE_FORMAL_URL = "https://api.infras.online/"
 private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
 private const val CLIENT_SECRET = "4657*@cde"
 
-class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
+class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
     private fun setCommonParams(url: String): RequestConfig {
         val localVariableQuery: MultiValueMap = mapOf()
@@ -250,7 +251,7 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return LoginRes
      */
-    suspend fun login(body: LoginParam): LoginRes? {
+    suspend fun login(body: LoginParam?): LoginRes? {
 
         val localVariableConfig = setCommonParams("/account/v1/login")
 
@@ -368,15 +369,12 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return AccountRes
      */
-    fun queryByEMail(body: QueryByEMailParam): AccountRes? {
-        val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
-
-        val response = request<AccountRes>(
-            localVariableConfig,
-            body
-        )
-        return response
-
+    suspend fun queryByEMail(body: QueryByEMailParam): AccountRes? {
+        return awaitRequest {
+            val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
+            val response = request<AccountRes>(localVariableConfig, body)
+            response
+        }
     }
 
     /**
@@ -439,10 +437,9 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun resetByPassword(body: ResetByPasswordParam): BaseResponse? {
+    suspend fun resetByPassword(body: ResetByPasswordParam) = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/password/reset")
-        val response = request<BaseResponse>(localVariableConfig, body)
-        return response
+        request<BaseResponse>(localVariableConfig, body)
     }
 
     /**
@@ -534,6 +531,34 @@ class RequestApi(basePath: String = BASE_URL) : ApiClient(basePath) {
             body
         )
         return response
+    }
+
+    /**
+     * 设置密码
+     * @param body password 密码 Authorization 登录后的didtoken
+     */
+    suspend fun setPassword(body: SetPasswordParam, didToken: String?) = awaitRequest {
+        val localVariableQuery: MultiValueMap = mapOf()
+        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
+        val authHeaders: Map<String, String> = mapOf("Authorization" to didToken.orEmpty())
+        val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders.putAll(contentHeaders)
+        localVariableHeaders.putAll(acceptsHeaders)
+        localVariableHeaders.putAll(secretHeaders)
+        localVariableHeaders.putAll(authHeaders)
+
+        val localVariableConfig = RequestConfig(
+            RequestMethod.POST,
+            "/account/v1/password/set",
+            query = localVariableQuery,
+            headers = localVariableHeaders
+        )
+        request<BaseResponse>(
+            localVariableConfig,
+            body
+        )
     }
 
 }

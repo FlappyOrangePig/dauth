@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 private const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
 private const val ACCESS_TOKEN = "access_token"
 private const val AUTH_ID = "auth_id"
+private const val DID_TOKEN = "did_token"
 
 internal class LoginPrefs(private val context: Context) {
 
@@ -27,6 +28,14 @@ internal class LoginPrefs(private val context: Context) {
 
     fun setAuthID(authId: String) {
         getPrefs().edit().putString(AUTH_ID, authId).apply()
+    }
+
+    fun setDidToken(didToken: String) {
+        getPrefs().edit().putString(DID_TOKEN, didToken).apply()
+    }
+
+    fun getDidToken(): String {
+        return getPrefs().getString(DID_TOKEN, null).orEmpty()
     }
 
 }
