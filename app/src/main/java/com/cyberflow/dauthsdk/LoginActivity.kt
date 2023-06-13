@@ -45,11 +45,8 @@ class LoginActivity : AppCompatActivity() {
                 )
                 when (code) {
                     0 -> MainActivity.launch(this@LoginActivity)
-                    10001 -> {
-                        val createWalletResult = DAuthSDK.instance.createWallet("Tt123456")
-//                        if (createWalletResult) {
-//                            MainActivity.launch(this@LoginActivity)
-//                        }
+                    200001 -> {
+                        handleCreateWallet()
                     }
                     else -> DAuthLogger.d("login return code == $code")
                 }
@@ -133,10 +130,13 @@ class LoginActivity : AppCompatActivity() {
         MainActivity.launch(this@LoginActivity)
     }
 
+    //创建aa钱包
     private fun handleCreateWallet() {
         lifecycleScope.launch {
             val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
             if (createWalletRes is CreateWalletResult.Success) {
+                val address = createWalletRes.address
+                DAuthLogger.d("创建的aa钱包地址：$address")
                 MainActivity.launch(this@LoginActivity)
             }
         }

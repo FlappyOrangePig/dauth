@@ -165,14 +165,15 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun bindPhone(body: BindPhoneParam): BaseResponse? {
-
-        val localVariableConfig = setCommonParams("/account/v1/phone/bind")
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
-        return response
+    suspend fun bindPhone(body: BindPhoneParam): BaseResponse? {
+        return awaitRequest {
+            val localVariableConfig = setCommonParams("/account/v1/phone/bind")
+            val response = request<BaseResponse>(
+                localVariableConfig,
+                body
+            )
+            response
+        }
     }
 
     /**
@@ -334,15 +335,17 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun logout(body: LogoutParam): BaseResponse? {
+    fun logout(body: LogoutParam): Boolean {
         val localVariableConfig = setCommonParams("/account/v1/logout")
 
         val response = request<BaseResponse>(
             localVariableConfig,
             body
         )
-        return response
-
+        if(response?.iRet == 0) {
+            return true
+        }
+        return false
     }
 
     /**

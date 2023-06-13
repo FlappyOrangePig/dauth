@@ -26,7 +26,6 @@ import com.cyberflow.dauthsdk.login.utils.JwtChallengeCode
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.login.utils.SignUtils
-import com.cyberflow.dauthsdk.login.utils.ThreadPoolUtils
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import kotlinx.coroutines.*
@@ -254,6 +253,7 @@ class DAuthLogin : ILoginApi {
                 val tokenAuthenticationRes =
                     getDAuthToken(codeVerifier, loginAuthCode, didToken)
                 val accessToken = tokenAuthenticationRes?.data?.access_token.orEmpty()
+                val expireTime = tokenAuthenticationRes?.data?.expire_in
                 val authIdToken = tokenAuthenticationRes?.data?.id_token.orEmpty()
                 val userId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
                 val authId = userInfo.sub.orEmpty()     //查询用户信息时用
@@ -286,8 +286,8 @@ class DAuthLogin : ILoginApi {
         map[OPEN_UID] = openUid
         val sign = SignUtils.sign(map)
         val requestBody = LogoutParam(openUid, sign)
-        ThreadPoolUtils.execute {
-            RequestApi().logout(requestBody)
+        if(RequestApi().logout(requestBody)) {
+            LoginPrefs(context).clearLoginStateInfo()
         }
     }
 
@@ -349,20 +349,21 @@ class DAuthLogin : ILoginApi {
      *  phone_area_code(区号)
      *  verify_code(验证码)
      */
-    override fun bindPhone(bindParams: BindPhoneParam) {
-        ThreadPoolUtils.execute {
-            RequestApi().bindPhone(bindParams)
-        }
+    override suspend fun bindPhone(bindParams: BindPhoneParam) {
+        RequestApi().bindPhone(bindParams)
     }
 
     /**
      * @param email 邮箱
      * @param verifyCode 邮箱验证码
      */
-    override fun bindEmail(email: String, verifyCode: String) {
+    override suspend fun bindEmail(email: String, verifyCode: String) {
 
     }
 
+    /**
+     * EOA钱包授权登录
+     */
     override suspend fun link2EOAWallet(context: Context): Int = suspendCancellableCoroutine { continuation ->
         val callback = object : WalletCallback {
             override fun onResult(walletInfo: String) {
@@ -377,6 +378,10 @@ class DAuthLogin : ILoginApi {
         WalletWebViewActivity.launch(context, false, callback)
     }
 
+    /**
+     * @param passWord 密码
+     * 设置密码
+     */
     override suspend fun setPassword(passWord: String): Int? {
         val didToken = LoginPrefs(context).getDidToken()
         val setPasswordParam = SetPasswordParam()
@@ -384,8 +389,15 @@ class DAuthLogin : ILoginApi {
         return RequestApi().setPassword(setPasswordParam, didToken)?.iRet
     }
 
+    /**
+     * @param email
+     * @return accountRes
+     * 根据邮箱查询用户信息
+     */
     override suspend fun queryAccountByEmail(email: String): AccountRes? {
-        val body = QueryByEMailParam(email)
+        val authId = LoginPrefs(context).getAuthId()
+        val accessToken = LoginPrefs(context).getAccessToken()
+        val body = QueryByEMailParam(email, authId, accessToken)
         return RequestApi().queryByEMail(body)
     }
 
