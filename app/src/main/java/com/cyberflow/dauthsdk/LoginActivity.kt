@@ -16,6 +16,7 @@ private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
 private const val FACEBOOK = "FACEBOOK"
 private const val ACCOUNT_TYPE_OF_EMAIL = 10
+private const val WALLET_IS_NOT_CREATE = 200001
 
 class LoginActivity : AppCompatActivity() {
     var loginBinding: ActivityLoginLayoutBinding?  = null
@@ -62,7 +63,7 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
                 when (code) {
                     0 -> handleLoginSuccess()
-                    200001 -> handleCreateWallet()
+                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
@@ -73,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
                 when (code) {
                     0 -> handleLoginSuccess()
-                    200001 -> handleCreateWallet()
+                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
@@ -85,7 +86,7 @@ class LoginActivity : AppCompatActivity() {
                 DAuthLogger.d("EOA钱包登录返回code:$code")
                 when(code) {
                     0 -> MainActivity.launch(this@LoginActivity)
-                    200001 -> handleCreateWallet()
+                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
