@@ -61,13 +61,13 @@ interface ILoginApi {
      *  phone_area_code(区号)
      *  verify_code(验证码)
      */
-    fun bindPhone(bindParams: BindPhoneParam)
+    suspend fun bindPhone(bindParams: BindPhoneParam)
 
     /**
      * @param email 邮箱
      * @param verifyCode 邮箱验证码
      */
-    fun bindEmail(email: String, verifyCode: String)
+    suspend fun bindEmail(email: String, verifyCode: String)
 
 
     /**

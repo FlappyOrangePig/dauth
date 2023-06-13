@@ -19,7 +19,9 @@ package com.cyberflow.dauthsdk.login.model
 data class QueryByEMailParam (
     /* 邮箱 */
     val email: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+    val access_token: String,
+    val auth_id: String,
+    val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 
 }

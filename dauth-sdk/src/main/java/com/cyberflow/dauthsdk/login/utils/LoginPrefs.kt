@@ -38,4 +38,10 @@ internal class LoginPrefs(private val context: Context) {
         return getPrefs().getString(DID_TOKEN, null).orEmpty()
     }
 
+    fun clearLoginStateInfo() {
+        val prefsEditor = getPrefs().edit()
+        prefsEditor.clear()
+        prefsEditor.apply()
+    }
+
 }

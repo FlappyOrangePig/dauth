@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="50dp"
         android:background="@drawable/allow_btn_shape"
-        android:text="预估Gas"
+        android:text="预估Gas费"
         android:textColor="@color/white" />
 
     <Button
