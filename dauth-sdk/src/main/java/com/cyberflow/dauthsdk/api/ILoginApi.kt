@@ -2,9 +2,9 @@ package com.cyberflow.dauthsdk.api
 
 import android.app.Activity
 import android.content.Context
-import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
-import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
+import com.cyberflow.dauthsdk.login.model.AccountRes
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
+import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
 
 interface ILoginApi {
 
@@ -17,11 +17,7 @@ interface ILoginApi {
      * @param activity
      */
 
-    suspend fun loginWithType(
-        type: String,
-        activity: Activity,
-        callback: ThirdPartyCallback? = null
-    ): Int?
+    suspend fun loginWithType(type: String, activity: Activity) : Int?
 
     /**
      * @param account 自有账号（字母和数字组合）
@@ -45,13 +41,13 @@ interface ILoginApi {
     /**
      * 重置密码
      */
-    fun setRecoverPassword(callback: ResetPwdCallback)
+    suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): Boolean
 
     /**
      * @param phone 手机号
      * @param areaCode  区号
      */
-    fun sendPhoneVerifyCode(phone: String, areaCode: String)
+    suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean
 
     /**
      * @param email 邮箱
@@ -74,5 +70,20 @@ interface ILoginApi {
     fun bindEmail(email: String, verifyCode: String)
 
 
-    fun link2EOAWallet(context: Context)
+    /**
+     * EOA钱包授权登录
+     */
+    suspend fun link2EOAWallet(context: Context) : Int?
+
+    /**
+     * 设置密码
+     * @param passWord
+     */
+    suspend fun setPassword(passWord: String) : Int?
+
+    /**
+     * 根据邮箱查询用户
+     * @param email
+     */
+    suspend fun queryAccountByEmail(email: String) : AccountRes?
 }

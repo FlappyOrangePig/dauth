@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditText
+        android:id="@+id/edt_account"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/account_btn_shape"
+        android:paddingStart="20dp"
+        android:singleLine="true"
+        android:textColor="@color/black"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:hint="Enter phone number"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="200dp"/>
+
+
+    <EditText
+        android:id="@+id/edt_verify_code"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginStart="50dp"
+        android:paddingStart="20dp"
+        android:singleLine="true"
+        android:textColor="@color/black"
+        android:layout_marginEnd="50dp"
+        android:background="@drawable/account_btn_shape"
+        app:layout_constraintTop_toBottomOf="@id/edt_account"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/tv_send_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Send Code"
+        app:layout_constraintEnd_toEndOf="@id/edt_verify_code"
+        app:layout_constraintTop_toTopOf="@id/edt_verify_code"
+        app:layout_constraintBottom_toBottomOf="@id/edt_verify_code"
+        android:layout_marginEnd="10dp"
+        android:textColor="@color/black"/>
+
+    <Button
+        android:id="@+id/btn_mobile_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:text="提交"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:background="@drawable/allow_btn_shape"
+        app:layout_constraintTop_toBottomOf="@id/edt_verify_code"
+        android:layout_marginBottom="50dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

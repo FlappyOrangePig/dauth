@@ -24,16 +24,30 @@
         android:layout_marginTop="100dp"/>
 
     <EditText
+        android:id="@+id/edt_account"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:singleLine="true"
+        android:hint="输入邮箱"
+        android:paddingStart="20dp"
+        android:background="@drawable/account_btn_shape"
+        app:layout_constraintTop_toBottomOf="@id/tv_new_pwd"
+        android:layout_marginTop="20dp"/>
+
+    <EditText
         android:id="@+id/edt_new_pwd"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
         android:singleLine="true"
+        android:hint="输入新密码"
         android:inputType="textPassword"
         android:paddingStart="20dp"
         android:background="@drawable/account_btn_shape"
-        app:layout_constraintTop_toBottomOf="@id/tv_new_pwd"
+        app:layout_constraintTop_toBottomOf="@id/edt_account"
         android:layout_marginTop="20dp"/>
 
     <EditText
@@ -63,10 +77,11 @@
         android:layout_height="50dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
+        android:background="@drawable/allow_btn_shape"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/edt_verify_code"
         android:layout_marginTop="50dp"
         android:text="Reset Password"
-        android:background="@drawable/refuse_btn_shape"
         android:textAllCaps="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

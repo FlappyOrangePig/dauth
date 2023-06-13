@@ -18,6 +18,17 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="150dp"/>
 
+    <com.twitter.sdk.android.core.identity.TwitterLoginButton
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/twitter_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
     <ImageView
         android:id="@+id/iv_google"
         android:layout_width="40dp"
@@ -40,10 +51,19 @@
         app:layout_constraintTop_toBottomOf="@id/tv_dauth"
         android:layout_marginBottom="5dp"/>
 
+    <com.twitter.sdk.android.core.identity.TwitterLoginButton
+        android:visibility="gone"
+        android:id="@+id/btn_twitter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
     <ImageView
         android:id="@+id/iv_facebook"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:visibility="gone"
         android:src="@drawable/ic_facebook"
         app:layout_constraintStart_toEndOf="@id/iv_twitter"
         android:layout_marginStart="10dp"
@@ -65,11 +85,25 @@
         app:layout_constraintTop_toBottomOf="@id/iv_google"
         android:layout_marginTop="20dp"/>
 
+    <TextView
+        android:id="@+id/tv_switch_pwd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:visibility="gone"
+        android:text="密码登录"
+        app:layout_constraintEnd_toEndOf="@id/edt_account"
+        app:layout_constraintTop_toTopOf="@id/edt_account"
+        app:layout_constraintBottom_toBottomOf="@id/edt_account"
+        android:layout_marginEnd="10dp"
+        android:textColor="@color/black"/>
+
     <ImageView
         android:id="@+id/iv_wallet"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:src="@drawable/ic_wallet_connect"
+        android:layout_marginStart="10dp"
         app:layout_constraintStart_toEndOf="@id/iv_facebook"
         android:layout_marginTop="20dp"
         app:layout_constraintTop_toBottomOf="@id/tv_dauth" />
@@ -100,6 +134,22 @@
         android:textColor="@color/black"/>
 
     <Button
+        android:id="@+id/btn_query_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:text="根据邮箱查询用户"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:background="@drawable/allow_btn_shape"
+        app:layout_constraintTop_toBottomOf="@id/edt_password"
+        android:layout_marginBottom="50dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
         android:id="@+id/btn_dauth_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -109,7 +159,7 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:background="@drawable/allow_btn_shape"
-        app:layout_constraintTop_toBottomOf="@id/edt_password"
+        app:layout_constraintTop_toBottomOf="@id/btn_query_account"
         android:layout_marginBottom="50dp"
         android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"

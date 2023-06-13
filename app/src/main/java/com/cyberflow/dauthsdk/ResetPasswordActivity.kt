@@ -9,9 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.login.callback.ResetPwdCallback
+import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
 import kotlinx.coroutines.launch
 
+private const val USER_TYPE_OF_EMAIL = 10
 class ResetPasswordActivity: AppCompatActivity() {
 
     private var _binding: ActivityResetPwdLayoutBinding ?= null
@@ -37,24 +38,38 @@ class ResetPasswordActivity: AppCompatActivity() {
         }
 
         binding.btnResetPwd.setOnClickListener {
-            DAuthSDK.instance.setRecoverPassword(object : ResetPwdCallback {
-                override fun success() {
-                    Toast.makeText(this@ResetPasswordActivity, "重置密码成功", Toast.LENGTH_SHORT).show()
-                    finish()
+            val account = binding.edtAccount.text.toString()
+            val password = binding.edtNewPwd.text.toString()
+            val verifyCode = binding.edtVerifyCode.text.toString()
+            if(password.length < 8) {
+                Toast.makeText(this, "请输入8-16位包括大小写英文和数字的密码",
+                    Toast.LENGTH_SHORT).show()
+            } else {
+                lifecycleScope.launch {
+                    val params = ResetByPasswordParam(
+                        USER_TYPE_OF_EMAIL, account = account,
+                        verify_code = verifyCode, password = password
+                    )
+                    val isSuccess = DAuthSDK.instance.setRecoverPassword(params)
+                    if (isSuccess) {
+                        Toast.makeText(
+                            this@ResetPasswordActivity, "重置密码成功",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        this@ResetPasswordActivity.finish()
+                    }
                 }
-
-                override fun failed() {
-                    Toast.makeText(this@ResetPasswordActivity, "重置密码失败", Toast.LENGTH_SHORT).show()
-                }
-
-            })
+            }
         }
 
         binding.tvSendCode.setOnClickListener {
-            Toast.makeText(this, "验证码发送成功", Toast.LENGTH_SHORT).show()
-            val account = binding.edtVerifyCode.text.toString()
+            val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
-                DAuthSDK.instance.sendEmailVerifyCode(account)
+                val isSend = DAuthSDK.instance.sendEmailVerifyCode(account)
+                if(isSend) {
+                    Toast.makeText(this@ResetPasswordActivity, "验证码发送成功",
+                        Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

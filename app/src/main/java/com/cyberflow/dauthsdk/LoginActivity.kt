@@ -1,7 +1,9 @@
 package com.cyberflow.dauthsdk
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -9,7 +11,12 @@ import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
 import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
+import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.twitter.sdk.android.core.Callback
+import com.twitter.sdk.android.core.Result
+import com.twitter.sdk.android.core.TwitterException
+import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.launch
 
 
@@ -39,8 +46,8 @@ class LoginActivity : AppCompatActivity() {
                 when (code) {
                     0 -> MainActivity.launch(this@LoginActivity)
                     10001 -> {
-                        val createWalletCode = DAuthSDK.instance.createWallet("Tt123456")
-//                        if (createWalletCode == 0) {
+                        val createWalletResult = DAuthSDK.instance.createWallet("Tt123456")
+//                        if (createWalletResult) {
 //                            MainActivity.launch(this@LoginActivity)
 //                        }
                     }
@@ -63,17 +70,12 @@ class LoginActivity : AppCompatActivity() {
     private fun initView() {
         binding.ivGoogle.setOnClickListener {
             lifecycleScope.launch {
-                DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity, object: ThirdPartyCallback {
-                    override fun onResult(code: Int?) {
-                        DAuthLogger.e("谷歌授权登录返回code:$code")
-                        when (code) {
-                            0 -> handleLoginSuccess()
-                            10001 -> handleCreateWallet()
-                            else -> handleLoginFailure(code)
-                        }
-                    }
-
-                })
+                val code = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
+                when (code) {
+                    0 -> handleLoginSuccess()
+                    200001 -> handleCreateWallet()
+                    else -> handleLoginFailure(code)
+                }
             }
         }
 
@@ -82,14 +84,22 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
                 when (code) {
                     0 -> handleLoginSuccess()
-                    10001 -> handleCreateWallet()
+                    200001 -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
         }
 
         binding.ivWallet.setOnClickListener {
-            DAuthSDK.instance.link2EOAWallet(this)
+            lifecycleScope.launch {
+                val code = DAuthSDK.instance.link2EOAWallet(this@LoginActivity)
+                DAuthLogger.d("EOA钱包登录返回code:$code")
+                when(code) {
+                    0 -> MainActivity.launch(this@LoginActivity)
+                    200001 -> handleCreateWallet()
+                    else -> handleLoginFailure(code)
+                }
+            }
         }
 
         binding.tvSendCode.setOnClickListener {
@@ -105,6 +115,17 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        binding.tvSwitchPwd.setOnClickListener {
+            binding.tvSendCode.visibility = View.GONE
+        }
+
+        binding.btnQueryAccount.setOnClickListener {
+            val email = binding.edtAccount.text.toString()
+            lifecycleScope.launch {
+                val accountRes = DAuthSDK.instance.queryAccountByEmail(email)
+                DAuthLogger.d("用户信息：${accountRes?.data?.address}")
+            }
+        }
 
     }
 

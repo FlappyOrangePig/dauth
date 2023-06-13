@@ -53,7 +53,7 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
-    //debugImplementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
+//    debugImplementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
     debugImplementation project(':dauth-sdk')
 
     // 协程Android支持库
@@ -77,8 +77,8 @@ dependencies {
     implementation 'com.twitter.sdk.android:twitter:3.1.1'
     implementation 'com.twitter.sdk.android:twitter-core:3.1.1@aar'
 
-    implementation 'com.google.code.gson:gson:2.9.0'
-    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+//    implementation 'com.google.code.gson:gson:2.9.0'
+//    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
 
 
 }

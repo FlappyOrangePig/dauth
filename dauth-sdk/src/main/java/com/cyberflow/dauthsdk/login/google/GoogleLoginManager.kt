@@ -5,11 +5,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
-import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.JwtDecoder
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -20,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 
-private const val REQUEST_CODE = 9001
+private const val REQUEST_CODE = 9004
 private const val AUTH_TYPE_OF_GOOGLE = "30"
 
 class GoogleLoginManager {
@@ -99,27 +97,7 @@ class GoogleLoginManager {
             id_token = accountIdToken
         )
         withContext(Dispatchers.IO) {
-            val authExchangedTokenRes = RequestApi().authorizeExchangedToken(authorizeParam)
-            if (authExchangedTokenRes?.iRet == 0) {
-                val didToken = authExchangedTokenRes.data?.did_token.orEmpty()
-                val googleUserInfo = JwtDecoder().decoded(didToken)
-                val accessToken = authExchangedTokenRes.data?.d_access_token.orEmpty()
-                val authId = googleUserInfo.sub.orEmpty()
-                val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
-                LoginPrefs(context).setAccessToken(accessToken)
-                LoginPrefs(context).setAuthID(authId)
-                //没有钱包  返回errorCode
-                if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                    loginResCode = 10001
-                } else {
-                    // 该邮箱绑定过钱包
-                    loginResCode = 0
-                    DAuthLogger.d("该google账号已绑定钱包，直接进入主页")
-                }
-            } else {
-                loginResCode = 100001
-                DAuthLogger.e("app第三方认证登录失败 errCode == $loginResCode")
-            }
+            loginResCode = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
         }
         return loginResCode
     }
