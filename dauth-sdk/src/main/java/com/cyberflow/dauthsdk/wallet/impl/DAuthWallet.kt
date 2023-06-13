@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-import android.content.Context
 import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
@@ -17,9 +17,9 @@ import java.math.BigInteger
  * Private Key: 0x689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd
  * 有钱的账号：0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f
  */
-class DAuthWallet internal constructor() : IWalletApi {
+/*class DAuthWallet internal constructor() : IWalletApi {
 
-    override fun initWallet(context: Context) {
+    override fun initWallet(chain: SdkConfig.ChainInfo) {
     }
 
     override suspend fun createWallet(passcode: String?): DAuthResult<CreateWalletData> {
@@ -64,4 +64,4 @@ class DAuthWallet internal constructor() : IWalletApi {
         return DAuthResult.NetworkError(NullPointerException())
     }
 
-}
+}*/

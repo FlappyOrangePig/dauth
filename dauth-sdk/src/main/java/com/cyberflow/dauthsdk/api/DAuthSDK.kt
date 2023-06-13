@@ -34,18 +34,21 @@ class DAuthSDK private constructor(
         this._config = config
         initializeCheck()
         loginApi.initSDK(context, config)
-        initWallet(appContext)
+        if (false) {
+            DAuthLogger.d(HelloJni().stringFromJNI().orEmpty(), "JNI")
+        }
         DAuthLogger.i("init sdk ok")
     }
 
     private fun initializeCheck() {
         context
-        if (config.chains.isEmpty()) {
+        if (config.chain == null) {
             throw IllegalArgumentException("must add a chain at least")
         }
     }
 
-    override fun initWallet(context: Context) {
-        DAuthLogger.d(HelloJni().stringFromJNI().orEmpty(), "JNI")
+    override fun initWallet(chain: SdkConfig.ChainInfo) {
+        walletApi.initWallet(chain)
+        config.chain = chain
     }
 }

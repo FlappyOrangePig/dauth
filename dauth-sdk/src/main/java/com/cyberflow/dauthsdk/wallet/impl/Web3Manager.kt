@@ -8,6 +8,7 @@ import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.const.WalletConst
+import com.cyberflow.dauthsdk.wallet.sol.IERC20Upgradeable
 import com.cyberflow.dauthsdk.wallet.sol.TestTemp
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import kotlinx.coroutines.Dispatchers
@@ -32,14 +33,15 @@ import java.util.concurrent.TimeUnit
 
 object Web3Manager {
 
-    private val web3j by lazy {
-        Web3j.build(
-            HttpService(
-                DAuthSDK.impl.config.chains.first().rpcUrl,
-                HttpClient.client
+    private val web3j: Web3j
+        get() {
+            return Web3j.build(
+                HttpService(
+                    DAuthSDK.impl.config.chain?.rpcUrl.orEmpty(),
+                    HttpClient.client
+                )
             )
-        )
-    }
+        }
 
     /**
      * S=请求 T=应答 D=data
@@ -173,5 +175,29 @@ object Web3Manager {
         return getTestTempContract()
             .owner()
             .await()
+    }
+
+    suspend fun getERC20Balance(accountAddress: String, index: Int): DAuthResult<WalletBalanceData> {
+        val chain = DAuthSDK.impl.config.chain
+        if (chain == null) {
+            DAuthLogger.e("chain is null")
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CHAIN_IS_NULL)
+        }
+        if (index < 0 || index >= chain.erc20Addresses.size) {
+            DAuthLogger.e("chain is null")
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_INDEX_OUT_OF_BOUND)
+        }
+        val contractAddress = chain.erc20Addresses[index]
+
+        val transactionManager = ClientTransactionManager(web3j, accountAddress)
+        val erc20 =
+            IERC20Upgradeable.load(contractAddress, web3j, transactionManager, DefaultGasProvider())
+        val call = erc20.balanceOf(accountAddress)
+        val balance = call.await()
+        DAuthLogger.d("getERC20Balance $balance")
+        if (balance == null) {
+            return DAuthResult.NetworkError()
+        }
+        return DAuthResult.Success(WalletBalanceData(balance))
     }
 }

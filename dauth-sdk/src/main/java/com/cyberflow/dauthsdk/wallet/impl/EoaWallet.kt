@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-import android.content.Context
 import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
@@ -20,7 +20,7 @@ private const val TAG = "EoaWallet"
  */
 class EoaWallet internal constructor(): IWalletApi {
 
-    override fun initWallet(context: Context) {
+    override fun initWallet(chain: SdkConfig.ChainInfo) {
 
     }
 
@@ -47,6 +47,21 @@ class EoaWallet internal constructor(): IWalletApi {
         val balance = Web3Manager.getBalance(address)
         DAuthLogger.i("queryWalletBalance $balance", TAG)
         return balance
+    }
+
+    override suspend fun queryERC20Balance(index: Int): DAuthResult<WalletBalanceData> {
+        val addressResult = queryWalletAddress()
+        if (addressResult !is DAuthResult.Success){
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
+        }
+        val address = addressResult.data.address
+        val balance = Web3Manager.getERC20Balance(address, index)
+        DAuthLogger.i("queryWalletBalance $balance", TAG)
+        return balance
+    }
+
+    override suspend fun queryERC721Balance(index: Int): DAuthResult<WalletBalanceData> {
+        return queryERC20Balance(index)
     }
 
     override suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData> {

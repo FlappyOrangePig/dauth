@@ -39,16 +39,10 @@ class MainActivity : AppCompatActivity() {
     private fun initView() {
         binding.btnQueryBalance.setOnClickListener {
             lifecycleScope.launch {
-                val balance = DAuthSDK.instance.queryWalletBalance()
-                var result: String? = null
-
-                when (balance) {
-                    is DAuthResult.Success -> {
-                        result = balance.data.balance.toString()
-                    }
-                    else -> {}
-                }
-                ToastUtil.show(this@MainActivity, "钱包余额：$result")
+                val sb = StringBuilder()
+                showEth(sb)
+                showUsdt(sb)
+                ToastUtil.show(this@MainActivity, sb.toString())
             }
         }
         binding.btnGas.setOnClickListener {
@@ -113,5 +107,32 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         dialog.show()
+    }
+
+    private suspend fun showEth(sb: StringBuilder){
+        val balance = DAuthSDK.instance.queryWalletBalance()
+        var result: String? = null
+
+        when (balance) {
+            is DAuthResult.Success -> {
+                result = balance.data.balance.toString()
+            }
+            else -> {}
+        }
+        sb.append("eth余额：$result")
+    }
+
+    private suspend fun showUsdt(sb: StringBuilder) {
+        val balance = DAuthSDK.instance.queryERC20Balance(0)
+        var result: String? = null
+
+        when (balance) {
+            is DAuthResult.Success -> {
+                result = balance.data.balance.toString()
+            }
+
+            else -> {}
+        }
+        sb.append("usdt余额：$result")
     }
 }

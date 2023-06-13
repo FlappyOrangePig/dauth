@@ -14,13 +14,12 @@ class MyApplication : Application() {
         val config = SdkConfig().apply {
             twitterConsumerKey = CONSUMER_KEY
             twitterConsumerSecret = CONSUMER_SECRET
-            chains = arrayListOf(
-                SdkConfig.ChainInfo(
-                    info = "sepolia test network",
-                    rpcUrl = "https://rpc.sepolia.org/",
-                    usdtAddress = "0x6175a8471C2122f778445e7E07A164250a19E661",
-                    nftAddress = ""
-                )
+            chain = SdkConfig.ChainInfo(
+                info = "sepolia test network",
+                rpcUrl = "https://rpc.sepolia.org/",
+                // USDT
+                erc20Addresses = listOf("0x6175a8471C2122f778445e7E07A164250a19E661"),
+                erc1155Addresses = listOf()
             )
         }
         DAuthSDK.instance.initSDK(this, config = config)

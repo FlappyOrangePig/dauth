@@ -3,19 +3,10 @@ package com.cyberflow.dauthsdk.api
 class SdkConfig {
 
     /**
-     * DAuth app id
-     */
-    var appId: String? = null
-
-    /**
-     * DAuth app key
-     */
-    var appKey: String? = null
-
-    /**
      * AppServerKey要提交到的AppServer-URL
+     * 同步方法，将被执行在IO线程
      */
-    var urlForAppServerKeyToSubmit: String? = null
+    var appSubmitServerKeyToAppServer: ((key: String) -> Boolean)? = null
 
     /**
      * web3-RPC-nodes
@@ -39,7 +30,7 @@ class SdkConfig {
      * Gou 's local node
      * http://172.16.13.155:8545/
      */
-    var chains: List<ChainInfo> = emptyList()
+    var chain: ChainInfo? = null
 
     /**
      * Twitter key
@@ -61,11 +52,17 @@ class SdkConfig {
      */
     var useTestNetwork: Boolean = false
 
+    /**
+     * @param info 扩展字段sdk使用者可以绑定自定义数据
+     * @param rpcUrl rpc节点
+     * @param erc20Addresses 使用[IWalletApi.queryERC20Balance]查询
+     * @param erc1155Addresses 使用[IWalletApi]
+     */
     class ChainInfo(
         val info: Any,
         val rpcUrl: String,
-        val usdtAddress: String,
-        val nftAddress: String,
+        val erc20Addresses: List<String>,
+        val erc1155Addresses: List<String>,
     )
 }
 

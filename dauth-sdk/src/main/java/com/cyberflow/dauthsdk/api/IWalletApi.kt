@@ -1,8 +1,6 @@
 package com.cyberflow.dauthsdk.api
 
-import android.content.Context
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
-import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
@@ -12,7 +10,10 @@ import java.math.BigInteger
 
 interface IWalletApi {
 
-    fun initWallet(context: Context)
+    /**
+     * 切换链
+     */
+    fun initWallet(chain: SdkConfig.ChainInfo)
 
     /**
      * 创建钱包
@@ -33,6 +34,18 @@ interface IWalletApi {
      * @return 查询结果
      */
     suspend fun queryWalletBalance(): DAuthResult<WalletBalanceData>
+
+    /**
+     * 查询同质化代币余额
+     * @return 查询结果
+     */
+    suspend fun queryERC20Balance(index: Int): DAuthResult<WalletBalanceData>
+
+    /**
+     * 查询NFT余额
+     * @return 查询结果
+     */
+    suspend fun queryERC721Balance(index: Int): DAuthResult<WalletBalanceData>
 
     /**
      * 预估交易费用

@@ -9,9 +9,9 @@ sealed class DAuthResult<T> {
         override fun getError() = null
     }
 
-    class Web3Error<T>(val code: Int, val error: String) : DAuthResult<T>() {
+    class Web3Error<T>(val code: Int, val msg: String) : DAuthResult<T>() {
         override fun getError(): String? {
-            return error
+            return msg
         }
     }
 
@@ -32,5 +32,7 @@ sealed class DAuthResult<T> {
         const val SDK_ERROR_CANNOT_GET_NONCE = 1
         const val SDK_ERROR_CANNOT_GET_ADDRESS = 2
         const val SDK_ERROR_BIND_WALLET = 3
+        const val SDK_ERROR_CHAIN_IS_NULL = 4
+        const val SDK_ERROR_INDEX_OUT_OF_BOUND = 5
     }
 }

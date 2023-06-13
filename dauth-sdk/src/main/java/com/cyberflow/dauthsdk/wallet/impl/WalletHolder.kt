@@ -11,6 +11,7 @@ import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.wallet.util.KeystoreUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.lang.IllegalStateException
 
 private const val TAG = "WalletWrapper"
 
@@ -29,7 +30,8 @@ object WalletHolder {
     private fun createWallet(): IWalletApi = if (DEBUG) {
         EoaWallet()
     } else {
-        DAuthWallet()
+        throw IllegalStateException()
+        //DAuthWallet()
     }
 }
 
