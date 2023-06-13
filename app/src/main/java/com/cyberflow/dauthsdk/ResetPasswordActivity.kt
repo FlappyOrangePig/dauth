@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
@@ -42,8 +41,7 @@ class ResetPasswordActivity: AppCompatActivity() {
             val password = binding.edtNewPwd.text.toString()
             val verifyCode = binding.edtVerifyCode.text.toString()
             if(password.length < 8) {
-                Toast.makeText(this, "请输入8-16位包括大小写英文和数字的密码",
-                    Toast.LENGTH_SHORT).show()
+                ToastUtil.show(this, "请输入8-16位包括大小写英文和数字的密码")
             } else {
                 lifecycleScope.launch {
                     val params = ResetByPasswordParam(
@@ -52,10 +50,8 @@ class ResetPasswordActivity: AppCompatActivity() {
                     )
                     val isSuccess = DAuthSDK.instance.setRecoverPassword(params)
                     if (isSuccess) {
-                        Toast.makeText(
-                            this@ResetPasswordActivity, "重置密码成功",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        ToastUtil.show(
+                            this@ResetPasswordActivity, "重置密码成功")
                         this@ResetPasswordActivity.finish()
                     }
                 }
@@ -67,8 +63,7 @@ class ResetPasswordActivity: AppCompatActivity() {
             lifecycleScope.launch {
                 val isSend = DAuthSDK.instance.sendEmailVerifyCode(account)
                 if(isSend) {
-                    Toast.makeText(this@ResetPasswordActivity, "验证码发送成功",
-                        Toast.LENGTH_SHORT).show()
+                    ToastUtil.show(this@ResetPasswordActivity, "验证码发送成功")
                 }
             }
         }

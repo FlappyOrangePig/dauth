@@ -1,9 +1,11 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-import android.os.Build
-import com.cyberflow.dauthsdk.api.entity.EstimateGasResult
-import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
+import com.cyberflow.dauthsdk.api.entity.EstimateGasData
+import com.cyberflow.dauthsdk.api.entity.SendTransactionData
+import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.const.WalletConst
 import com.cyberflow.dauthsdk.wallet.sol.TestTemp
@@ -28,13 +30,6 @@ import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
-/**
- * 获取应答中的字段，拋异常时返回空
- */
-private inline fun <T, R> T?.field(crossinline block: (T) -> R): R? = this?.let {
-    kotlin.runCatching { block.invoke(it) }.getOrNull()
-}
-
 object Web3Manager {
 
     private val web3j by lazy {
@@ -46,16 +41,24 @@ object Web3Manager {
         )
     }
 
-    private suspend fun <S, T : Response<*>> Request<S, T>.await(): T? {
-        val result = withContext(Dispatchers.IO) {
+    /**
+     * S=请求 T=应答 D=data
+     */
+    private suspend inline fun <S, T : Response<*>, D> Request<S, T>.await(crossinline block: (T) -> D): DAuthResult<D> {
+        return withContext(Dispatchers.IO) {
             try {
-                send()
-            } catch (e: Exception) {
-                DAuthLogger.e(android.util.Log.getStackTraceString(e))
-                null
+                val r = send()
+                if (r.hasError()) {
+                    DAuthResult.Web3Error(r.error.code, r.error.message)
+                } else {
+                    val d = block.invoke(r)
+                    DAuthResult.Success(d)
+                }
+            } catch (t: Throwable) {
+                DAuthLogger.e(android.util.Log.getStackTraceString(t))
+                DAuthResult.NetworkError(t)
             }
         }
-        return result
     }
 
     private suspend fun <T> RemoteFunctionCall<T>.await(): T? {
@@ -80,15 +83,17 @@ object Web3Manager {
         })
     }.build()
 
-    suspend fun getBalance(address: String): BigInteger? {
-        return web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).await().field { it.balance }
+    suspend fun getBalance(address: String): DAuthResult<WalletBalanceData> {
+        return web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).await {
+            WalletBalanceData(it.balance)
+        }
     }
 
-    suspend fun getGasPrice(): BigInteger? {
-        return web3j.ethGasPrice().await().field { it.gasPrice }
-    }
+    /*suspend fun getGasPrice(): BigInteger? {
+        return web3j.ethGasPrice().await() { it.gasPrice }
+    }*/
 
-    suspend fun estimateGas(from: String, to: String, value: BigInteger): EstimateGasResult {
+    suspend fun estimateGas(from: String, to: String, value: BigInteger): DAuthResult<EstimateGasData> {
         return web3j.ethEstimateGas(
             Transaction.createEtherTransaction(
                 from,
@@ -98,11 +103,12 @@ object Web3Manager {
                 to,
                 value
             )
-        ).await().field { it.amountUsed }?.let { EstimateGasResult.Success(it) }
-            ?: EstimateGasResult.Failure
+        ).await {
+            EstimateGasData(it.amountUsed)
+        }
     }
 
-    private suspend fun getTransactionReceipt(txHash: String): TransactionReceipt? {
+    /*private suspend fun getTransactionReceipt(txHash: String): TransactionReceipt? {
         val transactionReceipt = web3j.ethGetTransactionReceipt(txHash).await().field { it.transactionReceipt } ?: return null
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (transactionReceipt.isPresent) {
@@ -113,47 +119,34 @@ object Web3Manager {
         } else {
             null
         }
-    }
+    }*/
 
-    suspend fun sendTransaction(to: String, amount: BigInteger): SendTransactionResult {
+    suspend fun sendTransaction(to: String, amount: BigInteger): DAuthResult<SendTransactionData> {
         val credentials = CredentialsUtil.loadCredentials(false)
         val address = credentials.address
-        val transactionCount =
+        val transactionCountResult =
             web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST)
-                .await()?.let {
-                    kotlin.runCatching { it.transactionCount }.getOrNull()
+                .await {
+                    it.transactionCount
                 }
-        DAuthLogger.i("transactionCount=$transactionCount")
-        if (transactionCount == null) {
-            return SendTransactionResult.CannotFetchTransactionCount
+        if (transactionCountResult !is DAuthResult.Success) {
+            return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_NONCE)
         }
+        DAuthLogger.i("nonce=${transactionCountResult.data}")
 
         val gasProvider = DefaultGasProvider()
         val gasPrice = gasProvider.gasPrice
         val gasLimit = gasProvider.gasLimit
-        val nonce = transactionCount
+        val nonce = transactionCountResult.data
         val chainId = 11155111L
         val transaction =
             RawTransaction.createEtherTransaction(nonce, gasPrice, gasLimit, to, amount)
         val signedTransaction = TransactionEncoder.signMessage(transaction, chainId, credentials)
         val hexValue = Numeric.toHexString(signedTransaction)
-        val hash = web3j.ethSendRawTransaction(hexValue).await()?.field { it.transactionHash }
-        DAuthLogger.i("hash=$hash")
-        if (hash.isNullOrEmpty()) {
-            DAuthLogger.i("hash is null")
-            return SendTransactionResult.CannotFetchHash
-        }
 
-        val receipt = getTransactionReceipt(hash)
-        DAuthLogger.i("receipt=$receipt")
-        if (receipt == null) {
-            return SendTransactionResult.CannotFetchReceipt(hash)
+        return web3j.ethSendRawTransaction(hexValue).await {
+            SendTransactionData(it.transactionHash)
         }
-
-        return SendTransactionResult.Success(
-            receipt.transactionHash.orEmpty(),
-            receipt.gasUsedRaw.orEmpty()
-        )
     }
 
     private fun getTestTempContract(): TestTemp {

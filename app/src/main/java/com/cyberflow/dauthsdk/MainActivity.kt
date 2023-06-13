@@ -6,18 +6,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.api.entity.EstimateGasResult
-import com.cyberflow.dauthsdk.api.entity.GetBalanceResult
-import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
-
 import java.math.BigInteger
 
 
@@ -47,26 +43,25 @@ class MainActivity : AppCompatActivity() {
                 var result: String? = null
 
                 when (balance) {
-                    is GetBalanceResult.Success -> {
-                        result = balance.balance.toString()
+                    is DAuthResult.Success -> {
+                        result = balance.data.balance.toString()
                     }
                     else -> {}
                 }
-                Toast.makeText(this@MainActivity, "钱包余额：$result", Toast.LENGTH_LONG).show()
+                ToastUtil.show(this@MainActivity, "钱包余额：$result")
             }
         }
         binding.btnGas.setOnClickListener {
             lifecycleScope.launch {
-                val gas = DAuthSDK.instance.estimateGas(testAddress, BigInteger("1000"))
-                var result: String? = null
-
-                when (gas) {
-                    is EstimateGasResult.Success -> {
-                        result = gas.amountUsed.toString()
+                val result = when (val response = DAuthSDK.instance.estimateGas(testAddress, BigInteger("1000"))) {
+                    is DAuthResult.Success -> {
+                        "预估gas费：${response.data.amountUsed}"
                     }
-                    else -> {}
+                    else -> {
+                        response.getError()
+                    }
                 }
-                Toast.makeText(this@MainActivity, "gas费预估：$result", Toast.LENGTH_LONG).show()
+                ToastUtil.show(this@MainActivity, result.orEmpty())
             }
         }
         binding.btnSendTransaction.setOnClickListener {
@@ -76,12 +71,12 @@ class MainActivity : AppCompatActivity() {
                 var result: String? = null
 
                 when (transactionResult) {
-                    is SendTransactionResult.Success -> {
-                        result = transactionResult.transactionHash
+                    is DAuthResult.Success -> {
+                        result = "hash:${transactionResult.data.txHash}"
                     }
                     else -> {}
                 }
-                Toast.makeText(this@MainActivity, "转账结果：$result", Toast.LENGTH_LONG).show()
+                ToastUtil.show(this@MainActivity, "转账结果：$result")
             }
         }
 
@@ -106,13 +101,11 @@ class MainActivity : AppCompatActivity() {
                     val password = inputEditText.text.toString()
                     val responseCode = DAuthSDK.instance.setPassword(password)
                     if (responseCode == 0) {
-                        Toast.makeText(this@MainActivity, "密码设置成功", Toast.LENGTH_LONG).show()
+                        ToastUtil.show(this@MainActivity, "密码设置成功")
                     } else {
-                        Toast.makeText(
+                        ToastUtil.show(
                             this@MainActivity,
-                            "密码设置失败 errorCode == $responseCode",
-                            Toast.LENGTH_LONG
-                        ).show()
+                            "密码设置失败 errorCode == $responseCode")
                     }
                 }
             }

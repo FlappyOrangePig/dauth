@@ -1,22 +1,14 @@
 package com.cyberflow.dauthsdk
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
-import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
 import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
-import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.twitter.sdk.android.core.Callback
-import com.twitter.sdk.android.core.Result
-import com.twitter.sdk.android.core.TwitterException
-import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.launch
 
 
@@ -107,10 +99,10 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val isSend = DAuthSDK.instance.sendEmailVerifyCode(account)
                 if (isSend) {
-                    Toast.makeText(applicationContext, "验证码发送成功", Toast.LENGTH_SHORT).show()
+                    ToastUtil.show(applicationContext, "验证码发送成功")
                     DAuthLogger.d("验证码发送成功")
                 } else {
-                    Toast.makeText(applicationContext, "验证码发送失败", Toast.LENGTH_SHORT).show()
+                    ToastUtil.show(applicationContext, "验证码发送失败")
                 }
             }
         }
@@ -136,7 +128,7 @@ class LoginActivity : AppCompatActivity() {
     private fun handleCreateWallet() {
         lifecycleScope.launch {
             val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
-            if (createWalletRes is CreateWalletResult.Success) {
+            if (createWalletRes is DAuthResult.Success) {
                 MainActivity.launch(this@LoginActivity)
             }
         }
@@ -144,7 +136,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun handleLoginFailure(errorCode: Int?) {
         val errorMessage = "登录失败 errorCode==$errorCode"
-        Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
+        ToastUtil.show(this@LoginActivity, errorMessage)
         DAuthLogger.e("login errorCode == $errorCode")
     }
 

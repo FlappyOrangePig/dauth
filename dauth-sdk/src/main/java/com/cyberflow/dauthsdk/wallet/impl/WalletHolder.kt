@@ -1,13 +1,13 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
-import com.cyberflow.dauthsdk.api.entity.GetAddressResult
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.entity.CreateWalletData
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.wallet.util.KeystoreUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -37,16 +37,16 @@ private class WalletWrapper(private val walletApi: IWalletApi) : IWalletApi by w
 
     private val context get() = DAuthSDK.impl.context
 
-    override suspend fun createWallet(passcode: String?): CreateWalletResult {
+    override suspend fun createWallet(passcode: String?): DAuthResult<CreateWalletData> {
         val createWalletResult = walletApi.createWallet(passcode)
         DAuthLogger.d("createWalletResult=$createWalletResult", TAG)
 
         val address = when (val addressResult = walletApi.queryWalletAddress()) {
-            is GetAddressResult.Success -> {
-                addressResult.address
+            is DAuthResult.Success -> {
+                addressResult.data.address
             }
             else -> {
-                return CreateWalletResult.CreateWalletFailure
+                return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
             }
         }
         DAuthLogger.d("address=$address", TAG)
@@ -63,9 +63,9 @@ private class WalletWrapper(private val walletApi: IWalletApi) : IWalletApi by w
             val code = response?.iRet
             if (code != 0) {
                 DAuthLogger.e("绑定钱包失败：${response?.sMsg}", TAG)
-                CreateWalletResult.BindWalletFailed
+                DAuthResult.SdkError(DAuthResult.SDK_ERROR_BIND_WALLET)
             } else {
-                CreateWalletResult.Success(address)
+                DAuthResult.Success(CreateWalletData(address))
             }
         }
     }

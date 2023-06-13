@@ -1,13 +1,14 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import android.content.Context
-import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
-import com.cyberflow.dauthsdk.api.entity.EstimateGasResult
-import com.cyberflow.dauthsdk.api.entity.GetAddressResult
-import com.cyberflow.dauthsdk.api.entity.GetBalanceResult
-import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
-import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.entity.CreateWalletData
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.EstimateGasData
+import com.cyberflow.dauthsdk.api.entity.SendTransactionData
+import com.cyberflow.dauthsdk.api.entity.WalletAddressData
+import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import java.math.BigInteger
 
@@ -23,41 +24,43 @@ class EoaWallet internal constructor(): IWalletApi {
 
     }
 
-    override suspend fun createWallet(passcode: String?): CreateWalletResult {
+    override suspend fun createWallet(passcode: String?): DAuthResult<CreateWalletData> {
         val credential = CredentialsUtil.loadCredentials(true)
-        DAuthLogger.d("createWallet ${credential.address}", TAG)
-        return CreateWalletResult.Success(credential.address)
+        val address = credential.address
+        DAuthLogger.d("createWallet $address", TAG)
+        return DAuthResult.Success(CreateWalletData(address))
     }
 
-    override suspend fun queryWalletAddress(): GetAddressResult {
+    override suspend fun queryWalletAddress(): DAuthResult<WalletAddressData> {
         val address = CredentialsUtil.loadCredentials(false).address
         DAuthLogger.i("queryWalletAddress $address", TAG)
-        return address?.let { GetAddressResult.Success(address) } ?: GetAddressResult.Failure
+        return address?.let { DAuthResult.Success(WalletAddressData(address)) }
+            ?: DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
     }
 
-    override suspend fun queryWalletBalance(): GetBalanceResult {
+    override suspend fun queryWalletBalance(): DAuthResult<WalletBalanceData> {
         val addressResult = queryWalletAddress()
-        if (addressResult !is GetAddressResult.Success){
-            return GetBalanceResult.CannotGetAddress
+        if (addressResult !is DAuthResult.Success){
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
         }
-        val address = addressResult.address
-        val balance = Web3Manager.getBalance(address).takeIf { address.isNotEmpty() }
+        val address = addressResult.data.address
+        val balance = Web3Manager.getBalance(address)
         DAuthLogger.i("queryWalletBalance $balance", TAG)
-        return balance?.let { GetBalanceResult.Success(it) } ?: GetBalanceResult.Failure
+        return balance
     }
 
-    override suspend fun estimateGas(toUserId: String, amount: BigInteger): EstimateGasResult {
+    override suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData> {
         val addressResult = queryWalletAddress()
-        if (addressResult !is GetAddressResult.Success){
-            return EstimateGasResult.CannotGetAddress
+        if (addressResult !is DAuthResult.Success){
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
         }
-        val address = addressResult.address
+        val address = addressResult.data.address
         return Web3Manager.estimateGas(address, toUserId, amount).also {
             DAuthLogger.d("estimateGas from=$address to=$toUserId amount=$amount result=$it", TAG)
         }
     }
 
-    override suspend fun sendTransaction(toAddress: String, amount: BigInteger):SendTransactionResult {
+    override suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData> {
         DAuthLogger.d("sendTransaction $toAddress $amount", TAG)
         return Web3Manager.sendTransaction(toAddress, amount).also {
             DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it", TAG)

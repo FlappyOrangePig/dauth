@@ -1,11 +1,13 @@
 package com.cyberflow.dauthsdk.api
 
 import android.content.Context
+import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.CreateWalletResult
-import com.cyberflow.dauthsdk.api.entity.EstimateGasResult
-import com.cyberflow.dauthsdk.api.entity.GetAddressResult
-import com.cyberflow.dauthsdk.api.entity.GetBalanceResult
-import com.cyberflow.dauthsdk.api.entity.SendTransactionResult
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.EstimateGasData
+import com.cyberflow.dauthsdk.api.entity.SendTransactionData
+import com.cyberflow.dauthsdk.api.entity.WalletAddressData
+import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import java.math.BigInteger
 
 interface IWalletApi {
@@ -18,19 +20,19 @@ interface IWalletApi {
      * 创建成功则表示注册成功并成功登录，此时也可以绑定其他信息（可选）。
      * @return 创建结果
      */
-    suspend fun createWallet(passcode:String?): CreateWalletResult
+    suspend fun createWallet(passcode:String?): DAuthResult<CreateWalletData>
 
     /**
      * 查询钱包地址
      * @return 查询结果
      */
-    suspend fun queryWalletAddress(): GetAddressResult
+    suspend fun queryWalletAddress(): DAuthResult<WalletAddressData>
 
     /**
      * 查询钱包余额
      * @return 查询结果
      */
-    suspend fun queryWalletBalance(): GetBalanceResult
+    suspend fun queryWalletBalance(): DAuthResult<WalletBalanceData>
 
     /**
      * 预估交易费用
@@ -38,7 +40,7 @@ interface IWalletApi {
      * @param amount 转账金额，单位wei
      * @return 计算结果
      */
-    suspend fun estimateGas(toUserId: String, amount: BigInteger): EstimateGasResult
+    suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData>
 
     /**
      * 发送交易
@@ -46,5 +48,5 @@ interface IWalletApi {
      * @param amount 交易金额
      * @return 交易结果
      */
-    suspend fun sendTransaction(toAddress: String, amount: BigInteger): SendTransactionResult
+    suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData>
 }

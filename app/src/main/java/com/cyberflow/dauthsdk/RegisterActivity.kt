@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
@@ -47,15 +46,13 @@ class RegisterActivity: AppCompatActivity() {
                         if(code == 0) {
                             MainActivity.launch(this@RegisterActivity)
                         } else {
-                            Toast.makeText(this@RegisterActivity,
-                                "创建自有账号失败 errorCode: $code",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            ToastUtil.show(this@RegisterActivity,
+                                "创建自有账号失败 errorCode: $code")
                         }
                     }
                 }
             } else {
-                Toast.makeText(this, "请输入账号或密码", Toast.LENGTH_SHORT).show()
+                ToastUtil.show(this, "请输入账号或密码")
             }
         }
     }
