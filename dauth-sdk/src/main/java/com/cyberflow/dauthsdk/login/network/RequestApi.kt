@@ -46,46 +46,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
     }
 
-    private inline fun <reified T> fromJson(json: String?): T {
-        return Gson().fromJson(json, T::class.java)
-    }
-
-
-    fun Call.await(): Response {
-        return execute()
-    }
-
-
-    /**
-     * 第三方认证登录，返回临时 code
-     *
-     * @param body  下面authorize和token 接口，需要严格按照oauth协议标准定义字段, Oauth2 request authorize
-     * @return AuthorizeRes
-     */
-    fun authorize(body: AuthorizeParam, didToken: String): AuthorizeRes? {
-        val localVariableBody: Any = body
-        val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
-        val contentIdHeaders: Map<String, String> = mapOf("Authorization" to didToken)
-        val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        localVariableHeaders.putAll(contentIdHeaders)
-
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/sociallogin/auth",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
-        val response = request<AuthorizeRes>(
-            localVariableConfig,
-            localVariableBody
-        )
-        return response
-    }
-
     /**
      * 自定义账号认证登录，返回临时 code
      *
@@ -236,9 +196,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return GetAcccountInfoRes
      */
     fun getAccountInfo(body: GetAcccountInfoParam): GetAcccountInfoRes? {
-
         val localVariableConfig = setCommonParams("/account/v1/getacccountinfo")
-
         val response = request<GetAcccountInfoRes>(
             localVariableConfig,
             body
@@ -252,10 +210,8 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return LoginRes
      */
-    suspend fun login(body: LoginParam?): LoginRes? {
-
+    fun login(body: LoginParam?): LoginRes? {
         val localVariableConfig = setCommonParams("/account/v1/login")
-
         val response = request<LoginRes>(localVariableConfig, body)
         return response
     }
@@ -314,22 +270,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
 
     /**
-     * (邮箱、自定义账号、手机号)认证登录，返回临时 code
-     *
-     * @param body
-     * @return LoginAuthRes
-     */
-
-    fun loginAuth(body: LoginAuthParam): LoginAuthRes? {
-        val localVariableConfig = setCommonParams("/account/v1/login/auth")
-        val response = request<LoginAuthRes>(
-            localVariableConfig,
-            body
-        )
-        return response
-    }
-
-    /**
      * 账号退出，包括第三方账号退出
      *
      * @param body
@@ -357,7 +297,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
     fun queryByAccountNum(body: QueryByAccountParam): AccountRes? {
 
         val localVariableConfig = setCommonParams("/account/v1/userinfo/query")
-
         val response = request<AccountRes>(
             localVariableConfig,
             body

@@ -24,6 +24,8 @@ private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
 private const val FACEBOOK = "FACEBOOK"
 private const val ACCOUNT_TYPE_OF_EMAIL = 10
+private const val WALLET_IS_NOT_CREATE = 200001
+private const val LOGIN_CORRECT_CODE = 0
 
 class LoginActivity : AppCompatActivity() {
     var loginBinding: ActivityLoginLayoutBinding?  = null
@@ -44,8 +46,8 @@ class LoginActivity : AppCompatActivity() {
                     ACCOUNT_TYPE_OF_EMAIL
                 )
                 when (code) {
-                    0 -> MainActivity.launch(this@LoginActivity)
-                    200001 -> {
+                    LOGIN_CORRECT_CODE -> MainActivity.launch(this@LoginActivity)
+                    WALLET_IS_NOT_CREATE -> {
                         handleCreateWallet()
                     }
                     else -> DAuthLogger.d("login return code == $code")
@@ -70,7 +72,7 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
                 when (code) {
                     0 -> handleLoginSuccess()
-                    200001 -> handleCreateWallet()
+                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
@@ -80,8 +82,8 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val code = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
                 when (code) {
-                    0 -> handleLoginSuccess()
-                    200001 -> handleCreateWallet()
+                    LOGIN_CORRECT_CODE -> handleLoginSuccess()
+                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }
@@ -92,8 +94,8 @@ class LoginActivity : AppCompatActivity() {
                 val code = DAuthSDK.instance.link2EOAWallet(this@LoginActivity)
                 DAuthLogger.d("EOA钱包登录返回code:$code")
                 when(code) {
-                    0 -> MainActivity.launch(this@LoginActivity)
-                    200001 -> handleCreateWallet()
+                    LOGIN_CORRECT_CODE -> MainActivity.launch(this@LoginActivity)
+                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
                     else -> handleLoginFailure(code)
                 }
             }

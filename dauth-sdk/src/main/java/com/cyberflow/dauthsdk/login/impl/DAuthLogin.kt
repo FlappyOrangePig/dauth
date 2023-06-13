@@ -39,6 +39,7 @@ private const val TYPE_OF_WALLET_AUTH = "20"
 private const val IS_REGISTER = 1       //如果账号不存在则注册并登录
 private const val AREA_CODE = "86"      //手机区号
 private const val VERIFY_CODE_LENGTH = 4
+private const val WALLET_IS_NOT_CREATE = 200001
 class DAuthLogin : ILoginApi {
 
     private val context get() = DAuthSDK.impl.context
@@ -93,14 +94,14 @@ class DAuthLogin : ILoginApi {
      * @return 服务端返回临时code
      */
     private suspend fun loginAuth(codeChallengeCode: String, didToken: String): String {
-        val map = HashMap<String, String>()
+//        val map = HashMap<String, String>()
         var code = ""
-        map[USER_TYPE] = ACCOUNT_TYPE_OF_EMAIL
-        map[CODE_CHALLENGE] = codeChallengeCode
-        map[CODE_CHALLENGE_METHOD] = SIGN_METHOD
-        val sign = SignUtils.sign(map)
+//        map[USER_TYPE] = ACCOUNT_TYPE_OF_EMAIL
+//        map[CODE_CHALLENGE] = codeChallengeCode
+//        map[CODE_CHALLENGE_METHOD] = SIGN_METHOD
+//        val sign = SignUtils.sign(map)
 
-        val body = AuthorizeParam(10, codeChallengeCode, SIGN_METHOD, sign)
+        val body = AuthorizeParam(10, codeChallengeCode, SIGN_METHOD)
         val authorizeParam = withContext(Dispatchers.IO) {
             RequestApi().ownAuthorize(body, didToken)
         }
@@ -265,7 +266,7 @@ class DAuthLogin : ILoginApi {
 
                 if (queryWalletRes?.data?.address.isNullOrEmpty()) {
                     // 该邮箱没有钱包
-                    loginCode = 200001
+                    loginCode = WALLET_IS_NOT_CREATE
                 } else {
                     // 该邮箱绑定过钱包
                     loginCode = 0

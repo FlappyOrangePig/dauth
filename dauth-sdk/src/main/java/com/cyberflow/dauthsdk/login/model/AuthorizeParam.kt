@@ -27,7 +27,7 @@ data class AuthorizeParam (
     val user_type: Int,
     val code_challenge: String,
     val code_challenge_method: String,
-    val sign: String,
+    val sign: String? = null,
     val scope: String ?= null,
     val redirect_uri: String ?= null,
     val response_type: String ?= null,
