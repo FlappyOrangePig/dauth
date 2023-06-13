@@ -127,7 +127,7 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
             if (createWalletRes is DAuthResult.Success) {
-                val address = createWalletRes.address
+                val address = createWalletRes.data.address
                 DAuthLogger.d("创建的aa钱包地址：$address")
                 MainActivity.launch(this@LoginActivity)
             }
