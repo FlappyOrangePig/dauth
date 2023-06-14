@@ -36,10 +36,13 @@ private const val GOOGLE_REQUEST_CODE = 9004
 private const val TWITTER_REQUEST_CODE = 140
 private const val FIX_TWITTER_JS_ISSUE = false
 private const val TYPE_OF_WALLET_AUTH = "20"
-private const val IS_REGISTER = 1       //如果账号不存在则注册并登录
-private const val AREA_CODE = "86"      //手机区号
+private const val USER_TYPE_OF_EMAIL = 10
+private const val IS_REGISTER = 1       // 如果账号不存在则注册并登录
+private const val AREA_CODE = "86"      // 手机区号
 private const val VERIFY_CODE_LENGTH = 4
 private const val WALLET_IS_NOT_CREATE = 200001
+private const val CORRECT_LOGIN_CODE = 0
+private const val ACCESS_TOKEN_EXPIRED = 1000016    // 会话已过期，请重新刷新
 class DAuthLogin : ILoginApi {
 
     private val context get() = DAuthSDK.impl.context
@@ -94,21 +97,12 @@ class DAuthLogin : ILoginApi {
      * @return 服务端返回临时code
      */
     private suspend fun loginAuth(codeChallengeCode: String, didToken: String): String {
-//        val map = HashMap<String, String>()
-        var code = ""
-//        map[USER_TYPE] = ACCOUNT_TYPE_OF_EMAIL
-//        map[CODE_CHALLENGE] = codeChallengeCode
-//        map[CODE_CHALLENGE_METHOD] = SIGN_METHOD
-//        val sign = SignUtils.sign(map)
-
-        val body = AuthorizeParam(10, codeChallengeCode, SIGN_METHOD)
+        val body = AuthorizeParam(USER_TYPE_OF_EMAIL, codeChallengeCode, SIGN_METHOD)
         val authorizeParam = withContext(Dispatchers.IO) {
             RequestApi().ownAuthorize(body, didToken)
         }
-
-        code = authorizeParam?.data?.code.orEmpty()  //获取临时code
+       val code = authorizeParam?.data?.code.orEmpty()  //获取临时code
         DAuthLogger.e("ownAuthorize 临时code： $code ")
-
         return code
     }
 
@@ -240,7 +234,7 @@ class DAuthLogin : ILoginApi {
         var loginCode: Int? = null
         withContext(Dispatchers.IO) {
             val loginRes = RequestApi().login(loginParam)
-            if (loginRes?.iRet == 0) {
+            if (loginRes?.iRet == CORRECT_LOGIN_CODE) {
                 val data = loginRes.data
                 val userInfo = JwtDecoder().decoded(data.did_token.orEmpty())
 
@@ -255,13 +249,13 @@ class DAuthLogin : ILoginApi {
                     getDAuthToken(codeVerifier, loginAuthCode, didToken)
                 val accessToken = tokenAuthenticationRes?.data?.access_token.orEmpty()
                 val expireTime = tokenAuthenticationRes?.data?.expire_in
+                val refreshToken = tokenAuthenticationRes?.data?.refresh_token
                 val authIdToken = tokenAuthenticationRes?.data?.id_token.orEmpty()
-                val userId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
-                val authId = userInfo.sub.orEmpty()     //查询用户信息时用
-                LoginPrefs(context).setAccessToken(accessToken)
-                LoginPrefs(context).setAuthID(userId)
+                val authId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
+                val userId = userInfo.sub.orEmpty()     //查询用户信息时用
+                LoginPrefs(context).putLoginInfo(accessToken, authId, refreshToken)
                 val queryWalletRes = withContext(Dispatchers.IO) {
-                    RequestApi().queryWallet(accessToken, userId)
+                    RequestApi().queryWallet(accessToken, authId)
                 }
 
                 if (queryWalletRes?.data?.address.isNullOrEmpty()) {
@@ -269,7 +263,7 @@ class DAuthLogin : ILoginApi {
                     loginCode = WALLET_IS_NOT_CREATE
                 } else {
                     // 该邮箱绑定过钱包
-                    loginCode = 0
+                    loginCode = CORRECT_LOGIN_CODE
                     DAuthLogger.e("该邮箱绑定过钱包直接进入主页")
                 }
 
@@ -373,7 +367,9 @@ class DAuthLogin : ILoginApi {
                     user_data = walletInfo
                 )
                 val code = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
-                continuation.resume(code, onCancellation = null)
+                if (code != null) {
+                    continuation.resume(code, onCancellation = null)
+                }
             }
         }
         WalletWebViewActivity.launch(context, false, callback)
@@ -397,9 +393,18 @@ class DAuthLogin : ILoginApi {
      */
     override suspend fun queryAccountByEmail(email: String): AccountRes? {
         val authId = LoginPrefs(context).getAuthId()
-        val accessToken = LoginPrefs(context).getAccessToken()
-        val body = QueryByEMailParam(email, authId, accessToken)
-        return RequestApi().queryByEMail(body)
-    }
+        val loginPrefs = LoginPrefs(context)
+        val requestApi = RequestApi()
+        val accessToken = loginPrefs.getAccessToken()
+        val body = QueryByEMailParam(email, accessToken, authId)
+        var response = requestApi.queryByEMail(body)
 
+        if (response?.iRet == ACCESS_TOKEN_EXPIRED) {
+            DAuthLogger.e("accessToken已过期，刷新accessToken")
+            val refreshedToken = LoginManager.instance.refreshAccessToken(authId, USER_TYPE_OF_EMAIL)
+            val refreshedBody = QueryByEMailParam(email, refreshedToken, authId)
+            response = requestApi.queryByEMail(refreshedBody)
+        }
+        return response
+    }
 }

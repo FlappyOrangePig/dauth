@@ -59,7 +59,14 @@ data class AccountRes(
         var phone_area_code: String? = null
 
         /* 电话号码 */
-        var phone: Long? = null
+        var phone: String? = null
+
+        /* 用户真实名称 */
+        var real_name: String? = null
+
+        /* 身份证 */
+        var identity: String? = null
+
         var identity_Status: Int? = null
 
         /* 用户图像地址 */
@@ -89,11 +96,6 @@ data class AccountRes(
         /* 注册时间 */
         var create_time: String? = null
 
-        /* 用户真实名称 */
-        var real_name: String? = null
-
-        /* 身份证 */
-        var identity: String? = null
     }
 }
 

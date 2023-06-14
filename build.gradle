@@ -4,7 +4,7 @@ buildscript {
     // in the buildscript block, unless you link it from the buildscript block, too.
     apply from: 'config.gradle'
     dependencies {
-        classpath 'com.github.kezong:fat-aar:1.3.6'
+//        classpath 'com.github.kezong:fat-aar:1.3.6'
 //        classpath 'com.google.gms:google-services:4.3.15'
     }
 }

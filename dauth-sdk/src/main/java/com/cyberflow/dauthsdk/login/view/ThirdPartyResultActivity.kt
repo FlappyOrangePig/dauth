@@ -62,7 +62,7 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        var code = -1
+        var code : Int?
         lifecycleScope.launch {
             when (requestCode) {
                 GOOGLE_REQUEST_CODE -> {
@@ -89,7 +89,7 @@ class ThirdPartyResultActivity : AppCompatActivity() {
             DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
         }
     }
-    private fun dispatchResult(code: Int) {
+    private fun dispatchResult(code: Int?) {
         DAuthLogger.e("third platform result code == $code")
         callback?.let {
             it.onResult(code)

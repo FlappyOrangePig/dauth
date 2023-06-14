@@ -86,10 +86,10 @@ class GoogleLoginManager {
         return accountIdToken
     }
 
-     suspend fun googleAuthLogin(data: Intent?) : Int {
+     suspend fun googleAuthLogin(data: Intent?) : Int? {
         val accountIdToken = getGoogleIdToken(data)
-        var loginResCode: Int
-        val authorizeParam = AuthorizeToken2Param(
+         var loginResCode: Int?
+         val authorizeParam = AuthorizeToken2Param(
             access_token = null,
             refresh_token = null,
             AUTH_TYPE_OF_GOOGLE,

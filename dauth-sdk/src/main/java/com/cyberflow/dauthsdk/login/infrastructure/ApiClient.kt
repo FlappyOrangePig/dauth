@@ -4,6 +4,7 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
