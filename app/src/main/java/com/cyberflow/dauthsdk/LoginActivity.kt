@@ -110,14 +110,6 @@ class LoginActivity : AppCompatActivity() {
             binding.tvSendCode.visibility = View.GONE
         }
 
-        binding.btnQueryAccount.setOnClickListener {
-            val email = binding.edtAccount.text.toString()
-            lifecycleScope.launch {
-                val accountRes = DAuthSDK.instance.queryAccountByEmail(email)
-                DAuthLogger.d("用户信息：${accountRes?.data?.address}")
-            }
-        }
-
     }
 
     private fun handleLoginSuccess() {

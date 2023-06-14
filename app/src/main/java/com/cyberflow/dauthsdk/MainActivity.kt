@@ -19,6 +19,7 @@ import java.math.BigInteger
 
 class MainActivity : AppCompatActivity() {
     private val testAddress = "0xA0590b28C219E6C26a93116D04C395A56E9135f5"
+    private val testEmail = "453376077@qq.com"
     companion object {
         fun launch(context : Context) {
             val intent = Intent(context, MainActivity::class.java)
@@ -76,6 +77,13 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnSetPwd.setOnClickListener {
             showInputDialog(this)
+        }
+
+        binding.btnQueryAccount.setOnClickListener {
+            lifecycleScope.launch {
+                val accountRes = DAuthSDK.instance.queryAccountByEmail(testEmail)
+                DAuthLogger.d("用户信息：${accountRes?.data?.account}")
+            }
         }
     }
 

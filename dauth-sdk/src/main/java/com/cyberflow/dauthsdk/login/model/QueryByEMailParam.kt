@@ -20,7 +20,7 @@ data class QueryByEMailParam (
     /* 邮箱 */
     val email: String,
     val access_token: String,
-    val auth_id: String,
+    val authid: String,
     val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 

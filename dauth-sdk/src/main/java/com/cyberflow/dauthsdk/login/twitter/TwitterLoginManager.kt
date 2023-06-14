@@ -101,8 +101,8 @@ class TwitterLoginManager private constructor() {
         })
     }
 
-    suspend fun twitterAuthLogin(requestCode: Int, resultCode: Int, data: Intent?): Int {
-        var loginResCode = -1
+    suspend fun twitterAuthLogin(requestCode: Int, resultCode: Int, data: Intent?): Int? {
+        var loginResCode : Int?
         var twitterUser :String? = null
         try {
             twitterUser = twitterAuth(requestCode, resultCode, data)

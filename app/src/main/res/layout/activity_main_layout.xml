@@ -44,13 +44,29 @@
         android:textColor="@color/white" />
 
     <Button
+        android:id="@+id/btn_query_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:text="根据邮箱查询用户"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:background="@drawable/allow_btn_shape"
+        app:layout_constraintTop_toBottomOf="@id/btn_send_transaction"
+        android:layout_marginBottom="50dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
         android:id="@+id/btn_set_pwd"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="100dp"
         android:layout_marginEnd="100dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_send_transaction"
+        app:layout_constraintTop_toBottomOf="@id/btn_query_account"
         android:layout_marginTop="50dp"
         android:background="@drawable/allow_btn_shape"
         android:text="设置邮箱登录密码"

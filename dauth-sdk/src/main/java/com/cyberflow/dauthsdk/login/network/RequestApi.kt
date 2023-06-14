@@ -311,12 +311,9 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return AccountRes
      */
-    suspend fun queryByEMail(body: QueryByEMailParam): AccountRes? {
-        return awaitRequest {
-            val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
-            val response = request<AccountRes>(localVariableConfig, body)
-            response
-        }
+    suspend fun queryByEMail(body: QueryByEMailParam): AccountRes? = awaitRequest {
+        val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
+        request<AccountRes>(localVariableConfig, body)
     }
 
     /**
@@ -361,16 +358,13 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return RefreshTokenParamRes
      */
 
-    fun refreshToken(body: RefreshTokenParam): RefreshTokenParamRes? {
-
+    suspend fun refreshToken(body: RefreshTokenParam): RefreshTokenParamRes? {
         val localVariableConfig = setCommonParams("/account/v1/refresh_token")
-
         val response = request<RefreshTokenParamRes>(
             localVariableConfig,
             body
         )
         return response
-
     }
 
     /**

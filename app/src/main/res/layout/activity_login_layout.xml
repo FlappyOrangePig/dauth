@@ -133,21 +133,6 @@
         android:layout_marginEnd="10dp"
         android:textColor="@color/black"/>
 
-    <Button
-        android:id="@+id/btn_query_account"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
-        android:text="根据邮箱查询用户"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:background="@drawable/allow_btn_shape"
-        app:layout_constraintTop_toBottomOf="@id/edt_password"
-        android:layout_marginBottom="50dp"
-        android:layout_marginTop="30dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btn_dauth_login"
@@ -159,7 +144,7 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:background="@drawable/allow_btn_shape"
-        app:layout_constraintTop_toBottomOf="@id/btn_query_account"
+        app:layout_constraintTop_toBottomOf="@id/edt_password"
         android:layout_marginBottom="50dp"
         android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
