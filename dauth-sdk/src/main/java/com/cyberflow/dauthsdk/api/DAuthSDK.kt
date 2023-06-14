@@ -1,13 +1,11 @@
 package com.cyberflow.dauthsdk.api
 
-
 import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.example.hellojni.HelloJni
-
 
 class DAuthSDK private constructor(
     private val loginApi: ILoginApi,

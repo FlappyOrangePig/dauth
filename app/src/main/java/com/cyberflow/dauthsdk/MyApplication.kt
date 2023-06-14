@@ -15,11 +15,14 @@ class MyApplication : Application() {
             twitterConsumerKey = CONSUMER_KEY
             twitterConsumerSecret = CONSUMER_SECRET
             chain = SdkConfig.ChainInfo(
-                info = "sepolia test network",
+                // seplia-test
                 rpcUrl = "https://rpc.sepolia.org/",
-                // USDT
-                erc20Addresses = listOf("0x6175a8471C2122f778445e7E07A164250a19E661"),
-                erc1155Addresses = listOf()
+
+                // 本地服务器
+                //rpcUrl = Web3Const.RPC_URL
+
+                // ETMP-live
+                //rpcUrl = "https://rpc.etm.network",
             )
         }
         DAuthSDK.instance.initSDK(this, config = config)

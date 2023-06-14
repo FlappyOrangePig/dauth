@@ -6,8 +6,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
+import com.cyberflow.dauthsdk.Web3Const.MIMO_AVATAR_CONTRACT_ADDRESS
+import com.cyberflow.dauthsdk.Web3Const.MING_DA_S_ADDRESS
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
 
@@ -142,5 +145,27 @@ class LoginActivity : AppCompatActivity() {
         DAuthLogger.e("login errorCode == $errorCode")
     }
 
+    override fun onResume() {
+        super.onResume()
+        testWeb3()
+    }
 
+    private fun testWeb3() {
+        lifecycleScope.launch {
+            // 查询明达的MIMO-NFT列表
+            /*val tokenIds = DAuthSDK.instance.queryWalletBalance(
+                MING_DA_S_ADDRESS, TokenType.ERC721(
+                    MIMO_AVATAR_CONTRACT_ADDRESS
+                )
+            )
+            ToastUtil.show(this@LoginActivity, tokenIds.toString())*/
+
+            // 查询sepolia-test上面某人的BULL_TOKEN
+            val balance = DAuthSDK.instance.queryWalletBalance(
+                Web3Const.ANY_ONE_WHO_RECEIVE_BULL_TOKEN_ON_SEPOLIA_TEST_NETWORK,
+                TokenType.ERC20(Web3Const.BULL_TOKEN_CONTRACT_ADDRESS)
+            )
+            ToastUtil.show(this@LoginActivity, balance.toString())
+        }
+    }
 }

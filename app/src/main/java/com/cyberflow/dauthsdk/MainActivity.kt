@@ -12,6 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.TokenType
+import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
+import com.cyberflow.dauthsdk.ext.mount
+import com.cyberflow.dauthsdk.ext.myAddress
+import com.cyberflow.dauthsdk.ext.tokenIds
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -42,6 +47,7 @@ class MainActivity : AppCompatActivity() {
                 val sb = StringBuilder()
                 showEth(sb)
                 showUsdt(sb)
+                showNfts(sb)
                 ToastUtil.show(this@MainActivity, sb.toString())
             }
         }
@@ -110,29 +116,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun showEth(sb: StringBuilder){
-        val balance = DAuthSDK.instance.queryWalletBalance()
+        val address = myAddress() ?: return
+        val balanceResult = DAuthSDK.instance.queryWalletBalance(address, TokenType.Eth)
         var result: String? = null
 
-        when (balance) {
+        when (balanceResult) {
             is DAuthResult.Success -> {
-                result = balance.data.balance.toString()
+                result = balanceResult.data.mount().toString()
             }
             else -> {}
         }
-        sb.append("eth余额：$result")
+        sb.appendLine("eth余额：$result")
     }
 
     private suspend fun showUsdt(sb: StringBuilder) {
-        val balance = DAuthSDK.instance.queryERC20Balance(0)
+        val address = myAddress() ?: return
+        val balanceResult = DAuthSDK.instance.queryWalletBalance(address, TokenType.ERC20(Web3Const.ERC20))
+        var result: String? = null
+
+        when (balanceResult) {
+            is DAuthResult.Success -> {
+                result = balanceResult.data.mount().toString()
+            }
+            else -> {}
+        }
+        sb.appendLine("usdt余额：$result")
+    }
+
+    private suspend fun showNfts(sb: StringBuilder) {
+        val address = myAddress() ?: return
+        val balance = DAuthSDK.instance.queryWalletBalance(address, TokenType.ERC721(Web3Const.ERC721))
         var result: String? = null
 
         when (balance) {
             is DAuthResult.Success -> {
-                result = balance.data.balance.toString()
+                result = balance.data.tokenIds().toString()
             }
 
             else -> {}
         }
-        sb.append("usdt余额：$result")
+        sb.append("NFT余额：$result")
     }
 }

@@ -70,4 +70,5 @@ ext {
 
         // 3rd
         web3j_core                    : "org.web3j:core:$versions.web3j_core",
+        web3j_contract                : "org.web3j:contracts:$versions.web3j_core",
 ]

@@ -73,7 +73,9 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
     // web3j
-    implementation libraries.web3j_core
+    api libraries.web3j_core
+    implementation libraries.web3j_contract
+
 }
 
 apply from: '../maven_publish.gradle'

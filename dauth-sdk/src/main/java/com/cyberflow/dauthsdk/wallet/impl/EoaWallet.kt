@@ -6,10 +6,20 @@ import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
+import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
+import com.cyberflow.dauthsdk.wallet.sol.TestDAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.datatypes.Function
+import org.web3j.protocol.core.methods.response.TransactionReceipt
+import org.web3j.tx.ClientTransactionManager
+import org.web3j.tx.gas.DefaultGasProvider
 import java.math.BigInteger
 
 private const val TAG = "EoaWallet"
@@ -38,30 +48,26 @@ class EoaWallet internal constructor(): IWalletApi {
             ?: DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
     }
 
-    override suspend fun queryWalletBalance(): DAuthResult<WalletBalanceData> {
-        val addressResult = queryWalletAddress()
-        if (addressResult !is DAuthResult.Success){
-            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
+    override suspend fun queryWalletBalance(walletAddress: String, tokenType: TokenType): DAuthResult<WalletBalanceData> {
+        val r = when (tokenType) {
+            is TokenType.Eth -> {
+                Web3Manager.getBalance(walletAddress)
+            }
+            is TokenType.ERC20 -> {
+                Web3Manager.getERC20Balance(
+                    contractAddress = tokenType.contractAddress,
+                    accountAddress = walletAddress
+                )
+            }
+            is TokenType.ERC721 -> {
+                Web3Manager.getERC721NftTokenIds(
+                    contractAddress = tokenType.contractAddress,
+                    walletAddress = walletAddress
+                )
+            }
         }
-        val address = addressResult.data.address
-        val balance = Web3Manager.getBalance(address)
-        DAuthLogger.i("queryWalletBalance $balance", TAG)
-        return balance
-    }
-
-    override suspend fun queryERC20Balance(index: Int): DAuthResult<WalletBalanceData> {
-        val addressResult = queryWalletAddress()
-        if (addressResult !is DAuthResult.Success){
-            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
-        }
-        val address = addressResult.data.address
-        val balance = Web3Manager.getERC20Balance(address, index)
-        DAuthLogger.i("queryWalletBalance $balance", TAG)
-        return balance
-    }
-
-    override suspend fun queryERC721Balance(index: Int): DAuthResult<WalletBalanceData> {
-        return queryERC20Balance(index)
+        DAuthLogger.i("queryWalletBalance $r", TAG)
+        return r
     }
 
     override suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData> {
@@ -80,5 +86,13 @@ class EoaWallet internal constructor(): IWalletApi {
         return Web3Manager.sendTransaction(toAddress, amount).also {
             DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it", TAG)
         }
+    }
+
+    override suspend fun execute(
+        dest: String,
+        value: BigInteger,
+        func: Function
+    ): DAuthResult<TransactionReceipt> {
+        return Web3Manager.execute(dest, value, func)
     }
 }

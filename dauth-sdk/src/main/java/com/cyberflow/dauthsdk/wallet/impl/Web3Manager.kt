@@ -7,19 +7,20 @@ import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.wallet.const.WalletConst
-import com.cyberflow.dauthsdk.wallet.sol.IERC20Upgradeable
-import com.cyberflow.dauthsdk.wallet.sol.TestTemp
+import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.datatypes.Function
+import org.web3j.contracts.eip20.generated.ERC20
+import org.web3j.contracts.eip721.generated.ERC721
+import org.web3j.contracts.eip721.generated.ERC721Enumerable
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.RemoteFunctionCall
+import org.web3j.protocol.core.RemoteCall
 import org.web3j.protocol.core.Request
 import org.web3j.protocol.core.Response
 import org.web3j.protocol.core.methods.request.Transaction
@@ -29,7 +30,14 @@ import org.web3j.tx.ClientTransactionManager
 import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.util.concurrent.TimeUnit
+
+private const val TAG = "Web3Manager"
+
+/**
+ * 不是DAuthAccount的合约地址，是它的中转合约的地址，据说为了打包gas费
+ * 转发者和DAuthAccount接口相同
+ */
+private const val DAUTH_FORWARDER_ADDRESS = ""
 
 object Web3Manager {
 
@@ -57,37 +65,26 @@ object Web3Manager {
                     DAuthResult.Success(d)
                 }
             } catch (t: Throwable) {
-                DAuthLogger.e(android.util.Log.getStackTraceString(t))
+                DAuthLogger.e(android.util.Log.getStackTraceString(t), TAG)
                 DAuthResult.NetworkError(t)
             }
         }
     }
 
-    private suspend fun <T> RemoteFunctionCall<T>.await(): T? {
-        val result = withContext(Dispatchers.IO) {
-            try {
-                send()
-            } catch (e: Exception) {
-                DAuthLogger.e(android.util.Log.getStackTraceString(e))
-                null
-            }
+    private suspend fun <T> RemoteCall<T>.await(): DAuthResult<T> = withContext(Dispatchers.IO) {
+        try {
+            val r = send()
+            DAuthResult.Success(r)
+        } catch (t: Throwable) {
+            DAuthLogger.e(android.util.Log.getStackTraceString(t))
+            DAuthResult.NetworkError(t)
         }
-        return result
     }
 
-    private fun getOkhttpClient() = OkHttpClient().newBuilder().apply {
-        connectTimeout(10, TimeUnit.SECONDS)
-        readTimeout(10, TimeUnit.SECONDS)
-        addInterceptor(HttpLoggingInterceptor {
-            DAuthLogger.i(it)
-        }.apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        })
-    }.build()
 
     suspend fun getBalance(address: String): DAuthResult<WalletBalanceData> {
         return web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).await {
-            WalletBalanceData(it.balance)
+            WalletBalanceData.Eth(it.balance)
         }
     }
 
@@ -110,19 +107,6 @@ object Web3Manager {
         }
     }
 
-    /*private suspend fun getTransactionReceipt(txHash: String): TransactionReceipt? {
-        val transactionReceipt = web3j.ethGetTransactionReceipt(txHash).await().field { it.transactionReceipt } ?: return null
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (transactionReceipt.isPresent) {
-                transactionReceipt.get()
-            } else {
-                null
-            }
-        } else {
-            null
-        }
-    }*/
-
     suspend fun sendTransaction(to: String, amount: BigInteger): DAuthResult<SendTransactionData> {
         val credentials = CredentialsUtil.loadCredentials(false)
         val address = credentials.address
@@ -134,7 +118,7 @@ object Web3Manager {
         if (transactionCountResult !is DAuthResult.Success) {
             return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_NONCE)
         }
-        DAuthLogger.i("nonce=${transactionCountResult.data}")
+        DAuthLogger.i("nonce=${transactionCountResult.data}", TAG)
 
         val gasProvider = DefaultGasProvider()
         val gasPrice = gasProvider.gasPrice
@@ -151,53 +135,78 @@ object Web3Manager {
         }
     }
 
-    private fun getTestTempContract(): TestTemp {
-        val contractAddress = WalletConst.TEST_TEMP_CONTRACT_ADDRESS
-        //val credentials = CredentialsUtil.loadCredentials()
-        val transactionManager = ClientTransactionManager(web3j, WalletConst.ACCOUNT_ADDRESS_GOUJIAN2)
-        return TestTemp.load(contractAddress, web3j, transactionManager, DefaultGasProvider())
-        //return TestTemp.load(contractAddress, web3j, credentials, DefaultGasProvider())
-    }
-
-    suspend fun invokeTestTemp(
-        toAddress: String,
-        amount: BigInteger
-    ): TransactionReceipt? {
-        return getTestTempContract()
-            .TestCall(toAddress, amount).await()
-    }
-
-    suspend fun invokeGetAcc(): String? {
-        return getTestTempContract().acc.await()
-    }
-
-    suspend fun invokeGetOwner(): String? {
-        return getTestTempContract()
-            .owner()
-            .await()
-    }
-
-    suspend fun getERC20Balance(accountAddress: String, index: Int): DAuthResult<WalletBalanceData> {
-        val chain = DAuthSDK.impl.config.chain
-        if (chain == null) {
-            DAuthLogger.e("chain is null")
-            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CHAIN_IS_NULL)
+    suspend fun getERC20Balance(
+        contractAddress: String,
+        accountAddress: String
+    ): DAuthResult<WalletBalanceData> {
+        val contract = withContext(Dispatchers.IO) {
+            val transactionManager = ClientTransactionManager(web3j, accountAddress)
+            ERC20.load(contractAddress, web3j, transactionManager, DefaultGasProvider())
         }
-        if (index < 0 || index >= chain.erc20Addresses.size) {
-            DAuthLogger.e("chain is null")
-            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_INDEX_OUT_OF_BOUND)
+        val callResult = contract.balanceOf(accountAddress).await()
+        DAuthLogger.d("getERC20Balance $callResult", TAG)
+        if (callResult is DAuthResult.Success) {
+            return DAuthResult.Success(WalletBalanceData.ERC20(callResult.data))
         }
-        val contractAddress = chain.erc20Addresses[index]
+        return DAuthResult.NetworkError()
+    }
 
-        val transactionManager = ClientTransactionManager(web3j, accountAddress)
-        val erc20 =
-            IERC20Upgradeable.load(contractAddress, web3j, transactionManager, DefaultGasProvider())
-        val call = erc20.balanceOf(accountAddress)
-        val balance = call.await()
-        DAuthLogger.d("getERC20Balance $balance")
-        if (balance == null) {
+    suspend fun getERC721NftTokenIds(
+        contractAddress: String,
+        walletAddress: String
+    ): DAuthResult<WalletBalanceData> {
+        val (erC721, erC721Enumerable) = withContext(Dispatchers.IO) {
+            val transactionManager = ClientTransactionManager(web3j, walletAddress)
+            val erC721 =
+                ERC721.load(contractAddress, web3j, transactionManager, DefaultGasProvider())
+            val erC721Enumerable =
+                ERC721Enumerable.load(
+                    contractAddress,
+                    web3j,
+                    transactionManager,
+                    DefaultGasProvider()
+                )
+            erC721 to erC721Enumerable
+        }
+        val callResult = erC721.balanceOf(walletAddress).await()
+        DAuthLogger.d("getERC721Balance $callResult", TAG)
+        val arrayList = arrayListOf<BigInteger>()
+        if (callResult !is DAuthResult.Success) {
+            DAuthLogger.d("cannot get balance", TAG)
             return DAuthResult.NetworkError()
         }
-        return DAuthResult.Success(WalletBalanceData(balance))
+        for (i in 0 until callResult.data.toLong()) {
+            // get the token ID at a specific index owned by a specific address
+            val tokenIdResult =
+                erC721Enumerable.tokenOfOwnerByIndex(walletAddress, BigInteger(i.toString()))
+            val tokenId = tokenIdResult.await()
+            DAuthLogger.d("$i)tokenId=$tokenId", TAG)
+            if (tokenId !is DAuthResult.Success) {
+                DAuthLogger.d("cannot get tokenId $i", TAG)
+                return DAuthResult.NetworkError()
+            }
+            arrayList.add(tokenId.data)
+        }
+        DAuthLogger.d("success with $arrayList", TAG)
+        return DAuthResult.Success(WalletBalanceData.ERC721(arrayList))
+    }
+
+    suspend fun execute(
+        dest: String,
+        value: BigInteger,
+        func: Function
+    ): DAuthResult<TransactionReceipt> {
+        val encoded = FunctionEncoder.encode(func)
+        val dAuthAccount = withContext(Dispatchers.IO) {
+            val dauthAccountAddress = DAUTH_FORWARDER_ADDRESS
+            val transactionManager = ClientTransactionManager(web3j, dauthAccountAddress)
+            DAuthAccount.load(
+                dest,
+                web3j, transactionManager, DefaultGasProvider()
+            )
+        }
+        val r = dAuthAccount.execute(dest, value, encoded.toByteArray()).await()
+        DAuthLogger.d("execute dest=$dest value=$value func=${FunctionWrapper(func)} result=$r", TAG)
+        return r
     }
 }

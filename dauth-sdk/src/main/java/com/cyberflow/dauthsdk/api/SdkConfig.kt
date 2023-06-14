@@ -53,16 +53,10 @@ class SdkConfig {
     var useTestNetwork: Boolean = false
 
     /**
-     * @param info 扩展字段sdk使用者可以绑定自定义数据
      * @param rpcUrl rpc节点
-     * @param erc20Addresses 使用[IWalletApi.queryERC20Balance]查询
-     * @param erc1155Addresses 使用[IWalletApi]
      */
     class ChainInfo(
-        val info: Any,
-        val rpcUrl: String,
-        val erc20Addresses: List<String>,
-        val erc1155Addresses: List<String>,
+        val rpcUrl: String
     )
 }
 

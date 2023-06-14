@@ -4,8 +4,11 @@ import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
+import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
+import org.web3j.abi.datatypes.Function
+import org.web3j.protocol.core.methods.response.TransactionReceipt
 import java.math.BigInteger
 
 interface IWalletApi {
@@ -33,19 +36,7 @@ interface IWalletApi {
      * 查询钱包余额
      * @return 查询结果
      */
-    suspend fun queryWalletBalance(): DAuthResult<WalletBalanceData>
-
-    /**
-     * 查询同质化代币余额
-     * @return 查询结果
-     */
-    suspend fun queryERC20Balance(index: Int): DAuthResult<WalletBalanceData>
-
-    /**
-     * 查询NFT余额
-     * @return 查询结果
-     */
-    suspend fun queryERC721Balance(index: Int): DAuthResult<WalletBalanceData>
+    suspend fun queryWalletBalance(walletAddress: String, tokenType: TokenType): DAuthResult<WalletBalanceData>
 
     /**
      * 预估交易费用
@@ -53,6 +44,7 @@ interface IWalletApi {
      * @param amount 转账金额，单位wei
      * @return 计算结果
      */
+    @Deprecated("不再提供，直接调用合约计算Gas")
     suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData>
 
     /**
@@ -61,5 +53,15 @@ interface IWalletApi {
      * @param amount 交易金额
      * @return 交易结果
      */
+    @Deprecated("不再提供，直接调用合约发送")
     suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData>
+
+    /**
+     * 执行合约
+     * @param dest 合约地址
+     * @param value 当合约账户余额不足时会扣调用者的费用
+     * @param func
+     * @return 执行结果
+     */
+    suspend fun execute(dest: String, value: BigInteger, func: Function): DAuthResult<TransactionReceipt>
 }
