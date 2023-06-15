@@ -9,8 +9,11 @@ private const val AUTH_ID = "auth_id"
 private const val USER_ID = "user_id"
 private const val DID_TOKEN = "did_token"
 private const val REFRESH_TOKEN = "refresh_token"
+private const val EXPIRE_TIME = "expire_in"
+private const val USER_TYPE = "user_type"
+private const val DEFAULT_USER_TYPE = 0
 
-internal class LoginPrefs(private val context: Context) {
+class LoginPrefs(val context: Context)  {
 
     private val defaultAsync = true
     private val sp get() = context.getSharedPreferences(LOGIN_STATE_INFO, Context.MODE_PRIVATE)!!
@@ -51,11 +54,29 @@ internal class LoginPrefs(private val context: Context) {
         getPrefs().edit().putString(REFRESH_TOKEN, refreshToken).apply()
     }
 
+    fun setExpireTime(expireTime: Long) {
+        getPrefs().edit().putLong(EXPIRE_TIME, expireTime).apply()
+    }
+
+    fun getExpireTime(): Long {
+        return getPrefs().getLong(EXPIRE_TIME, 0L)
+    }
+
+    fun setUserType(type: Int) {
+        getPrefs().edit().putInt(USER_TYPE, type).apply()
+    }
+
+    fun getUserType() : Int {
+        return getPrefs().getInt(USER_TYPE, DEFAULT_USER_TYPE)
+    }
+
     fun putLoginInfo(
         accessToken: String? = null,
         authId: String? = null,
         userId: String? = null,
         refreshToken: String? = null,
+        expireTime: Long?  = null,
+        user_type: Int? = null,
         async: Boolean = false
     ) {
         val values = ArrayList<Pair<String, Any>>()
@@ -70,6 +91,12 @@ internal class LoginPrefs(private val context: Context) {
         }
         refreshToken?.let {
             values.add(REFRESH_TOKEN to it)
+        }
+        expireTime?.let {
+            values.add(EXPIRE_TIME to it)
+        }
+        user_type?.let {
+            values.add(USER_TYPE to it)
         }
 
         put(values, async)

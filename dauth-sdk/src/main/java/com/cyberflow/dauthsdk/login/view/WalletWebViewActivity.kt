@@ -4,11 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauthsdk.databinding.ActivityWebviewBinding
 import com.cyberflow.dauthsdk.login.viewmodel.WalletWebViewViewModel
-import com.tencent.smtt.sdk.QbSdk
-import com.tencent.smtt.sdk.WebView
 import androidx.activity.viewModels
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
@@ -55,15 +54,15 @@ class WalletWebViewActivity : AppCompatActivity() {
         webView.addJavascriptInterface(JavaScriptMethods(this
             ,
             object : WalletCallback {
-            override fun onResult(walletInfo: String) {
-                callback?.onResult(walletInfo)
+                override fun onResult(walletInfo: String) {
+                    callback?.onResult(walletInfo)
 //                val body = AuthorizeToken2Param(
 //                    user_type = TYPE_OF_WALLET_AUTH,
 //                    user_data = walletInfo
 //                )
 //                val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
+                }
             }
-        }
         ), "android")
         webView.loadUrl(H5_URL)
     }
@@ -79,7 +78,6 @@ class WalletWebViewActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        QbSdk.clearAllWebViewCache(this, true) // 清除缓存
         webView.stopLoading()
         webView.clearHistory()
         webView.clearCache(true)

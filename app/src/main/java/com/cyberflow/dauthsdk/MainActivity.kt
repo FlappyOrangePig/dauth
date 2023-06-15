@@ -25,6 +25,7 @@ import java.math.BigInteger
 class MainActivity : AppCompatActivity() {
     private val testAddress = "0xA0590b28C219E6C26a93116D04C395A56E9135f5"
     private val testEmail = "453376077@qq.com"
+    private val testAuthId = "6b5a96eb3fedc2e7bbf183eab6820b95"
     companion object {
         fun launch(context : Context) {
             val intent = Intent(context, MainActivity::class.java)
@@ -91,6 +92,25 @@ class MainActivity : AppCompatActivity() {
                 DAuthLogger.d("用户信息：${accountRes?.data?.account}")
             }
         }
+
+        binding.btnBindEmail.setOnClickListener {
+            lifecycleScope.launch {
+                DAuthSDK.instance.bindEmail(testEmail,"6877")
+            }
+        }
+
+        binding.btnQueryAccountByOpenid.setOnClickListener {
+            lifecycleScope.launch {
+                val accountRes = DAuthSDK.instance.queryAccountByAuthid(testAuthId)
+                val hasPassword = accountRes?.data?.has_password
+                if(accountRes!= null && hasPassword == 1) {
+                    ToastUtil.show(this@MainActivity,"该账号已设置密码")
+                } else {
+                    ToastUtil.show(this@MainActivity,"该账号未设置密码")
+                }
+            }
+        }
+
     }
 
     override fun onDestroy() {
@@ -100,7 +120,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun showInputDialog(context: Context) {
         val inputEditText = EditText(context)
-
         val dialog = AlertDialog.Builder(context)
             .setTitle("Enter Password")
             .setView(inputEditText)
@@ -119,7 +138,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .create()
-
         dialog.show()
     }
 

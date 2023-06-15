@@ -24,7 +24,7 @@ package com.cyberflow.dauthsdk.login.model
  */
 data class AuthorizeToken2Param (
     /* access_token */
-    val access_token: String? = null,
+    var access_token: String? = null,
     /* refresh_token */
     val refresh_token: String? = null,
     /* 登录来源 */

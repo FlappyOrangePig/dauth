@@ -20,14 +20,15 @@ package com.cyberflow.dauthsdk.login.model
  * @param sign 检验参数
  */
 data class BindEmailParam (
-    /* 用户id */
-    val openudid: String,
+    /* 授权id */
+    val authid: String,
     /* 邮箱 */
     val account: String,
     /* 验证码 */
-    val verify_code: Int,
+    val verify_code: String,
+    var access_token: String,
     /* 检验参数 */
-    val sign: String,
+    val sign: String? = null,
     val accessTokenInHeader : AccessTokenInHeader? = null
 ) {
 

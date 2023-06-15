@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.google.GoogleLoginManager
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
@@ -62,25 +62,25 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        var code : Int?
+        var loginResultData : LoginResultData? = null
         lifecycleScope.launch {
             when (requestCode) {
                 GOOGLE_REQUEST_CODE -> {
                     lifecycleScope.launch {
-                        code = GoogleLoginManager.instance.googleAuthLogin(data)
-                        dispatchResult(code)
+                        loginResultData = GoogleLoginManager.instance.googleAuthLogin(data)
+                        dispatchResult(loginResultData)
                         finish()
                     }
                 }
 
                 TWITTER_REQUEST_CODE -> {
                     lifecycleScope.launch {
-                         code = TwitterLoginManager.instance.twitterAuthLogin(
+                        loginResultData = TwitterLoginManager.instance.twitterAuthLogin(
                                 requestCode,
                                 resultCode,
                                 data
                             )
-                        dispatchResult(code)
+                        dispatchResult(loginResultData)
                         finish()
                     }
                 }
@@ -89,10 +89,9 @@ class ThirdPartyResultActivity : AppCompatActivity() {
             DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
         }
     }
-    private fun dispatchResult(code: Int?) {
-        DAuthLogger.e("third platform result code == $code")
+    private fun dispatchResult(loginResultData: LoginResultData?) {
         callback?.let {
-            it.onResult(code)
+            it.onResult(loginResultData)
             callback = null
         }
     }
@@ -100,6 +99,6 @@ class ThirdPartyResultActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         DAuthLogger.d("ThirdPartyResultActivity onDestroy")
-        dispatchResult(Integer.MAX_VALUE)
+        dispatchResult(LoginResultData.Failure(Integer.MAX_VALUE))
     }
 }

@@ -1,6 +1,7 @@
 package com.cyberflow.dauthsdk
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import com.cyberflow.dauthsdk.Web3Const.MIMO_AVATAR_CONTRACT_ADDRESS
 import com.cyberflow.dauthsdk.Web3Const.MING_DA_S_ADDRESS
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
@@ -31,21 +33,32 @@ class LoginActivity : AppCompatActivity() {
         loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
 
         setContentView(binding.root)
+        // 邮箱登录
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
             val password = binding.edtPassword.text.toString()
             lifecycleScope.launch {
-                val code = DAuthSDK.instance.loginByMobileOrEmail(
+                val loginResultData = DAuthSDK.instance.loginByMobileOrEmail(
                     account,
                     password,
                     ACCOUNT_TYPE_OF_EMAIL
                 )
-                when (code) {
-                    LOGIN_CORRECT_CODE -> MainActivity.launch(this@LoginActivity)
-                    WALLET_IS_NOT_CREATE -> {
-                        handleCreateWallet()
+                when (loginResultData) {
+                    is LoginResultData.Success -> {
+                        val idToken = loginResultData.idToken
+                        // 处理登录成功逻辑
+                        MainActivity.launch(this@LoginActivity)
+                        DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
                     }
-                    else -> DAuthLogger.d("login return code == $code")
+                    is LoginResultData.Failure -> {
+                        val failureCode = loginResultData.code
+                        // 处理登录失败逻辑
+                        DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
+                        if(failureCode == WALLET_IS_NOT_CREATE) {
+                            handleCreateWallet()
+                        }
+                    }
+                    else -> {}
                 }
             }
 
@@ -64,23 +77,15 @@ class LoginActivity : AppCompatActivity() {
     private fun initView() {
         binding.ivGoogle.setOnClickListener {
             lifecycleScope.launch {
-                val code = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
-                when (code) {
-                    0 -> handleLoginSuccess()
-                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
-                    else -> handleLoginFailure(code)
-                }
+                val loginResultData = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
+                handleLoginResult(loginResultData)
             }
         }
 
         binding.ivTwitter.setOnClickListener {
             lifecycleScope.launch {
-                val code = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
-                when (code) {
-                    LOGIN_CORRECT_CODE -> handleLoginSuccess()
-                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
-                    else -> handleLoginFailure(code)
-                }
+                val loginResultData = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
+                handleLoginResult(loginResultData)
             }
         }
 
@@ -88,19 +93,15 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val code = DAuthSDK.instance.link2EOAWallet(this@LoginActivity)
                 DAuthLogger.d("EOA钱包登录返回code:$code")
-                when(code) {
-                    LOGIN_CORRECT_CODE -> MainActivity.launch(this@LoginActivity)
-                    WALLET_IS_NOT_CREATE -> handleCreateWallet()
-                    else -> handleLoginFailure(code)
-                }
+                handleLoginResult(code)
             }
         }
 
         binding.tvSendCode.setOnClickListener {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
-                val isSend = DAuthSDK.instance.sendEmailVerifyCode(account)
-                if (isSend) {
+                val response = DAuthSDK.instance.sendEmailVerifyCode(account)
+                if (response?.iRet == 0) {
                     ToastUtil.show(applicationContext, "验证码发送成功")
                     DAuthLogger.d("验证码发送成功")
                 } else {
@@ -109,14 +110,31 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        binding.tvSwitchPwd.setOnClickListener {
-            binding.tvSendCode.visibility = View.GONE
+        binding.btnMobileLogin.setOnClickListener {
+            LoginByMobileActivity.launch(this)
         }
 
     }
 
-    private fun handleLoginSuccess() {
-        MainActivity.launch(this@LoginActivity)
+
+    private fun handleLoginResult(loginResultData: LoginResultData?) {
+        when (loginResultData) {
+            is LoginResultData.Success -> {
+                val idToken = loginResultData.idToken
+                // 处理登录成功逻辑
+                MainActivity.launch(this@LoginActivity)
+                DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+            }
+            is LoginResultData.Failure -> {
+                val failureCode = loginResultData.code
+                // 处理登录失败逻辑
+                DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
+                if(failureCode == WALLET_IS_NOT_CREATE) {
+                    handleCreateWallet()
+                }
+            }
+            else -> {}
+        }
     }
 
     //创建aa钱包
@@ -131,11 +149,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleLoginFailure(errorCode: Int?) {
-        val errorMessage = "登录失败 errorCode==$errorCode"
-        ToastUtil.show(this@LoginActivity, errorMessage)
-        DAuthLogger.e("login errorCode == $errorCode")
-    }
 
     override fun onResume() {
         super.onResume()

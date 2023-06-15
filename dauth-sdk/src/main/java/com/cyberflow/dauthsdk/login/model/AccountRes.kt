@@ -96,6 +96,9 @@ data class AccountRes(
         /* 注册时间 */
         var create_time: String? = null
 
+        /* 是否设置密码 0-未设置 1-已设置 */
+        var has_password: Int? = null
+
     }
 }
 

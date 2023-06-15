@@ -48,11 +48,14 @@ class ResetPasswordActivity: AppCompatActivity() {
                         USER_TYPE_OF_EMAIL, account = account,
                         verify_code = verifyCode, password = password
                     )
-                    val isSuccess = DAuthSDK.instance.setRecoverPassword(params)
-                    if (isSuccess) {
+                    val setPasswordData = DAuthSDK.instance.setRecoverPassword(params)
+                    if (setPasswordData.code == 0) {
                         ToastUtil.show(
                             this@ResetPasswordActivity, "重置密码成功")
                         this@ResetPasswordActivity.finish()
+                    } else {
+                        ToastUtil.show(
+                            this@ResetPasswordActivity, "${setPasswordData.msg}")
                     }
                 }
             }
@@ -61,8 +64,8 @@ class ResetPasswordActivity: AppCompatActivity() {
         binding.tvSendCode.setOnClickListener {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
-                val isSend = DAuthSDK.instance.sendEmailVerifyCode(account)
-                if(isSend) {
+                val response = DAuthSDK.instance.sendEmailVerifyCode(account)
+                if(response?.iRet == 0) {
                     ToastUtil.show(this@ResetPasswordActivity, "验证码发送成功")
                 }
             }

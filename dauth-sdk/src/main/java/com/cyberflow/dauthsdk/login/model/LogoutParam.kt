@@ -22,8 +22,6 @@ package com.cyberflow.dauthsdk.login.model
 data class LogoutParam (
     /* 用户id */
     val openudid: String,
-    /* 检验参数 */
-    val sign: String,
     val clientInHeader: ClientInHeader? = null
 ) {
 

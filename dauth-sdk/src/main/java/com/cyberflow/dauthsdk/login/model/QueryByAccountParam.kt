@@ -13,13 +13,13 @@ package com.cyberflow.dauthsdk.login.model
 
 /**
  * 
- * @param  
- * @param openudid 用户id
+ * @param access_token
+ * @param authid 用户id
  */
-data class QueryByAccountParam (
+data class QueryByAuthIdParam (
     /* 用户id */
-    val openudid: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+     val authid: String,
+     var access_token: String
 ) {
 
 }

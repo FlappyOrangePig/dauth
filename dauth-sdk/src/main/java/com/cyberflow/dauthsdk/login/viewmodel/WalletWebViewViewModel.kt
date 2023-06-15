@@ -4,16 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.lifecycle.MutableLiveData
+import android.net.http.SslError
+import android.webkit.SslErrorHandler
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.lifecycle.ViewModel
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.tencent.smtt.sdk.WebSettings
-import com.tencent.smtt.sdk.WebView
-import com.tencent.smtt.sdk.WebViewClient
+
 
 class WalletWebViewViewModel : ViewModel() {
-
-    val walletInfo = MutableLiveData<String>()
 
     fun initWebViewClient(webView: WebView) {
         initWebViewSettings(webView)
@@ -51,13 +51,14 @@ class WalletWebViewViewModel : ViewModel() {
                 }
             }
 
+            @SuppressLint("WebViewClientOnReceivedSslError")
             override fun onReceivedSslError(
-                p0: WebView?,
-                p1: com.tencent.smtt.export.external.interfaces.SslErrorHandler?,
-                p2: com.tencent.smtt.export.external.interfaces.SslError?
+                view: WebView?,
+                handler: SslErrorHandler?,
+                error: SslError?
             ) {
-                p1?.proceed()
-                DAuthLogger.i( "sslError:$p2")
+                handler?.proceed()
+                DAuthLogger.i( "sslError:$error")
             }
 
         }

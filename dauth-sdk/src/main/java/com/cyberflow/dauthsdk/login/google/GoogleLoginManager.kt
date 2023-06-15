@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -86,9 +87,9 @@ class GoogleLoginManager {
         return accountIdToken
     }
 
-     suspend fun googleAuthLogin(data: Intent?) : Int? {
+     suspend fun googleAuthLogin(data: Intent?) : LoginResultData? {
         val accountIdToken = getGoogleIdToken(data)
-         var loginResCode: Int?
+         var loginResultData: LoginResultData? = null
          val authorizeParam = AuthorizeToken2Param(
             access_token = null,
             refresh_token = null,
@@ -97,9 +98,9 @@ class GoogleLoginManager {
             id_token = accountIdToken
         )
         withContext(Dispatchers.IO) {
-            loginResCode = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
+            loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
         }
-        return loginResCode
+        return loginResultData
     }
 
 }

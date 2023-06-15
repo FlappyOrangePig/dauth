@@ -29,6 +29,7 @@ ext {
 
         // 3rd
         web3j_core                   : "4.8.8-android",
+        webview                      : "webkit:1.7.0",
 ]
 
 ext {
@@ -71,4 +72,5 @@ ext {
         // 3rd
         web3j_core                    : "org.web3j:core:$versions.web3j_core",
         web3j_contract                : "org.web3j:contracts:$versions.web3j_core",
+        webview                       : "androidx.webkit:$versions.webview",
 ]

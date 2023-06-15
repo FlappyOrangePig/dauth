@@ -11,15 +11,13 @@
  */
 package com.cyberflow.dauthsdk.login.network
 
+import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.infrastructure.ApiClient
 import com.cyberflow.dauthsdk.login.infrastructure.MultiValueMap
 import com.cyberflow.dauthsdk.login.infrastructure.RequestConfig
 import com.cyberflow.dauthsdk.login.infrastructure.RequestMethod
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.google.gson.Gson
-import okhttp3.Call
-import okhttp3.Response
 
 
 private const val BASE_TEST_URL = "https://api-dev.infras.online"
@@ -96,10 +94,10 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun bindAccount(body: BindAcoountParam): BaseResponse? {
+    suspend fun bindAccount(body: BindAcoountParam): BaseResponse? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/bind")
         val response = request<BaseResponse>(localVariableConfig, body)
-        return response
+        response
     }
 
     /**
@@ -109,14 +107,14 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return Any
      */
 
-    fun bindEmail(body: BindEmailParam): BaseResponse? {
+    suspend fun bindEmail(body: BindEmailParam): BaseResponse? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/email/bind")
-
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
-        return response
+        var response: BaseResponse? = null
+        TokenManager.instance.authenticatedRequest() { accessToken ->
+            body.access_token = accessToken.orEmpty()
+            request<BaseResponse>(localVariableConfig, body)
+        }
+        response
     }
 
     /**
@@ -125,15 +123,11 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    suspend fun bindPhone(body: BindPhoneParam): BaseResponse? {
-        return awaitRequest {
-            val localVariableConfig = setCommonParams("/account/v1/phone/bind")
-            val response = request<BaseResponse>(
-                localVariableConfig,
-                body
-            )
-            response
-        }
+    suspend fun bindPhone(body: BindPhoneParam): BaseResponse? = awaitRequest {
+        val localVariableConfig = setCommonParams("/account/v1/phone/bind")
+        var response: BaseResponse? = null
+        response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
     /**
@@ -142,18 +136,14 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    fun bindRealInfo(body: BindRealInfoParam): BaseResponse? {
+    suspend fun bindRealInfo(body: BindRealInfoParam): BaseResponse? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/realinfo/bind")
 
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body,
-        )
-
-        return response
+        val response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
-    /**
+/**
      * 注册创建账号,当设置is_login时，返回临时code
      *
      * @param body
@@ -163,10 +153,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
     fun createAccount(body: CreateAccountParam): CreateAccountRes? {
 
         val localVariableConfig = setCommonParams("/account/v1/create")
-        val response = request<CreateAccountRes>(
-            localVariableConfig,
-            body
-        )
+        val response = request<CreateAccountRes>(localVariableConfig, body)
         return response
     }
 
@@ -178,31 +165,16 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AuthorizeToken2Res
      */
 
-    fun getUserInfo(body: AuthorizeToken2Param): AuthorizeToken2Res? {
-
+    suspend fun getUserInfo(body: AuthorizeToken2Param): AuthorizeToken2Res? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/get_user_info")
-        val response = request<AuthorizeToken2Res>(
-            localVariableConfig,
-            body
-
-        )
-        return response
+        var response: AuthorizeToken2Res? = null
+        TokenManager.instance.authenticatedRequest() { accessToken ->
+            body.access_token = accessToken.orEmpty()
+            response = request<AuthorizeToken2Res>(localVariableConfig, body)
+        }
+        response
     }
 
-    /**
-     * 用户profile信息,给appserver 获取用户信息
-     *
-     * @param body
-     * @return GetAcccountInfoRes
-     */
-    fun getAccountInfo(body: GetAcccountInfoParam): GetAcccountInfoRes? {
-        val localVariableConfig = setCommonParams("/account/v1/getacccountinfo")
-        val response = request<GetAcccountInfoRes>(
-            localVariableConfig,
-            body
-        )
-        return response
-    }
 
     /**
      * (邮箱、自定义账号、手机号)账号登录验证，返回登录凭证SessionID
@@ -217,23 +189,24 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
     }
 
     /**
-     * @param access_token 访问资源凭证,有效期短,过期需要刷新
-     * @param authid 用户id
+     * @param accessToken 访问资源凭证,有效期短,过期需要刷新
+     * @param authId 用户id
      */
-    fun queryWallet(accessToken: String, authId: String): QueryWalletRes? {
+    suspend fun queryWallet(accessToken: String, authId: String): QueryWalletRes? = awaitRequest {
         val body = QueryWalletParam(accessToken, authId)
         val localVariableConfig = setCommonParams("/wallet/v1/query")
-        val response = request<QueryWalletRes>(localVariableConfig, body)
-        return response
+        var response: QueryWalletRes? = null
+        TokenManager.instance.authenticatedRequest() { accessToken ->
+            body.access_token = accessToken.orEmpty()
+            DAuthLogger.d("queryWallet accessToken= ${body.access_token}")
+            response = request<QueryWalletRes>(localVariableConfig, body)
+        }
+        response
     }
 
     fun bindWallet(bindWalletParam: BindWalletParam): BaseResponse? {
         val localVariableConfig = setCommonParams("/wallet/v1/bind")
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            bindWalletParam
-        )
-
+        val response = request<BaseResponse>(localVariableConfig, bindWalletParam)
         return  response
     }
 
@@ -260,11 +233,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        DAuthLogger.d("调用了ownOauth2Token")
-        val response = request<TokenAuthenticationRes>(
-            localVariableConfig,
-            body
-        )
+        val response = request<TokenAuthenticationRes>(localVariableConfig, body)
         return response
     }
 
@@ -289,20 +258,19 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
     }
 
     /**
-     * 根据账号查询用户信息
+     * 根据authId查询用户
      *
      * @param body
      * @return AccountRes
      */
-    fun queryByAccountNum(body: QueryByAccountParam): AccountRes? {
-
-        val localVariableConfig = setCommonParams("/account/v1/userinfo/query")
-        val response = request<AccountRes>(
-            localVariableConfig,
-            body
-        )
-        return response
-
+    suspend fun queryByAuthId(body: QueryByAuthIdParam): AccountRes? = awaitRequest {
+        var response: AccountRes? = null
+        TokenManager.instance.authenticatedRequest() { accessToken ->
+            body.access_token = accessToken.orEmpty()
+            val localVariableConfig = setCommonParams("/account/v1/userinfo/query")
+            response = request<AccountRes>(localVariableConfig, body)
+        }
+        response
     }
 
     /**
@@ -312,8 +280,13 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AccountRes
      */
     suspend fun queryByEMail(body: QueryByEMailParam): AccountRes? = awaitRequest {
-        val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
-        request<AccountRes>(localVariableConfig, body)
+        var response: AccountRes? = null
+        TokenManager.instance.authenticatedRequest() { accessToken ->
+            body.access_token = accessToken.orEmpty()
+            val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
+            response = request<AccountRes>(localVariableConfig, body)
+        }
+        response
     }
 
     /**
@@ -323,15 +296,11 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AccountRes
      */
 
-    fun queryByPhone(body: QueryByPhoneParam): AccountRes? {
-
+    suspend fun queryByPhone(body: QueryByPhoneParam): AccountRes? = awaitRequest {
+        var response: AccountRes? = null
         val localVariableConfig = setCommonParams("/account/v1/userinfo/phone/query")
-
-        val response = request<AccountRes>(
-            localVariableConfig,
-            body
-        )
-        return response
+        response = request<AccountRes>(localVariableConfig, body)
+        response
     }
 
     /**
@@ -341,14 +310,11 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return MiniAccountRealInfoRes
      */
 
-    fun queryRealInfo(body: QueryRealInfoParam): MiniAccountRealInfoRes? {
+    suspend fun queryRealInfo(body: QueryRealInfoParam): MiniAccountRealInfoRes? = awaitRequest {
+        var response: MiniAccountRealInfoRes? = null
         val localVariableConfig = setCommonParams("/account/v1/realinfo/query")
-
-        val response = request<MiniAccountRealInfoRes>(
-            localVariableConfig,
-            body
-        )
-        return response
+        response = request<MiniAccountRealInfoRes>(localVariableConfig, body)
+        response
     }
 
     /**
@@ -358,7 +324,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return RefreshTokenParamRes
      */
 
-    suspend fun refreshToken(body: RefreshTokenParam): RefreshTokenParamRes? {
+     fun refreshToken(body: RefreshTokenParam): RefreshTokenParamRes?  {
         val localVariableConfig = setCommonParams("/account/v1/refresh_token")
         val response = request<RefreshTokenParamRes>(
             localVariableConfig,
@@ -373,9 +339,11 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return Any
      */
-    suspend fun resetByPassword(body: ResetByPasswordParam) = awaitRequest {
+    suspend fun resetByPassword(body: ResetByPasswordParam) : BaseResponse? = awaitRequest {
+        var response: BaseResponse? = null
         val localVariableConfig = setCommonParams("/account/v1/password/reset")
-        request<BaseResponse>(localVariableConfig, body)
+        response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
     /**
@@ -400,22 +368,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
         request<BaseResponse>(localVariableConfig, body)
     }
 
-    /**
-     * 账号认证,给appserver 做临时code校验, 并返回access token
-     *
-     * @param body  Oauth2 request access token
-     * @return TokenAuthenticationRes
-     */
-
-    fun tokenAuthentication(body: TokenAuthenticationParam): TokenAuthenticationRes? {
-        val localVariableConfig = setCommonParams("/account/v1/oauth2/token")
-
-        val response = request<TokenAuthenticationRes>(
-            localVariableConfig,
-            body
-        )
-        return response
-    }
 
     /**
      * 邮箱解绑
@@ -424,14 +376,11 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return Any
      */
 
-    fun unbindEmail(body: UnbindEmailParam): BaseResponse? {
-
+    suspend fun unbindEmail(body: UnbindEmailParam): BaseResponse? = awaitRequest {
+        var response: BaseResponse? = null
         val localVariableConfig = setCommonParams("/account/v1/mail/unbind")
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
-        return response
+        response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
     /**
@@ -441,15 +390,11 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return Any
      */
 
-    fun unbindPhone(body: UnbindPhoneParam): BaseResponse? {
-
+     suspend fun unbindPhone(body: UnbindPhoneParam): BaseResponse? = awaitRequest {
+        var response: BaseResponse? = null
         val localVariableConfig = setCommonParams("/account/v1/phone/unbind")
-
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
-        return response
+        response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
     /**
@@ -459,21 +404,18 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return Any
      */
 
-    fun updateBaseInfo(body: UpdateBaseInfoParam): BaseResponse? {
-
+    suspend fun updateBaseInfo(body: UpdateBaseInfoParam): BaseResponse? = awaitRequest {
+        var response: BaseResponse? = null
         val localVariableConfig = setCommonParams("/account/v1/baseinfo/update")
-        val response = request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
-        return response
+        response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
     /**
      * 设置密码
      * @param body password 密码 Authorization 登录后的didtoken
      */
-    suspend fun setPassword(body: SetPasswordParam, didToken: String?) = awaitRequest {
+    suspend fun setPassword(body: SetPasswordParam, didToken: String?) : BaseResponse? = awaitRequest {
         val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
         val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
@@ -491,10 +433,9 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        request<BaseResponse>(
-            localVariableConfig,
-            body
-        )
+        var response: BaseResponse? = null
+        response = request<BaseResponse>(localVariableConfig, body)
+        response
     }
 
 }

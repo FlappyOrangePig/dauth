@@ -2,9 +2,13 @@ package com.cyberflow.dauthsdk.api
 
 import android.app.Activity
 import android.content.Context
+import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.LoginResultData
+import com.cyberflow.dauthsdk.api.entity.SetPasswordData
 import com.cyberflow.dauthsdk.login.model.AccountRes
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
 import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
+import com.cyberflow.dauthsdk.login.network.BaseResponse
 
 interface ILoginApi {
 
@@ -17,7 +21,7 @@ interface ILoginApi {
      * @param activity
      */
 
-    suspend fun loginWithType(type: String, activity: Activity) : Int?
+    suspend fun loginWithType(type: String, activity: Activity) : LoginResultData?
 
     /**
      * @param account 自有账号（字母和数字组合）
@@ -29,7 +33,7 @@ interface ILoginApi {
     /**
      * 手机号或邮箱登录
      */
-    suspend fun loginByMobileOrEmail(account: String, verifyCode: String, type: Int) : Int?
+    suspend fun loginByMobileOrEmail(account: String, verifyCode: String, type: Int) : LoginResultData?
 
 
     /**
@@ -41,7 +45,7 @@ interface ILoginApi {
     /**
      * 重置密码
      */
-    suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): Boolean
+    suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): SetPasswordData
 
     /**
      * @param phone 手机号
@@ -52,7 +56,7 @@ interface ILoginApi {
     /**
      * @param email 邮箱
      */
-    suspend fun sendEmailVerifyCode(email: String): Boolean
+    suspend fun sendEmailVerifyCode(email: String): BaseResponse?
 
     /**
      * @param bindParams 对象
@@ -67,13 +71,13 @@ interface ILoginApi {
      * @param email 邮箱
      * @param verifyCode 邮箱验证码
      */
-    suspend fun bindEmail(email: String, verifyCode: String)
+    suspend fun bindEmail(email: String, verifyCode: String) : Boolean
 
 
     /**
      * EOA钱包授权登录
      */
-    suspend fun link2EOAWallet(context: Context) : Int?
+    suspend fun link2EOAWallet(context: Context) : LoginResultData?
 
     /**
      * 设置密码
@@ -86,4 +90,10 @@ interface ILoginApi {
      * @param email
      */
     suspend fun queryAccountByEmail(email: String) : AccountRes?
+
+    /**
+     * 根据用户id查询用户信息
+     * @param openId 用户id
+     */
+    suspend fun queryAccountByAuthid(authId: String) : AccountRes?
 }

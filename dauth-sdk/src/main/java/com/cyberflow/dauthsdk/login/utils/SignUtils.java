@@ -2,11 +2,6 @@ package com.cyberflow.dauthsdk.login.utils;
 
 
 
-import android.text.TextUtils;
-import android.util.Log;
-
-import org.json.JSONObject;
-
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -18,9 +13,10 @@ import java.util.Set;
 public class SignUtils {
     private static final String SECRET_KEY = "123&*abc";
     private static final String TAG = "ApiClient";
+    private static final String SECURITR_KEY = "security_key";
     //对参数升序排序
     public static String sign(final Map<String, String> data) {
-        data.put("security_key",SECRET_KEY);
+        data.put(SECURITR_KEY,SECRET_KEY);
         Set<String> keySet = data.keySet();
         String[] keyArray = keySet.toArray(new String[0]);
         Arrays.sort(keyArray);
@@ -38,10 +34,8 @@ public class SignUtils {
                 }
             }
         }
-        Log.e("DAuthLogger","签名前参数："+sb.toString());
         String signParam = md5(sb.toString());
-        Log.e("DAuthLogger","签名后md5值："+signParam);
-        data.remove("security_key");
+        data.remove(SECURITR_KEY);
         return signParam;
     }
 

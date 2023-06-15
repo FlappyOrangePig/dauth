@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.SdkConfig
+import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.DAuthUser
@@ -101,8 +102,8 @@ class TwitterLoginManager private constructor() {
         })
     }
 
-    suspend fun twitterAuthLogin(requestCode: Int, resultCode: Int, data: Intent?): Int? {
-        var loginResCode : Int?
+    suspend fun twitterAuthLogin(requestCode: Int, resultCode: Int, data: Intent?): LoginResultData? {
+        var loginResultData : LoginResultData? = null
         var twitterUser :String? = null
         try {
             twitterUser = twitterAuth(requestCode, resultCode, data)
@@ -118,9 +119,9 @@ class TwitterLoginManager private constructor() {
                 id_token = null,
                 user_data = twitterUser
             )
-            loginResCode = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
+            loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
         }
-        return loginResCode
+        return loginResultData
     }
 
 }
