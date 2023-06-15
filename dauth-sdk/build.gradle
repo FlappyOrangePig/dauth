@@ -9,6 +9,12 @@ android {
 
     defaultConfig {
         versionName versions.version_name
+
+        ndk {
+            //abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            abiFilters 'arm64-v8a'
+            ldLibs 'c++_shared'
+        }
     }
 
     externalNativeBuild {
@@ -17,6 +23,11 @@ android {
             version "3.26.4"
         }
     }
+
+    /*sourceSets.main {
+        jniLibs.srcDirs = ['src/main/libs', 'jniLibs']
+        jni.srcDirs = [] //disable automatic ndk-build call
+    }*/
 }
 
 dependencies {

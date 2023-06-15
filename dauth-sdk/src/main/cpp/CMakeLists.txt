@@ -1,18 +1,27 @@
 cmake_minimum_required(VERSION 3.26.4)
 
-project("hello-jni")
+project("dauth-sdk")
 
-# Sets lib_build_DIR to the path of the desired output directory.
-set( lib_build_DIR ../jniLibs )
-file(MAKE_DIRECTORY ${lib_build_DIR})
+set(CMAKE_CXX_STANDARD 14)
 
-add_library(hello-jni SHARED
-            hello-jni.cpp)
+# 添加头文件目录
+# CMAKE_SOURCE_DIR是指cpp目录
+include_directories(${CMAKE_SOURCE_DIR}/../jniLibs/include/)
 
-# Include libraries needed for hello-jni lib
-target_link_libraries(hello-jni
-                      android
-                      log)
+# 源代码编译到dauth
+add_library(
+        dauth
+        SHARED
+        dauth-jni.cpp)
+
+# 查找内置库
+find_library(log-lib log)
+
+target_link_libraries(
+        dauth
+        ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libMPCSignModule.so
+        ${log-lib}
+        ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${ANDROID_ABI}/libc++_shared.so)
 
 
 

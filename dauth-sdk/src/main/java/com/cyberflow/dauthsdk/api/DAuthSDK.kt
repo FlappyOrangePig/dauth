@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
-import com.example.hellojni.HelloJni
 
 class DAuthSDK private constructor(
     private val loginApi: ILoginApi,
@@ -32,9 +32,7 @@ class DAuthSDK private constructor(
         this._config = config
         initializeCheck()
         loginApi.initSDK(context, config)
-        if (false) {
-            DAuthLogger.d(HelloJni().stringFromJNI().orEmpty(), "JNI")
-        }
+        DAuthJniInvoker.initialize()
         DAuthLogger.i("init sdk ok")
     }
 
