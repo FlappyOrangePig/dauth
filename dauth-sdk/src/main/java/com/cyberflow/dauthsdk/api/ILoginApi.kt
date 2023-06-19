@@ -5,9 +5,7 @@ import android.content.Context
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.api.entity.SetPasswordData
-import com.cyberflow.dauthsdk.login.model.AccountRes
-import com.cyberflow.dauthsdk.login.model.BindPhoneParam
-import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
+import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.BaseResponse
 
 interface ILoginApi {
@@ -95,5 +93,5 @@ interface ILoginApi {
      * 根据用户id查询用户信息
      * @param openId 用户id
      */
-    suspend fun queryAccountByAuthid(authId: String) : AccountRes?
+    suspend fun queryAccountByAuthid() : AccountRes?
 }

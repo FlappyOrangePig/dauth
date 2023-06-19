@@ -70,7 +70,7 @@ class WalletWebViewViewModel : ViewModel() {
         webSetting.javaScriptEnabled = true
         webSetting.setSupportZoom(true)
         webSetting.databaseEnabled = true
-        webSetting.domStorageEnabled = true
+        webSetting.domStorageEnabled = false
     }
 
 }

@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnQueryAccountByOpenid.setOnClickListener {
             lifecycleScope.launch {
-                val accountRes = DAuthSDK.instance.queryAccountByAuthid(testAuthId)
+                val accountRes = DAuthSDK.instance.queryAccountByAuthid()
                 val hasPassword = accountRes?.data?.has_password
                 if(accountRes!= null && hasPassword == 1) {
                     ToastUtil.show(this@MainActivity,"该账号已设置密码")

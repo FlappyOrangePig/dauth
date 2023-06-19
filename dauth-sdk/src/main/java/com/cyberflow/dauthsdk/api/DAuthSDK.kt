@@ -32,7 +32,7 @@ class DAuthSDK private constructor(
         this._config = config
         initializeCheck()
         loginApi.initSDK(context, config)
-        DAuthJniInvoker.initialize()
+//        DAuthJniInvoker.initialize()
         DAuthLogger.i("init sdk ok")
     }
 

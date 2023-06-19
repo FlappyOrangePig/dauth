@@ -1,7 +1,9 @@
 package com.cyberflow.dauthsdk.login.impl
 
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.entity.ErrorCode
 import com.cyberflow.dauthsdk.login.model.RefreshTokenParam
+import com.cyberflow.dauthsdk.login.network.BaseResponse
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
@@ -9,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 val context get() = DAuthSDK.impl.context
 
-class TokenManager() {
+class TokenManager private constructor() {
 
     companion object {
         val instance: TokenManager by lazy {
@@ -68,15 +70,20 @@ class TokenManager() {
         LoginPrefs(context).setAccessToken(newToken.orEmpty())
     }
 
-    inline fun <reified T> authenticatedRequest(crossinline request: (accessToken: String?) -> T
-    ): T? {
+    inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T): T? {
         val isValidate = validateToken()
         return if (isValidate) {
             val accessToken = LoginPrefs(context).getAccessToken()
-            DAuthLogger.e("TokenManager accessToken is valid:$accessToken")
-            request(accessToken)
+            DAuthLogger.e("TokenManager accessToken is valid: $accessToken")
+            val response = request(accessToken)
+            val baseResponse = response as BaseResponse
+            if (baseResponse.iRet == ErrorCode.TOKEN_IS_INVALIDATE) {
+                val newAccessToken = refreshToken()
+                request(newAccessToken)
+            } else {
+                response
+            }
         } else {
-            // 30天未操作，accessToken不刷新
             DAuthLogger.e("Token is invalid.")
             null
         }

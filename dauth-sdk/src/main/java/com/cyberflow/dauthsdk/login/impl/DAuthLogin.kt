@@ -393,7 +393,7 @@ class DAuthLogin : ILoginApi {
      * @return accountRes
      * 根据邮箱查询用户信息
      */
-    override suspend fun queryAccountByAuthid(authId: String): AccountRes? {
+    override suspend fun queryAccountByAuthid(): AccountRes? {
         val loginPrefs = LoginPrefs(context)
         val authId = loginPrefs.getAuthId()
         val accessToken = loginPrefs.getAccessToken()
