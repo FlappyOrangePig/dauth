@@ -1,3 +1,3 @@
 #!/bin/bash
-
-javac -h src/main/cpp/ src/main/java/com/cyberflow/dauthsdk/mpc/DAuthJni.java
+cd src/main/java
+javac -h ../cpp/ com/cyberflow/dauthsdk/mpc/DAuthJni.java

@@ -4,13 +4,13 @@ extern "C"
 {
     //生成MPC签名密钥分片, 函数比较耗时，建议采用异步调用
     //threshold: MPC签名门限数
-    //nParties: 参与签名的参与方数量
-    //retCount: 返回的数组长度
+    //partyIds: 参与签名的参与方的id🔢
     //使用完后 freeMemory() 进行内存释放
-    //eg. const char** keys = generateSignKeys(2, 3, count); freeMemoryArray(keys, count);
+    //eg. const char** partyids = ["id1", "id2", "id3"]
+    //eg. const char** keys = generateSignKeys(2, partyids, 3); freeMemoryArray(keys, 3);
     //eg.  test/genMain.cpp
 
-    const char** generateSignKeys( int threshold, int nParties, int& retCount);
+    const char** generateSignKeys( int threshold, const char** partyIds, int idCount);
 
     //释放字符串数组内存
     //p: 字符串数组指针
@@ -19,20 +19,29 @@ extern "C"
 
     void freeMemory(const char* p);
 
+    typedef struct
+    {
+        const char* id;
+        const char* key;
+        /* data */
+    }KeyInfo;
+    
+
     //刷新私钥
     //keys:原始私钥数组
     //count:数组长度
     //return: 新私钥数组，长度与输入长度一致
     //使用完后 freeMemoryArray() 进行内存释放
-    const char**  refreshKeys(const char** keys, int count);
+    const char**  refreshKeys(const KeyInfo** keys, int count);
 
 
     //本地签名一个消息
     //msghash: 需要签名的消息的hash字符串，一定是hash字符串
     //keys: 签名的私钥数组
-    //indies: 签名私钥的索引数组，索引顺序与generateSignKeys产生的key数组索引一致
+    //ids: 签名私钥的id，与generateSignKeys产生key的id一致
     //keyCount: 私钥数组长度
-    const char* localSignMsg(const char* msghash, const char** keys, int* indices, int keyCount );
+    
+    const char* localSignMsg(const char* msghash, const KeyInfo* keys, int keyCount );
 
 
     //分布式签名
@@ -42,26 +51,39 @@ extern "C"
     //输出的buffer内容用网络推送到远端eg.  send(s, outBuffer, outLen)
     //return:  返回一个地址，在签名过程中使用，调用remoteSignRound 时传入该地址
 
-    //--note--- //使用outBuffer之后 调用freeMemory释放内存 freeMemory(*outBuffer);
+    //--note--- //outSign ,循环删除SignOutBuffer内部的outBuffer和id，freeMemory(outBuffer),freeMemory(id);
+    //再调用freeMemory释放outSign内存 freeMemory(outSign);
     typedef struct 
     {
-        const char* localKey;//参与联合签名的本地签名的私钥
-        int localIndex;//本地签名的私钥的索引，索引顺序与generateSignKeys产生的key数组索引一致
-        int* remoteIndices; //参与签名的节点索引数组，索引顺序与generateSignKeys产生的key数组索引一致
-        int indexCount;//远程签名的节点数，如果是3签2，该处参与远程签名的节点数为1（排除自己）
+        KeyInfo* selfKeyInfo; //本地签名的私钥
+        const char** remotePartyids; //参与签名的节点ID数组，由生成key时的ID决定
+        int remoteCount;//远程签名的节点数，
     } RemoteSignKeyInfo;
+
+    typedef struct{
+        const char* id;//输出数据需要发送到远端的id;
+        void* outBuffer;//需要发送的数据指针
+        unsigned int len;//数据长度
+    } SignOutBuffer;
     
-    void* remoteSignMsg(const char* msghash, const RemoteSignKeyInfo* signInfo, char** outBuffer , unsigned int& outLen);
+    void* remoteSignMsg(const char* msghash, const RemoteSignKeyInfo* signInfo, SignOutBuffer** outSign , unsigned int& outBufferCount);
     
     //分布式签名过程函数
     //p: remoteSignMsg的输出
-    //remoteIndex: 远端的key索引，与generateSignKeys产生的key数组索引一致
+    //remoteId: 远端的id
     //buffer: 收到的远程数据包地址
     //len: 收到的远程数据包长度
     //outBuffer: 本轮计算的输出内容地址
     //outLen: 本轮计算输出的内容长度
-    //returu : false，签名过程还未完成，需要继续执行签名过程，true:签名已经结束，outBuffer为签名结果
+    //returu : false，签名过程还未完成，需要继续执行签名过程，true:签名已经结束，调用getSignature 获取签名结果
 
-     //--note--- //使用outBuffer之后 调用freeMemory释放内存 freeMemory(*outBuffer);
-    bool remoteSignRound(void* p, int remoteIndex, const char* buffer,unsigned int len, char** outBuffer , unsigned int& outLen);
+    //--note--- //outSign ,循环删除SignOutBuffer内部的outBuffer和id，freeMemory(outBuffer),freeMemory(id);
+    //再调用freeMemory释放outSign内存 freeMemory(outSign);
+    bool remoteSignRound(void* p, const char* remoteId, const char* buffer,unsigned int len, SignOutBuffer** outSign , unsigned int& outLen);
+
+
+    //获取签名结果
+    //当remoteSignRound返回true时调用该函数获取签名结果
+    const char* getSignature(void* p);
 }
+

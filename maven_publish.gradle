@@ -29,7 +29,7 @@ afterEvaluate {
                 artifactId = project.getName()
                 version = android.defaultConfig.versionName
                 from components.release
-//                artifact sourceJar
+                //artifact sourceJar
             }
         }
         repositories {

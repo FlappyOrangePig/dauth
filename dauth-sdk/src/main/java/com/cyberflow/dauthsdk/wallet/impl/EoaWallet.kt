@@ -6,6 +6,7 @@ import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GENERATE_EOA_ADDRESS
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_MERGE_RESULT
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.TokenType
@@ -16,22 +17,15 @@ import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.MpcConst
+import com.cyberflow.dauthsdk.mpc.MergeResultUtil
+import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
-import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
-import com.cyberflow.dauthsdk.wallet.sol.TestDAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.protocol.core.methods.response.TransactionReceipt
-import org.web3j.tx.ClientTransactionManager
-import org.web3j.tx.gas.DefaultGasProvider
-import java.io.ByteArrayOutputStream
 import java.math.BigInteger
-import java.util.zip.Deflater
-import java.util.zip.Inflater
 
 private const val TAG = "EoaWallet"
 
@@ -49,53 +43,52 @@ class EoaWallet internal constructor(): IWalletApi {
     }
 
     override suspend fun createWallet(passcode: String?): DAuthResult<CreateWalletData> {
-        return withContext(Dispatchers.IO) {
-            DAuthLogger.d("createWallet $passcode", TAG)
-            val keys = DAuthJniInvoker.generateSignKeys()
+        return createWalletInner(passcode)
+    }
 
-            // 第一片存本地
-            DAuthLogger.d("save 1st key", TAG)
-            keystore.setLocalKey(keys.first())
+    private suspend fun createWalletInner(passcode: String?): DAuthResult<CreateWalletData>{
+        DAuthLogger.d("createWallet $passcode", TAG)
+        val keys = DAuthJniInvoker.generateSignKeys()
 
-            // 生成EOA账号
-            val msg = DAuthJniInvoker.genRandomMsg()
-            val address = DAuthJniInvoker.generateEoaAddress(msg, keys)
-            if (address == null) {
-                DAuthLogger.e("address error", TAG)
-                return@withContext DAuthResult.SdkError(SDK_ERROR_CANNOT_GENERATE_EOA_ADDRESS)
-            }
-            DAuthLogger.d("address=$address", TAG)
+        // 第一片存本地
+        DAuthLogger.d("save 1st key", TAG)
+        keystore.setLocalKey(keys.first())
 
-            // 第二片给DAuthServer
-            val accessToken = LoginPrefs(context).getAccessToken()
-            val authId = LoginPrefs(context).getAuthId()
-            val bindWalletParam = BindWalletParam(
-                accessToken, authId, address, 11,
-                keys[MpcConst.KEY_INDEX_DAUTH_SERVER],
-                "0x00"
-            )
-            val response = RequestApi().bindWallet(bindWalletParam)
-            val code = response?.iRet
-            if (code != 0) {
-                DAuthLogger.e("绑定钱包失败：${response?.sMsg}", TAG)
-                DAuthResult.SdkError(DAuthResult.SDK_ERROR_BIND_WALLET)
-            } else {
-                DAuthResult.Success(CreateWalletData(address))
-            }
+        // 生成EOA账号
+        val msg = DAuthJniInvoker.genRandomMsg()
+        val address = DAuthJniInvoker.generateEoaAddress(msg, keys)
+        if (address == null) {
+            DAuthLogger.e("address error", TAG)
+            return DAuthResult.SdkError(SDK_ERROR_CANNOT_GENERATE_EOA_ADDRESS)
+        }
+        DAuthLogger.d("address=$address", TAG)
 
-
+        // 秘钥求和
+        val mergeResult = MergeResultUtil.encode(keys)
+        val mergeResultLen = mergeResult.length
+        DAuthLogger.d("key merge len=$mergeResultLen", TAG)
+        if (mergeResultLen == 0) {
+            return DAuthResult.SdkError(SDK_ERROR_MERGE_RESULT)
         }
 
-
-
-
-
-
-
-        /*val credential = CredentialsUtil.loadCredentials(true)
-        val address = credential.address
-        DAuthLogger.d("createWallet $address", TAG)
-        return DAuthResult.Success(CreateWalletData(address))*/
+        // 第二片给DAuthServer
+        val accessToken = LoginPrefs(context).getAccessToken()
+        val authId = LoginPrefs(context).getAuthId()
+        val dauthKey = keys[MpcKeyIds.KEY_INDEX_DAUTH_SERVER]
+        val bindWalletParam = BindWalletParam(
+            accessToken, authId, address, 11,
+            dauthKey,
+            mergeResult
+        )
+        val response = RequestApi().bindWallet(bindWalletParam)
+        val code = response?.iRet
+        DAuthLogger.d("bind wallet:$code", TAG)
+        return if (code != 0) {
+            DAuthLogger.e("绑定钱包失败：${response?.sMsg}", TAG)
+            DAuthResult.SdkError(DAuthResult.SDK_ERROR_BIND_WALLET)
+        } else {
+            DAuthResult.Success(CreateWalletData(address))
+        }
     }
 
     override suspend fun queryWalletAddress(): DAuthResult<WalletAddressData> {

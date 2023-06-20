@@ -22,5 +22,11 @@
 
 -keep class com.cyberflow.dauthsdk.login.** { *; }
 -keep class com.cyberflow.dauthsdk.wallet.api.** { *; }
-
+-keep class com.cyberflow.dauthsdk.mpc.entity.** { *; }
 -keep class com.cyberflow.dauthsdk.api.** { *; }
+
+# Keep all JNI classes and their methods and fields
+-keepclasseswithmembers class * {
+    native <methods>;
+}
+

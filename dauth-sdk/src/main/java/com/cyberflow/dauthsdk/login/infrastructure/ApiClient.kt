@@ -19,8 +19,6 @@ import java.util.regex.Pattern
 
 //账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter
 open class ApiClient(val baseUrl: String) {
-     val context get() = DAuthSDK.impl.context
-     val accessToken = LoginPrefs(context).getAccessToken()
     companion object {
         protected const val ContentType = "Content-Type"
         protected const val Accept = "Accept"

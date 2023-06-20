@@ -14,11 +14,11 @@ private const val TAG = "MergeResultUtil"
  */
 object MergeResultUtil {
 
-    private const val bytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    private const val bytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-_"
     private val reverseMap = HashMap<Char, Int>()
 
-    private const val DEBUG = false
-    private const val Base62 = 62
+    private const val DEBUG = true
+    private const val BASE65 = 65
 
     init {
         bytes.forEachIndexed { index, c ->
@@ -35,13 +35,13 @@ object MergeResultUtil {
     fun encode(keys: Array<String>): String {
         // 求和
         val sum = keyAdd(keys)
-        log("sum=$sum")
+        //log("sum=$sum")
 
         // 压缩
         val compressed = compress(sum.toString().toByteArray())
         // base64
         val compressedBase64 = Base64.encodeToString(compressed, Base64.DEFAULT)
-        log("len=${compressedBase64.length}compressedBase64=$compressedBase64 ")
+        log("compressedBase64 len=${compressedBase64.length}")
         return compressedBase64
     }
 
@@ -60,25 +60,27 @@ object MergeResultUtil {
 
     private fun toBigInt(key: String): BigInteger {
         var sum = BigInteger("0")
+        log("toBigInt key len=${key.length}")
         for (i in key.indices) {
             val v = key[key.length - 1 - i]
-            val index = reverseMap[v]
-            val currentByteValue = BigInteger(Base62.toString())
+            val index = reverseMap[v] ?: throw IllegalArgumentException("cannot find $v")
+            //log("toBigInt $i ${v.code}->$index")
+            val currentByteValue = BigInteger(BASE65.toString())
                 .pow(i)
                 .multiply(BigInteger(index.toString()))
             sum = sum.add(currentByteValue)
         }
-        log("toBigInt=$sum")
+        //log("toBigInt sum=$sum")
         return sum
     }
 
     private fun fromBigInt(bigInt: BigInteger): String {
-        val bigInt62 = BigInteger(Base62.toString())
+        val bigInt = BigInteger(BASE65.toString())
         var curBigInt = bigInt
         val result = StringBuilder()
         while (curBigInt > BigInteger("0")) {
-            val v = curBigInt.mod(bigInt62)
-            curBigInt = curBigInt.divide(bigInt62)
+            val v = curBigInt.mod(bigInt)
+            curBigInt = curBigInt.divide(bigInt)
             val char = bytes[v.toInt()]
             result.insert(0, char)
         }

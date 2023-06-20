@@ -108,6 +108,9 @@ class LoginActivity : BaseActivity() {
             LoginByMobileActivity.launch(this)
         }
 
+        binding.tvDauth.setOnClickListener {
+            WalletTestActivity.launch(it.context)
+        }
     }
 
 

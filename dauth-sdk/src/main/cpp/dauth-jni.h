@@ -21,7 +21,7 @@ JNIEXPORT void JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_init
  * Signature: (II)I
  */
 JNIEXPORT jobjectArray JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_generateSignKeys
-        (JNIEnv *, jobject, jint, jint);
+        (JNIEnv *, jobject, jint, jint, jobjectArray);
 
 /*
  * Class:     com_cyberflow_dauthsdk_mpc_DAuthJni
@@ -29,7 +29,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_generate
  * Signature: ([Ljava/lang/String;I)I
  */
 JNIEXPORT jobjectArray JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_refreshKeys
-        (JNIEnv *, jobject, jobjectArray, jint);
+        (JNIEnv *, jobject, jobjectArray, jobjectArray);
 
 /*
  * Class:     com_cyberflow_dauthsdk_mpc_DAuthJni
@@ -37,7 +37,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_refreshK
  * Signature: (Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Integer;I)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_localSignMsg
-        (JNIEnv *, jobject, jstring, jobjectArray, jintArray);
+        (JNIEnv *, jobject, jstring, jobjectArray, jobjectArray);;
 
 /*
  * Class:     com_cyberflow_dauthsdk_mpc_DAuthJni
@@ -45,7 +45,7 @@ JNIEXPORT jstring JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_localSignMsg
  * Signature: (Ljava/lang/String;Ljava/lang/String;I[Ljava/lang/Integer;[C)J
  */
 JNIEXPORT jlong JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignMsg
-        (JNIEnv *, jobject, jstring, jstring, jint, jintArray, jobject);
+        (JNIEnv *, jobject, jstring, jstring, jstring, jobjectArray, jobject);
 
 /*
  * Class:     com_cyberflow_dauthsdk_mpc_DAuthJni
@@ -53,7 +53,15 @@ JNIEXPORT jlong JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignMsg
  * Signature: (JI[C[B)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
-        (JNIEnv *, jobject, jlong, jint, jbyteArray, jobject);
+        (JNIEnv *, jobject, jlong, jstring, jbyteArray, jobject);
+
+/*
+ * Class:     com_cyberflow_dauthsdk_mpc_DAuthJni
+ * Method:    getSignature
+ * Signature: (J)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_getSignature
+        (JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

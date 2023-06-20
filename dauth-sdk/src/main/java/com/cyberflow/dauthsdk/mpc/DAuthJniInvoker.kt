@@ -2,27 +2,21 @@ package com.cyberflow.dauthsdk.mpc
 
 import androidx.annotation.Keep
 import androidx.annotation.VisibleForTesting
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.mpc.entity.JniOutBuffer
+import com.cyberflow.dauthsdk.mpc.ext.runSpending
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.web3j.crypto.Hash
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.crypto.Sign.SignatureData
+import java.util.ArrayList
 import kotlin.random.Random
 
 private const val TAG = "DAuthJniInvoker"
-
-private inline fun <T> runSpending(logInfo: String, block: () -> T): T {
-    DAuthLogger.d("$logInfo >>>", TAG)
-    val start = System.currentTimeMillis()
-    val r = block.invoke()
-    val spent = System.currentTimeMillis() - start
-    DAuthLogger.d("$logInfo <<< spent $spent", TAG)
-    return r
-}
 
 private fun ByteArray.printable(): String {
     val sb = StringBuilder()
@@ -56,9 +50,9 @@ object DAuthJniInvoker {
     private fun initializeInner() {
         jni.init()
 
-        val keyInSp = MpcKeyStore.getAllKeys().let { emptyList<String>() }
+        val keyInSp = MpcKeyStore.getAllKeys()/*.let { emptyList<String>() }*/
         val keys = if (keyInSp.isEmpty()) {
-            runSpending("generateSignKeys") {
+            runSpending(TAG, "generateSignKeys") {
                 generateSignKeys().also {
                     keystore.setAllKeys(it.toList())
                 }
@@ -66,33 +60,39 @@ object DAuthJniInvoker {
         } else {
             keyInSp.toTypedArray()
         }
-        /*runSpending("refreshKeys") {
-            jni.refreshKeys(keys, nParties)
+        /*runSpending(TAG, "refreshKeys") {
+            jni.refreshKeys(MpcKeyIds.getKeyIds(), keys)
         }*/
 
         val msg = genRandomMsg()
         val msgHash = Hash.sha3String(genRandomMsg()).removePrefix("0x")
 
-        runSpending("localSign") {
+        /*runSpending(TAG, "localSign") {
             val account = generateEoaAddress(msg, keys)
             DAuthLogger.d("localSign account=$account", TAG)
-        }
+        }*/
 
-        runSpending("remoteSignMsg") {
+        /*runSpending("remoteSignMsg") {
             DAuthLogger.d("remoteSignMsg msgHash=$msgHash", TAG)
-            val byteArrayList = ArrayList<ByteArray>()
-            jni.remoteSignMsg(msgHash, keys[0], 0, intArrayOf(1), byteArrayList)
+            val byteArrayList = ArrayList<JniOutBuffer>()
+            jni.remoteSignMsg(
+                msgHash,
+                keys[0],
+                MpcKeyIds.getLocalId(),
+                MpcKeyIds.getRemoteIdsToSign(),
+                byteArrayList
+            )
             val returnedBytes = if (byteArrayList.isNotEmpty()){
-                byteArrayList.first()
+                byteArrayList.first().bytes
             } else{
                 null
             }
             DAuthLogger.d("outBuffer[${returnedBytes?.size}]=${returnedBytes?.printable()}", TAG)
-        }
+        }*/
 
         // 模拟多轮签名
-        val u1 = CoSignerUser("coSigner1", msgHash, keys[0], 0, 1)
-        val u2 = CoSignerUser("coSigner2", msgHash, keys[1], 1, 0)
+        val u1 = CoSignerUser("coSigner1", msgHash, keys[0], MpcKeyIds.getLocalId(), MpcKeyIds.getRemoteIdsToSign())
+        val u2 = CoSignerUser("coSigner2", msgHash, keys[1], MpcKeyIds.getRemoteIdsToSign(), MpcKeyIds.getLocalId())
 
         val out1: ByteArray = u1.startRemoveSign()
         val out2: ByteArray = u2.startRemoveSign()
@@ -106,7 +106,7 @@ object DAuthJniInvoker {
         var index = 1
 
         while (true) {
-            DAuthLogger.d("poll ${index++}", TAG)
+            DAuthLogger.v("poll ${index++}", TAG)
 
             if (!result1.first){
                 temp2 = u2.signRound(result1.second)
@@ -131,10 +131,15 @@ object DAuthJniInvoker {
     }
 
     fun localSignMsg(msg: String, keys: Array<String>): SignResult? {
+        val keyIds = MpcKeyIds.getKeyIds()
+        DAuthLogger.d("localSignMsg: ${keyIds.contentToString()}", TAG)
         val msgHash = Hash.sha3String(msg).removePrefix("0x")
-        val indies = intArrayOf(0, 1)
-        val signedResultJson = jni.localSignMsg(msgHash, keys, indies)
-        DAuthLogger.d("localSignMsg:$signedResultJson")
+        val signedResultJson = jni.localSignMsg(
+            msgHash,
+            keyIds.take(2).toTypedArray(),
+            keys.take(2).toTypedArray()
+        )
+        DAuthLogger.d("localSignMsg result=$signedResultJson", TAG)
         return signedResultJson.toSignResult()
     }
 
@@ -175,7 +180,19 @@ object DAuthJniInvoker {
 
     fun generateSignKeys(): Array<String> {
         // 3签2
-        return jni.generateSignKeys(THRESHOLD, PARTIES)
+        val authId = LoginPrefs(DAuthSDK.impl.context).getAuthId()
+        if (authId.isEmpty()) {
+            DAuthLogger.e("auth id empty", TAG)
+            return emptyArray()
+        }
+
+        val ids = MpcKeyIds.getKeyIds()
+        val r = jni.generateSignKeys(THRESHOLD, PARTIES, ids)
+        DAuthLogger.d("----generateSignKeys----", TAG)
+        /*r.forEachIndexed { index, s ->
+            DAuthLogger.d("key$index) len=${s.length}\n$s", TAG)
+        }*/
+        return r
     }
 }
 

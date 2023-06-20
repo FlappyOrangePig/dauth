@@ -197,7 +197,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
     suspend fun bindWallet(bindWalletParam: BindWalletParam): BaseResponse? = awaitRequest  {
         val localVariableConfig = setCommonParams("/wallet/v1/bind")
         TokenManager.instance.authenticatedRequest {
-            bindWalletParam.access_token = accessToken
+            bindWalletParam.access_token = it.orEmpty()
             request<BaseResponse>(localVariableConfig, bindWalletParam)
         }
     }

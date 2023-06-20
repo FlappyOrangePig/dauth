@@ -8,7 +8,21 @@ object DAuthLogger {
     private val isOpenLog: Boolean get() = true
 
     private inline fun log(log: String, crossinline block: (String) -> Unit) {
-        if (isOpenLog) block.invoke("[tid=${Thread.currentThread().id}]$log")
+        if (isOpenLog) {
+            val maxLogSize = 1000
+            for (i in 0..log.length / maxLogSize) {
+                val start = i * maxLogSize
+                var end = (i + 1) * maxLogSize
+                end = if (end > log.length) log.length else end
+                val segment = log.substring(start, end)
+                if (i == 0) {
+                    block.invoke("[tid=${Thread.currentThread().id}]$segment")
+                } else {
+                    block.invoke("        $segment")
+                }
+
+            }
+        }
     }
 
     fun i(msg: String, tag: String = TAG) {
