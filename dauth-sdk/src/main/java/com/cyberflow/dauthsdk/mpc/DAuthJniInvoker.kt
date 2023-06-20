@@ -5,6 +5,8 @@ import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.web3j.crypto.Hash
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
@@ -34,24 +36,30 @@ private fun ByteArray.printable(): String {
  * 使用kotlin进行调用，方便使用内联函数
  */
 object DAuthJniInvoker {
+    private const val THRESHOLD = 2
+    private const val PARTIES = 3
     private val jni by lazy { DAuthJni.getInstance() }
     private val keystore get() = MpcKeyStore
 
     fun initialize(){
-        initializeInner()
+
+        Thread {
+            DAuthLogger.d(">>> thread", TAG)
+            initializeInner()
+            DAuthLogger.d("<<< thread", TAG)
+        }.let {
+            it.name = "DAuthJniInvoker"
+            it.start()
+        }
     }
 
     private fun initializeInner() {
         jni.init()
 
-        // 3签2
-        val threshold = 2
-        val nParties = 3
-
-        val keyInSp = MpcKeyStore.getAllKeys()
+        val keyInSp = MpcKeyStore.getAllKeys().let { emptyList<String>() }
         val keys = if (keyInSp.isEmpty()) {
             runSpending("generateSignKeys") {
-                jni.generateSignKeys(threshold, nParties).also {
+                generateSignKeys().also {
                     keystore.setAllKeys(it.toList())
                 }
             }
@@ -122,7 +130,7 @@ object DAuthJniInvoker {
         DAuthLogger.d("equals=${r1==r2}", TAG)
     }
 
-    private fun localSignMsg(msg: String, keys: Array<String>): SignResult? {
+    fun localSignMsg(msg: String, keys: Array<String>): SignResult? {
         val msgHash = Hash.sha3String(msg).removePrefix("0x")
         val indies = intArrayOf(0, 1)
         val signedResultJson = jni.localSignMsg(msgHash, keys, indies)
@@ -136,7 +144,7 @@ object DAuthJniInvoker {
         return "0x" + Keys.getAddress(signedPublicKey)
     }
 
-    private fun generateEoaAddress(msg: String, keys: Array<String>): String? {
+    fun generateEoaAddress(msg: String, keys: Array<String>): String? {
         val signResult = localSignMsg(msg, keys)
         if (signResult == null) {
             DAuthLogger.e("signResult null", TAG)
@@ -149,7 +157,6 @@ object DAuthJniInvoker {
     /**
      * 生成随机消息。为了执行[DAuthJni.localSignMsg]
      */
-    @VisibleForTesting
     fun genRandomMsg(): String{
         val seed = System.currentTimeMillis()
         val random = Random(seed)
@@ -164,6 +171,11 @@ object DAuthJniInvoker {
     } catch (e: Exception) {
         DAuthLogger.e(e.stackTraceToString(), TAG)
         null
+    }
+
+    fun generateSignKeys(): Array<String> {
+        // 3签2
+        return jni.generateSignKeys(THRESHOLD, PARTIES)
     }
 }
 

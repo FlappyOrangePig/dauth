@@ -17,24 +17,16 @@ private const val TAG = "WalletWrapper"
 
 object WalletHolder {
     private const val DEBUG = true
-    val walletApi: IWalletApi by lazy { wrap(createWallet()) }
+    val walletApi: IWalletApi by lazy { EoaWallet() }
 
     init {
         KeystoreUtil.setupBouncyCastle()
     }
-
-    private fun wrap(walletApi: IWalletApi): IWalletApi {
-        return WalletWrapper(walletApi)
-    }
-
-    private fun createWallet(): IWalletApi = if (DEBUG) {
-        EoaWallet()
-    } else {
-        throw IllegalStateException()
-        //DAuthWallet()
-    }
 }
 
+/**
+ * 包装类，处理钱包类型无关的逻辑
+ */
 private class WalletWrapper(private val walletApi: IWalletApi) : IWalletApi by walletApi {
 
     private val context get() = DAuthSDK.impl.context

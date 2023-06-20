@@ -5,6 +5,7 @@ import android.content.Context
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
+import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 
 class DAuthSDK private constructor(
@@ -15,7 +16,7 @@ class DAuthSDK private constructor(
 
     companion object {
         val instance: IDAuthApi get() = impl
-        val impl: DAuthSDK by lazy {
+        internal val impl: DAuthSDK by lazy {
             DAuthSDK(DAuthLogin.instance, WalletHolder.walletApi)
         }
     }
@@ -32,7 +33,8 @@ class DAuthSDK private constructor(
         this._config = config
         initializeCheck()
         loginApi.initSDK(context, config)
-//        DAuthJniInvoker.initialize()
+        DAuthJniInvoker.initialize()
+        WebsocketManager.instance.createDefaultSession()
         DAuthLogger.i("init sdk ok")
     }
 

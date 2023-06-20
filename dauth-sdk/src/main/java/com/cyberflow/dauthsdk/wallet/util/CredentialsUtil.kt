@@ -130,6 +130,4 @@ object CredentialsUtil {
 
         return Bip39Wallet(walletFile, mnemonic)
     }
-
-
 }

@@ -49,5 +49,6 @@ sealed class DAuthResult<T> {
         const val SDK_ERROR_CANNOT_GET_NONCE = 1
         const val SDK_ERROR_CANNOT_GET_ADDRESS = 2
         const val SDK_ERROR_BIND_WALLET = 3
+        const val SDK_ERROR_CANNOT_GENERATE_EOA_ADDRESS = 4
     }
 }
