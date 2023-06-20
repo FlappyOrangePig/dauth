@@ -1,5 +1,6 @@
 package com.cyberflow.dauthsdk.mpc
 
+import android.annotation.SuppressLint
 import com.cyberflow.dauthsdk.api.DAuthSDK
 
 private const val FILE = "mpc_keystore"
@@ -22,11 +23,20 @@ object MpcKeyStore {
             keys.forEachIndexed { index, s ->
                 et.putString(index.toString(), s)
             }
-            et.apply()
+            et.commit()
         }
     }
 
+    fun setLocalKey(key: String) {
+        file.edit().let { et ->
+            et.clear()
+            et.putString(0.toString(), key)
+            et.commit()
+        }
+    }
+
+    @SuppressLint("ApplySharedPref")
     fun clear() {
-        file.edit().clear().apply()
+        file.edit().clear().commit()
     }
 }
