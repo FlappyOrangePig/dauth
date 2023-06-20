@@ -38,7 +38,7 @@ class WalletTestActivity : AppCompatActivity() {
         }
         binding.btnSign.setOnClickListener {
             val session = WebsocketManager.instance.createDefaultSession()
-            session.onEvent = {
+            session?.onEvent = {
                 Log.i(TAG, "onEvent $it")
             }
         }

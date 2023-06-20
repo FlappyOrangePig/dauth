@@ -34,10 +34,10 @@ class DAuthSDK private constructor(
         initializeCheck()
         loginApi.initSDK(context, config)
         //DAuthJniInvoker.initialize()
-        val session = WebsocketManager.instance.createDefaultSession()
+        /*val session = WebsocketManager.instance.createDefaultSession()
         session.onEvent = {
             DAuthLogger.d("on event $it")
-        }
+        }*/
         DAuthLogger.i("init sdk ok")
     }
 
