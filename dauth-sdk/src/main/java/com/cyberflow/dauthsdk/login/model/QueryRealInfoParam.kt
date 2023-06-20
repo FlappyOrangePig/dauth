@@ -11,8 +11,6 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -20,11 +18,10 @@ import kotlinx.serialization.Serializable
  * @param openudid 用户id
  */
 
-@Serializable
 data class QueryRealInfoParam (
     /* 用户id */
     val openudid: String,
-     val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
+     val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 
 }

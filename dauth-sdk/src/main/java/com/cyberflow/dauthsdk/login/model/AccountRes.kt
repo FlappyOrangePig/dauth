@@ -12,8 +12,7 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -39,11 +38,11 @@ import kotlinx.serialization.Serializable
  * @param create_time 注册时间
  */
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class AccountRes(
-    var data: @Contextual Data? = null
+    var data: Data? = null
 ) : BaseResponse() {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     class Data {
         /* 用户账号 */
         var account: String? = null

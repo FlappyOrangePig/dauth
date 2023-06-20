@@ -11,7 +11,6 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
 
 
 /**
@@ -21,7 +20,6 @@ import kotlinx.serialization.Serializable
  * @param sign 检验参数
  */
 
-@Serializable
 data class SendEmailVerifyCodeParam (
     /* 邮箱 */
     val account: String,

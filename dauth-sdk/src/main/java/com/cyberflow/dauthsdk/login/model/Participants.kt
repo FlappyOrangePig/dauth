@@ -1,8 +1,8 @@
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
-@Serializable
+@JsonClass(generateAdapter = true)
 class Participants {
     var id = 0
     /* 保存密钥的url */

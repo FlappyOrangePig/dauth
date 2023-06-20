@@ -70,7 +70,7 @@ class DAuthLogin : ILoginApi {
         val loginRes = RequestApi().login(loginParam)
 
         if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
-            val didToken = loginRes.data.did_token
+            val didToken = loginRes.data?.didToken
             //DAuth 授权接口测试获取临时code
             val codeVerifier = JwtChallengeCode().generateCodeVerifier()
             val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
@@ -97,7 +97,7 @@ class DAuthLogin : ILoginApi {
         val authorizeParam = withContext(Dispatchers.IO) {
             RequestApi().ownAuthorize(body, didToken)
         }
-       val code = authorizeParam?.data?.code.orEmpty()  //获取临时code
+        val code = authorizeParam?.data?.code.orEmpty()  //获取临时code
         DAuthLogger.e("ownAuthorize 临时code： $code ")
         return code
     }
@@ -106,15 +106,13 @@ class DAuthLogin : ILoginApi {
      * 自有账号授权登录获取token
      */
 
-    private fun getDAuthToken(
+    private suspend fun getDAuthToken(
         codeVerifier: String,
         code: String,
         didToken: String?
     ): TokenAuthenticationRes? {
-        var tokenAuthenticationRes: TokenAuthenticationRes? = null
         val body = TokenAuthenticationParam(codeVerifier, code)
-        tokenAuthenticationRes = RequestApi().ownOauth2Token(body, didToken)
-        return tokenAuthenticationRes
+        return RequestApi().ownOauth2Token(body, didToken)
     }
 
     /**
@@ -227,7 +225,7 @@ class DAuthLogin : ILoginApi {
         val loginRes = RequestApi().login(loginParam)
 
         if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
-            val didToken = loginRes.data.did_token.orEmpty()
+            val didToken = loginRes.data?.didToken.orEmpty()
             val userInfo = JwtDecoder().decoded(didToken)
             LoginPrefs(context).setDidToken(didToken)
             val codeVerifier = JwtChallengeCode().generateCodeVerifier()

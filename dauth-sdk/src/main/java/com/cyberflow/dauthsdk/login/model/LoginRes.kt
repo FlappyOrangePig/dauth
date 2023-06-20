@@ -12,8 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -21,12 +21,12 @@ import kotlinx.serialization.Serializable
  * @param session_id 用户登录凭证
  */
 
-@Serializable
-data class LoginRes (val data: Data) : BaseResponse() {
-    @Serializable
+@JsonClass(generateAdapter = true)
+data class LoginRes(val data: Data? = null) : BaseResponse() {
+    @JsonClass(generateAdapter = true)
     class Data {
         /* 用户登录凭证 */
-        val did_token: String? = null
+        @Json(name = "did_token") var didToken: String? = null
     }
 }
 

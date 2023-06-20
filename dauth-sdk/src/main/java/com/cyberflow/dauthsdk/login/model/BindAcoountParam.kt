@@ -11,9 +11,6 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
-
 /**
  * 
  * @param  
@@ -23,7 +20,7 @@ import kotlinx.serialization.Serializable
  * @param sign 检验参数
  */
 
-@Serializable
+
 data class BindAcoountParam (
     /* 用户main openudid */
     val openudid: String,
@@ -33,7 +30,7 @@ data class BindAcoountParam (
     val user_type: Int,
     /* 检验参数 */
     val sign: String,
-    val accessTokenInHeader : @Contextual AccessTokenInHeader? = null
+    val accessTokenInHeader : AccessTokenInHeader? = null
 ) {
 
 }

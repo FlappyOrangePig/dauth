@@ -4,7 +4,7 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-suspend inline fun <reified RESPONSE> awaitRequest(crossinline block: () -> RESPONSE?): RESPONSE? {
+suspend inline fun <reified RESPONSE> awaitRequest(crossinline block: suspend () -> RESPONSE?): RESPONSE? {
     return try {
         withContext(Dispatchers.IO) {
             block.invoke()

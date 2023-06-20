@@ -12,8 +12,7 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -25,11 +24,11 @@ import kotlinx.serialization.Serializable
  * @param scope 
  */
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class TokenAuthenticationRes (
-    val data: @Contextual Data?
+    val data: Data?
 ) : BaseResponse() {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     class Data {
         /* 用户登录标识,调用凭证,接口header传入,有效期短 */
         var access_token: String? = null

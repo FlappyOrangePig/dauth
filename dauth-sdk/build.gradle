@@ -52,13 +52,11 @@ dependencies {
     implementation libraries.google_service_auth
     implementation libraries.google_service_base
 
-    implementation libraries.serialization_json
-
     //twitter
     implementation libraries.twitter
     implementation libraries.twitter_core
 
-    implementation 'com.squareup.moshi:moshi-kotlin:1.12.0'
+    implementation libraries.moshi
     implementation libraries.commons_lang
     implementation libraries.commons_beanutils
     implementation libraries.kotlinx_coroutines_core

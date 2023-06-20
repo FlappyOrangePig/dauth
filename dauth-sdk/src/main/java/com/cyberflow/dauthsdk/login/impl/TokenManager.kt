@@ -19,12 +19,11 @@ class TokenManager private constructor() {
         }
     }
 
-    fun validateToken(): Boolean {
+    suspend fun validateToken(): Boolean {
         val tokenExpirationTime = LoginPrefs(context).getExpireTime()
         val currentTime = System.currentTimeMillis() / 1000
         // refreshToken过期时间
         val expirationTime = tokenExpirationTime + TimeUnit.DAYS.toMillis(30) / 1000
-
         return when {
             currentTime < tokenExpirationTime -> true // 令牌尚未过期
             // refreshToken未过期, accessToken过期
@@ -44,7 +43,7 @@ class TokenManager private constructor() {
         }
     }
 
-    fun refreshToken(): String? {
+    suspend fun refreshToken(): String? {
         // 刷新token
         val authId = LoginPrefs(context).getAuthId()
         val userType = LoginPrefs(context).getUserType()
@@ -52,8 +51,8 @@ class TokenManager private constructor() {
         val body = RefreshTokenParam(authId, userType, refreshToken)
         val response = RequestApi().refreshToken(body)
         if(response?.iRet == 0) {
-            val expireTime = response.data?.expire_in
-            val accessToken = response.data?.access_token
+            val expireTime = response.data?.expireIn
+            val accessToken = response.data?.accessToken
             DAuthLogger.d("刷新accessToken成功:$accessToken")
             LoginPrefs(context).setAccessToken(accessToken.orEmpty())
             expireTime?.let {
@@ -70,7 +69,7 @@ class TokenManager private constructor() {
         LoginPrefs(context).setAccessToken(newToken.orEmpty())
     }
 
-    inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T): T? {
+    suspend inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T): T? {
         val isValidate = validateToken()
         return if (isValidate) {
             val accessToken = LoginPrefs(context).getAccessToken()

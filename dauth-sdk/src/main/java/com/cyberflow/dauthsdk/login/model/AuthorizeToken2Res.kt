@@ -12,8 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -23,16 +23,16 @@ import kotlinx.serialization.Serializable
  * @param refresh_after DIDToken应该刷新的时间 一般过期时间的前几天
  */
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class AuthorizeToken2Res(
-    var data: @Contextual Data? = null
+    @Json(name = "data") val data: Data?
 ) : BaseResponse() {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     class Data {
-        val did_token: String? = null
-        val d_access_token: String? = null
-        val d_refresh_token: String? = null
-        val d_expire_in: Long? = null
+        @Json(name = "did_token") var didToken: String? = null
+        @Json(name = "d_access_token") var accessToken: String? = null
+        @Json(name = "d_refresh_token") var refreshToken: String? = null
+        @Json(name = "d_expire_in") var expireIn: Long? = null
     }
 }
 

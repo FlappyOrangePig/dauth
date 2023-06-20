@@ -1,8 +1,8 @@
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
-@Serializable
+@JsonClass(generateAdapter = true)
 class JwtDecodeResponse {
     val account: String? = null
     val nickname: String? = null

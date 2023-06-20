@@ -23,13 +23,13 @@ class ThirdPlatformLogin private constructor() {
         var loginResultData: LoginResultData? = null
         val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
         if (authorizeToken2Res?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
-            val didToken = authorizeToken2Res.data?.did_token.orEmpty()
+            val didToken = authorizeToken2Res.data?.didToken.orEmpty()
             val googleUserInfo = JwtDecoder().decoded(didToken)
-            val accessToken = authorizeToken2Res.data?.d_access_token.orEmpty()
+            val accessToken = authorizeToken2Res.data?.accessToken.orEmpty()
             DAuthLogger.d("第三方登录后获取的accessToken：$accessToken")
-            val refreshToken = authorizeToken2Res.data?.d_refresh_token.orEmpty()
+            val refreshToken = authorizeToken2Res.data?.refreshToken.orEmpty()
             val authId = googleUserInfo.sub.orEmpty()
-            val expireTime = authorizeToken2Res.data?.d_expire_in
+            val expireTime = authorizeToken2Res.data?.expireIn
             LoginPrefs(context).putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime)
             val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
             //没有钱包  返回errorCode

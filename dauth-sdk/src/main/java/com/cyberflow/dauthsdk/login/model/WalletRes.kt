@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class WalletRes(val name: String, val address: String) {
 }

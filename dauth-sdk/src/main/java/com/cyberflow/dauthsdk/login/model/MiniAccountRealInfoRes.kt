@@ -11,7 +11,7 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -37,7 +37,7 @@ import kotlinx.serialization.Serializable
  * @param create_time 注册时间
  */
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class MiniAccountRealInfoRes (
     /* 用户账号 */
     val account: String,

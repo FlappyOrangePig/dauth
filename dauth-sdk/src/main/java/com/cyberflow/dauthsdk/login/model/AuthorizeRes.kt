@@ -11,22 +11,20 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
-
+import com.squareup.moshi.JsonClass
 
 /**
  * 
  * @param code 临时code
  */
-@Serializable
+@JsonClass(generateAdapter = true)
 data class AuthorizeRes (
     /* 临时code */
-    val data: @Contextual Data
+    val data: Data
 ) {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     class Data {
-        val code: String? = null
+        var code: String? = null
     }
 }
 

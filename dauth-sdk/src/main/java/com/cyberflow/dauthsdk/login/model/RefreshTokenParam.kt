@@ -11,7 +11,6 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
 
 
 /**
@@ -24,7 +23,6 @@ import kotlinx.serialization.Serializable
  * @param sign 检验参数
  */
 
-@Serializable
 data class RefreshTokenParam (
     /* 用户id */
     val authid: String,

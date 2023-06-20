@@ -1,15 +1,14 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class ParticipantsRes(
-    val data: @Contextual Data? = null
+    val data: Data? = null
 ) : BaseResponse() {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     class Data {
-        val list: List<Participants>? = null
+        var list: List<Participants>? = null
     }
 }

@@ -6,8 +6,6 @@ import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import kotlinx.coroutines.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -85,13 +83,11 @@ open class ApiClient(val baseUrl: String) {
         return mime != null && (mime.matches(jsonMime.toRegex()) || mime == "*/*")
     }
 
-    protected inline fun <reified T: Any?> responseBody(response: Response, accept: String): T? {
-        if(response.body == null) return null
+    protected inline fun <reified T : Any> responseBody(response: Response, accept: String): T? {
+        if (response.body == null) return null
         val body = response.body
         val rb = body?.string()
-        val data = JSONObject(rb)
-        val msg = data.getString("sMsg")
-        DAuthLogger.e("接口返回：$msg")
+        DAuthLogger.e("接口返回：$rb")
         if (T::class.java == java.io.File::class.java) {
             return downloadFileFromResponse(response) as T
         } else if (T::class == Unit::class) {
@@ -105,7 +101,8 @@ open class ApiClient(val baseUrl: String) {
         }
         try {
             return if (isJsonMime(contentType)) {
-                Json{ignoreUnknownKeys = true}.decodeFromString(rb.orEmpty())
+                val adapter = Serializer.moshi.adapter(T::class.java)
+                adapter.fromJson(rb.toString())
             } else if (contentType.equals(String.Companion::class.java)) {
                 response.body.toString() as T
             } else {

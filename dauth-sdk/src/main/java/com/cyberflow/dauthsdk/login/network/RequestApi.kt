@@ -18,6 +18,7 @@ import com.cyberflow.dauthsdk.login.infrastructure.RequestConfig
 import com.cyberflow.dauthsdk.login.infrastructure.RequestMethod
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import kotlinx.coroutines.*
 
 
 private const val BASE_TEST_URL = "https://api-dev.infras.online"
@@ -51,7 +52,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AuthorizeRes
      */
 
-    fun ownAuthorize(body: AuthorizeParam, didToken: String): AuthorizeRes? {
+    suspend fun ownAuthorize(body: AuthorizeParam, didToken: String): AuthorizeRes? = awaitRequest {
         val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
         val contentIdHeaders: Map<String, String> = mapOf("Authorization" to didToken)
@@ -68,7 +69,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
             headers = localVariableHeaders
         )
         val response = request<AuthorizeRes>(localVariableConfig, body)
-        return response
+        response
 
     }
 
@@ -79,12 +80,10 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AuthorizeToken2Res
      */
 
-     fun authorizeExchangedToken(body: AuthorizeToken2Param): AuthorizeToken2Res? {
-
+     suspend fun authorizeExchangedToken(body: AuthorizeToken2Param): AuthorizeToken2Res? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/sociallogin/exchangedtoken")
-
         val response = request<AuthorizeToken2Res>(localVariableConfig, body)
-        return response
+        response
     }
 
 
@@ -147,11 +146,10 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return CreateAccountRes
      */
 
-    fun createAccount(body: CreateAccountParam): CreateAccountRes? {
-
+    suspend fun createAccount(body: CreateAccountParam): CreateAccountRes? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/create")
         val response = request<CreateAccountRes>(localVariableConfig, body)
-        return response
+        response
     }
 
 
@@ -177,9 +175,9 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @param body
      * @return LoginRes
      */
-    fun login(body: LoginParam?): LoginRes? {
+    suspend fun login(body: LoginParam?): LoginRes? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/login")
-        return request<LoginRes>(localVariableConfig, body)
+        request<LoginRes>(localVariableConfig, body)
     }
 
     /**
@@ -209,7 +207,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * 自有账号授权获取token
      */
 
-    fun ownOauth2Token(body: TokenAuthenticationParam, didToken: String?): TokenAuthenticationRes? {
+    suspend fun ownOauth2Token(body: TokenAuthenticationParam, didToken: String?): TokenAuthenticationRes? = awaitRequest {
         val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
         val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
@@ -228,7 +226,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
             headers = localVariableHeaders
         )
         val response = request<TokenAuthenticationRes>(localVariableConfig, body)
-        return response
+        response
     }
 
 
@@ -311,9 +309,9 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return RefreshTokenParamRes
      */
 
-    fun refreshToken(body: RefreshTokenParam): RefreshTokenParamRes? {
+    suspend fun refreshToken(body: RefreshTokenParam): RefreshTokenParamRes? = awaitRequest {
         val localVariableConfig = setCommonParams("/account/v1/refresh_token")
-        return request<RefreshTokenParamRes>(
+        request<RefreshTokenParamRes>(
             localVariableConfig,
             body
         )

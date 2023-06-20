@@ -11,7 +11,7 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -24,7 +24,7 @@ import kotlinx.serialization.Serializable
  * @param sign 
  */
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class AuthorizeToken2Param (
     /* access_token */
     var access_token: String? = null,

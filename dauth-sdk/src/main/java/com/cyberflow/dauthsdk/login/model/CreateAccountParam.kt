@@ -11,7 +11,6 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Serializable
 
 
 /**
@@ -42,7 +41,6 @@ import kotlinx.serialization.Serializable
  * @param sign 检验参数
  */
 
-@Serializable
 data class CreateAccountParam (
     /* 账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter */
     val user_type: String,

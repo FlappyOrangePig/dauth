@@ -1,8 +1,9 @@
 package com.cyberflow.dauthsdk.login.network
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.JsonClass
 
-@Serializable
+
+@JsonClass(generateAdapter = true)
 open class BaseResponse {
     var iRet: Int = 0
     var sMsg: String? = null

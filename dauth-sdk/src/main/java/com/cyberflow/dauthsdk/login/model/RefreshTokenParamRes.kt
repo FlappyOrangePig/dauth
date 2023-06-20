@@ -12,8 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 
 /**
@@ -24,23 +24,23 @@ import kotlinx.serialization.Serializable
  * @param refresh_token 用于刷新access_token,每次刷新返回新的
  */
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class RefreshTokenParamRes (
-   val data: @Contextual Data?
+   val data: Data?
 ) : BaseResponse() {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     class Data {
         /* 用户id */
-        val openudid: String? = null
+        @Json(name = "openudid") var openId: String? = null
 
         /* 用户登录标识,调用凭证,接口header传入,有效期短 */
-        val access_token: String? = null
+        @Json(name = "access_token") var accessToken: String? = null
 
         /* access_token有效期，单位（秒） */
-        var expire_in: Long? = null
+        @Json(name = "expire_in") var expireIn: Long? = null
 
         /* 用于刷新access_token,每次刷新返回新的 */
-        val refresh_token: String? = null
+        @Json(name = "refresh_token") var refreshToken: String? = null
     }
 }
 

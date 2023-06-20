@@ -11,22 +11,18 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
-
 /**
  * 
  * @param  
  * @param email 邮箱
  */
 
-@Serializable
 data class QueryByEMailParam (
     /* 邮箱 */
     val email: String,
     var access_token: String,
     val authid: String,
-    val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
+    val accessTokenInHeader: AccessTokenInHeader? = null
 ) {
 
 }
