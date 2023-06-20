@@ -190,17 +190,19 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
     suspend fun queryWallet(accessToken: String, authId: String): QueryWalletRes? = awaitRequest {
         val body = QueryWalletParam(accessToken, authId)
         val localVariableConfig = setCommonParams("/wallet/v1/query")
-        TokenManager.instance.authenticatedRequest() { accessToken ->
+        TokenManager.instance.authenticatedRequest { accessToken ->
             body.access_token = accessToken.orEmpty()
             DAuthLogger.d("queryWallet accessToken= ${body.access_token}")
             request<QueryWalletRes>(localVariableConfig, body)
         }
     }
 
-    fun bindWallet(bindWalletParam: BindWalletParam): BaseResponse? {
+    suspend fun bindWallet(bindWalletParam: BindWalletParam): BaseResponse? = awaitRequest  {
         val localVariableConfig = setCommonParams("/wallet/v1/bind")
-        val response = request<BaseResponse>(localVariableConfig, bindWalletParam)
-        return  response
+        TokenManager.instance.authenticatedRequest {
+            bindWalletParam.access_token = accessToken
+            request<BaseResponse>(localVariableConfig, bindWalletParam)
+        }
     }
 
 
@@ -239,7 +241,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      */
     fun logout(body: LogoutParam): Boolean {
         val localVariableConfig = setCommonParams("/account/v1/logout")
-
         val response = request<BaseResponse>(
             localVariableConfig,
             body
@@ -257,8 +258,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AccountRes
      */
     suspend fun queryByAuthId(body: QueryByAuthIdParam): AccountRes? = awaitRequest {
-        var response: AccountRes? = null
-        TokenManager.instance.authenticatedRequest() { accessToken ->
+        TokenManager.instance.authenticatedRequest { accessToken ->
             body.access_token = accessToken.orEmpty()
             val localVariableConfig = setCommonParams("/account/v1/userinfo/query")
             request<AccountRes>(localVariableConfig, body)
@@ -272,7 +272,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * @return AccountRes
      */
     suspend fun queryByEMail(body: QueryByEMailParam): AccountRes? = awaitRequest {
-        TokenManager.instance.authenticatedRequest() { accessToken ->
+        TokenManager.instance.authenticatedRequest { accessToken ->
             body.access_token = accessToken.orEmpty()
             val localVariableConfig = setCommonParams("/account/v1/userinfo/email/query")
             request<AccountRes>(localVariableConfig, body)
