@@ -4,19 +4,17 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
 import com.cyberflow.dauth.databinding.ActivityMobileLoginLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_MOBILE = 60  // 手机号登录
-private const val WALLET_IS_NOT_CREATE = 200001
-class LoginByMobileActivity: AppCompatActivity() {
+class LoginByMobileActivity: BaseActivity() {
     private var _binding: ActivityMobileLoginLayoutBinding?  = null
     private val binding: ActivityMobileLoginLayoutBinding get() = _binding!!
 
@@ -34,7 +32,7 @@ class LoginByMobileActivity: AppCompatActivity() {
         initView()
     }
 
-    private fun initView() {
+    override fun initView() {
         binding.tvSendCode.setOnClickListener {
             val phone = binding.edtAccount.text.toString()
             lifecycleScope.launch {
@@ -64,7 +62,7 @@ class LoginByMobileActivity: AppCompatActivity() {
                 val failureCode = loginResultData.code
                 // 处理登录失败逻辑
                 DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
-                if(failureCode == WALLET_IS_NOT_CREATE) {
+                if(failureCode == ResponseCode.AA_WALLET_IS_NOT_CREATE) {
                     handleCreateWallet()
                 }
             }

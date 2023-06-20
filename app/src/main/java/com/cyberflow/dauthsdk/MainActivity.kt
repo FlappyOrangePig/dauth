@@ -18,22 +18,23 @@ import com.cyberflow.dauthsdk.ext.mount
 import com.cyberflow.dauthsdk.ext.myAddress
 import com.cyberflow.dauthsdk.ext.tokenIds
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.fasterxml.jackson.databind.ser.Serializers.Base
 import kotlinx.coroutines.launch
 import java.math.BigInteger
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     private val testAddress = "0xA0590b28C219E6C26a93116D04C395A56E9135f5"
     private val testEmail = "453376077@qq.com"
     private val testAuthId = "6b5a96eb3fedc2e7bbf183eab6820b95"
     companion object {
-        fun launch(context : Context) {
+        fun launch(context: Context) {
             val intent = Intent(context, MainActivity::class.java)
             context.startActivity(intent)
         }
     }
 
-    private var mainBinding: ActivityMainLayoutBinding?  = null
+    private var mainBinding: ActivityMainLayoutBinding? = null
     private val binding: ActivityMainLayoutBinding get() = mainBinding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         initView()
     }
 
-    private fun initView() {
+    override fun initView() {
         binding.btnQueryBalance.setOnClickListener {
             lifecycleScope.launch {
                 val sb = StringBuilder()

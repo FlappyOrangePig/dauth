@@ -52,7 +52,6 @@ dependencies {
     implementation libraries.core_ktx
     implementation libraries.appcompat
     implementation libraries.material
-    implementation 'androidx.fragment:fragment:1.4.1'
     testImplementation libraries.junit
     androidTestImplementation libraries.ext_junit
     androidTestImplementation libraries.espresso_core
@@ -62,25 +61,25 @@ dependencies {
     debugImplementation project(':dauth-sdk')
 
     // 协程Android支持库
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    implementation libraries.coroutine
+    implementation libraries.kotlinx_coroutines_core
     // 协程Java8支持库
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4"
+    implementation libraries.kotlinx_coroutines_jdk8
     // lifecycle对于协程的扩展封装
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
+    implementation libraries.lifecycle_viewmodel_ktx
+    implementation libraries.lifecycle_runtime_ktx
+    implementation libraries.lifecycle_livedata_ktx
 
 //    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
     implementation libraries.okhttp
 
     //Google
-    implementation 'com.google.android.gms:play-services-auth:20.5.0'
-    implementation 'com.google.android.gms:play-services-base:18.2.0'
+    implementation libraries.google_service_auth
+    implementation libraries.google_service_base
 
     //twitter
-    implementation 'com.twitter.sdk.android:twitter:3.1.1'
-    implementation 'com.twitter.sdk.android:twitter-core:3.1.1@aar'
+    implementation libraries.twitter
+    implementation libraries.twitter_core
 
 
 

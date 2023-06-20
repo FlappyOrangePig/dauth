@@ -56,11 +56,6 @@ class WalletWebViewActivity : AppCompatActivity() {
             object : WalletCallback {
                 override fun onResult(walletInfo: String) {
                     callback?.onResult(walletInfo)
-//                val body = AuthorizeToken2Param(
-//                    user_type = TYPE_OF_WALLET_AUTH,
-//                    user_data = walletInfo
-//                )
-//                val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
                 }
             }
         ), "android")

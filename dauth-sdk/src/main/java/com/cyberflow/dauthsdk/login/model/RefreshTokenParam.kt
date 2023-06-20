@@ -11,7 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
- 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
@@ -22,6 +23,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param refresh_token 用于刷新access_token
  * @param sign 检验参数
  */
+
+@Serializable
 data class RefreshTokenParam (
     /* 用户id */
     val authid: String,

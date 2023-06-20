@@ -11,6 +11,9 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
@@ -20,6 +23,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param verify_code 验证码
  * @param sign 检验参数
  */
+
+@Serializable
 data class BindPhoneParam (
     /* 用户id */
     val openudid: String,
@@ -31,7 +36,7 @@ data class BindPhoneParam (
     val verify_code: String,
     /* 检验参数 */
     val sign: String,
-    val accessTokenInHeader: AccessTokenInHeader? = null
+    val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) {
 
 }

@@ -11,6 +11,9 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
@@ -19,6 +22,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param phone_area_code 手机区号
  * @param sign 检验参数
  */
+
+@Serializable
 data class UnbindPhoneParam (
     /* 用户id */
     val openudid: String,
@@ -28,7 +33,7 @@ data class UnbindPhoneParam (
     val phone_area_code: String,
     /* 检验参数 */
     val sign: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+     val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) {
 
 }

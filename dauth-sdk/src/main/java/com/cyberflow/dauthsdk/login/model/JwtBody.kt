@@ -1,5 +1,8 @@
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class JwtDecodeResponse {
     val account: String? = null
     val nickname: String? = null

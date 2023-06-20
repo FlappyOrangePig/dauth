@@ -1,5 +1,8 @@
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class Participants {
     var id = 0
     /* 保存密钥的url */

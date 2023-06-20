@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
@@ -21,6 +23,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param redirect_uri 
  * @param code_verifier 代码校验器
  */
+
+@Serializable
 data class TokenAuthenticationParam(
     val code_verifier: String,
 

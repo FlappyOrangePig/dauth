@@ -12,6 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -21,6 +23,8 @@ import com.cyberflow.dauthsdk.login.network.BaseResponse
  * @param phone_area_code 手机区号
  * @param sign 检验参数
  */
+
+@Serializable
 data class SendPhoneVerifyCodeParam (
     /* 用户id */
     val openudid: String ?= null,
@@ -29,7 +33,7 @@ data class SendPhoneVerifyCodeParam (
     /* 手机区号 */
     val phone_area_code: String,
     /* 检验参数 */
-     val accessTokenInHeader: AccessTokenInHeader? = null
+     val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) : BaseResponse(){
 
 }

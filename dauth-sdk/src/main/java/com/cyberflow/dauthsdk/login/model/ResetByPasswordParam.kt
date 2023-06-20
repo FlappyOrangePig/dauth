@@ -11,12 +11,16 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
  * @param openudid 用户id
  * @param sign 检验参数
  */
+
+@Serializable
 data class ResetByPasswordParam (
     // 账号类型
     val user_type: Int,

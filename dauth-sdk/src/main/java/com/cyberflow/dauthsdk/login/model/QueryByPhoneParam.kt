@@ -11,15 +11,20 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
  * @param phone 电话号码
  */
+
+@Serializable
 data class QueryByPhoneParam (
     /* 电话号码 */
     val phone: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+     val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) {
 
 }

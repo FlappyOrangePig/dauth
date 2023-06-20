@@ -12,6 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -21,9 +23,12 @@ import com.cyberflow.dauthsdk.login.network.BaseResponse
  * @param expire_in access_token有效期，单位（秒）
  * @param refresh_token 用于刷新access_token,每次刷新返回新的
  */
+
+@Serializable
 data class RefreshTokenParamRes (
-   val data: Data?
+   val data: @Contextual Data?
 ) : BaseResponse() {
+    @Serializable
     class Data {
         /* 用户id */
         val openudid: String? = null

@@ -12,13 +12,18 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 
 /**
  * 
  * @param SessionID 登录凭证
  */
-data class CreateAccountRes(val data: Data) : BaseResponse() {
+
+@Serializable
+data class CreateAccountRes(val data: @Contextual Data) : BaseResponse() {
+    @Serializable
     class Data {
         /* 登录凭证 */
         var SessionID: String? = null

@@ -1,14 +1,13 @@
 package com.cyberflow.dauthsdk.login.infrastructure
 
 import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -106,8 +105,7 @@ open class ApiClient(val baseUrl: String) {
         }
         try {
             return if (isJsonMime(contentType)) {
-                val gson = Gson()
-                gson.fromJson(rb, T::class.java)
+                Json{ignoreUnknownKeys = true}.decodeFromString(rb.orEmpty())
             } else if (contentType.equals(String.Companion::class.java)) {
                 response.body.toString() as T
             } else {

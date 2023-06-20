@@ -11,7 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
- 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
@@ -19,6 +20,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param openudid 用户id
  * @param sign 检验参数
  */
+
+@Serializable
 data class LogoutParam (
     /* 用户id */
     val openudid: String,

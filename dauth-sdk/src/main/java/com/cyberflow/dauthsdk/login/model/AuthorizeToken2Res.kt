@@ -12,6 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -20,9 +22,12 @@ import com.cyberflow.dauthsdk.login.network.BaseResponse
  * @param token_expire DIDToken过期时间
  * @param refresh_after DIDToken应该刷新的时间 一般过期时间的前几天
  */
+
+@Serializable
 data class AuthorizeToken2Res(
-    var data: Data? = null
+    var data: @Contextual Data? = null
 ) : BaseResponse() {
+    @Serializable
     class Data {
         val did_token: String? = null
         val d_access_token: String? = null

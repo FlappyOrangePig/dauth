@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
@@ -34,6 +36,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param user_state 用户状态
  * @param create_time 注册时间
  */
+
+@Serializable
 data class GetAcccountInfoRes (
     /* 用户账号 */
     val account: String,

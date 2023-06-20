@@ -11,7 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
- 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
@@ -25,6 +26,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param is_register 是否注册 0-不注册仅登录 1-不存在则注册并登录
  * @param sign 检验参数
  */
+
+@Serializable
 data class LoginParam(
     /* 账号类型 */
     val user_type: Int,

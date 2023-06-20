@@ -12,9 +12,9 @@ import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_EMAIL = 10
-class ResetPasswordActivity: AppCompatActivity() {
+class ResetPasswordActivity : BaseActivity() {
 
-    private var _binding: ActivityResetPwdLayoutBinding ?= null
+    private var _binding: ActivityResetPwdLayoutBinding? = null
     private val binding: ActivityResetPwdLayoutBinding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +31,7 @@ class ResetPasswordActivity: AppCompatActivity() {
         }
     }
 
-    private fun initView() {
+     override fun initView() {
         binding.ivBack.setOnClickListener {
             finish()
         }

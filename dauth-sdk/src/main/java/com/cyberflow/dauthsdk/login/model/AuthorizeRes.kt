@@ -11,15 +11,20 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
  * @param code 临时code
  */
+@Serializable
 data class AuthorizeRes (
     /* 临时code */
-    val data: Data
+    val data: @Contextual Data
 ) {
+    @Serializable
     class Data {
         val code: String? = null
     }

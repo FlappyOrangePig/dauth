@@ -1,16 +1,12 @@
 package com.cyberflow.dauthsdk
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
-import com.cyberflow.dauthsdk.Web3Const.MIMO_AVATAR_CONTRACT_ADDRESS
-import com.cyberflow.dauthsdk.Web3Const.MING_DA_S_ADDRESS
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -21,18 +17,19 @@ private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
 private const val FACEBOOK = "FACEBOOK"
 private const val ACCOUNT_TYPE_OF_EMAIL = 10
-private const val WALLET_IS_NOT_CREATE = 200001
-private const val LOGIN_CORRECT_CODE = 0
 
-class LoginActivity : AppCompatActivity() {
-    var loginBinding: ActivityLoginLayoutBinding?  = null
+class LoginActivity : BaseActivity() {
+    var loginBinding: ActivityLoginLayoutBinding? = null
     private val binding: ActivityLoginLayoutBinding get() = loginBinding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
-
         setContentView(binding.root)
+        initView()
+    }
+
+    override fun initView() {
         // 邮箱登录
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
@@ -54,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
                         val failureCode = loginResultData.code
                         // 处理登录失败逻辑
                         DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
-                        if(failureCode == WALLET_IS_NOT_CREATE) {
+                        if(failureCode == ResponseCode.AA_WALLET_IS_NOT_CREATE) {
                             handleCreateWallet()
                         }
                     }
@@ -71,10 +68,7 @@ class LoginActivity : AppCompatActivity() {
         binding.tvRegister.setOnClickListener {
             RegisterActivity.launch(this)
         }
-        initView()
-    }
 
-    private fun initView() {
         binding.ivGoogle.setOnClickListener {
             lifecycleScope.launch {
                 val loginResultData = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
@@ -129,7 +123,7 @@ class LoginActivity : AppCompatActivity() {
                 val failureCode = loginResultData.code
                 // 处理登录失败逻辑
                 DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
-                if(failureCode == WALLET_IS_NOT_CREATE) {
+                if(failureCode == ResponseCode.AA_WALLET_IS_NOT_CREATE) {
                     handleCreateWallet()
                 }
             }

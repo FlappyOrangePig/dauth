@@ -11,11 +11,15 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param access_token
  * @param authid 用户id
  */
+
+@Serializable
 data class QueryByAuthIdParam (
     /* 用户id */
      val authid: String,

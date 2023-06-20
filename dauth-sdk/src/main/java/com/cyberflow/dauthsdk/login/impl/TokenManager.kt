@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk.login.impl
 
 import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.api.entity.ErrorCode
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.model.RefreshTokenParam
 import com.cyberflow.dauthsdk.login.network.BaseResponse
 import com.cyberflow.dauthsdk.login.network.RequestApi
@@ -77,7 +77,7 @@ class TokenManager private constructor() {
             DAuthLogger.e("TokenManager accessToken is valid: $accessToken")
             val response = request(accessToken)
             val baseResponse = response as BaseResponse
-            if (baseResponse.iRet == ErrorCode.TOKEN_IS_INVALIDATE) {
+            if (baseResponse.iRet == ResponseCode.TOKEN_IS_INVALIDATE) {
                 val newAccessToken = refreshToken()
                 request(newAccessToken)
             } else {

@@ -11,6 +11,9 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
@@ -18,6 +21,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param account 邮箱
  * @param sign 检验参数
  */
+
+@Serializable
 data class UnbindEmailParam (
     /* 用户id */
     val openudid: String,
@@ -25,7 +30,7 @@ data class UnbindEmailParam (
     val account: String,
     /* 检验参数 */
     val sign: String,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+     val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) {
 
 }

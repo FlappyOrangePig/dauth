@@ -12,6 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -22,9 +24,12 @@ import com.cyberflow.dauthsdk.login.network.BaseResponse
  * @param refresh_token 用于刷新access_token,每次刷新返回新的
  * @param scope 
  */
+
+@Serializable
 data class TokenAuthenticationRes (
-    val data: Data?
-) : BaseResponse(){
+    val data: @Contextual Data?
+) : BaseResponse() {
+    @Serializable
     class Data {
         /* 用户登录标识,调用凭证,接口header传入,有效期短 */
         var access_token: String? = null

@@ -1,6 +1,7 @@
 package com.cyberflow.dauthsdk.api.entity
 
-object ErrorCode {
+object ResponseCode {
+     const val RESPONSE_CORRECT_CODE = 0                              // 请求成功
      const val WRONG_REQUEST_METHOD = 1000000                         // 请求方式错误
      const val WRONG_PARAMS = 1000001                                 // 参数错误
      const val WRONG_DATABASE = 1000002                               // 数据库错误

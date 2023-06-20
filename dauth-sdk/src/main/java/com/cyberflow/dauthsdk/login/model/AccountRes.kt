@@ -12,6 +12,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -36,9 +38,12 @@ import com.cyberflow.dauthsdk.login.network.BaseResponse
  * @param user_state 用户状态
  * @param create_time 注册时间
  */
+
+@Serializable
 data class AccountRes(
-    var data: Data? = null
+    var data: @Contextual Data? = null
 ) : BaseResponse() {
+    @Serializable
     class Data {
         /* 用户账号 */
         var account: String? = null
@@ -47,7 +52,7 @@ data class AccountRes(
         var nickname: String? = null
 
         /* 用户生日 */
-        var birthday: String? = null
+        var birthday: Int? = null
 
         /* 性别 0保密 1男 2女 */
         var sex: Int? = null
@@ -94,7 +99,7 @@ data class AccountRes(
         var user_state: Int? = null
 
         /* 注册时间 */
-        var create_time: String? = null
+        var create_time: Int? = null
 
         /* 是否设置密码 0-未设置 1-已设置 */
         var has_password: Int? = null

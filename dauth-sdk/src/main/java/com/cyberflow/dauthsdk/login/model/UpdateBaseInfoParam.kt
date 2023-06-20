@@ -11,6 +11,9 @@
  */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 
 /**
  *
@@ -27,6 +30,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param address 详细地址
  * @param sign 检验参数
  */
+
+@Serializable
 data class UpdateBaseInfoParam(
     /* 用户唯一标识 */
     val openudid: String,
@@ -50,7 +55,7 @@ data class UpdateBaseInfoParam(
     val address: String,
     /* 检验参数 */
     val sign: String,
-    val accessTokenInHeader: AccessTokenInHeader? = null
+    val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) {
 
 }

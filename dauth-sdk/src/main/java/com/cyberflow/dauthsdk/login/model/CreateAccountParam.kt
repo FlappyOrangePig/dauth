@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
@@ -39,6 +41,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param is_login 是否登录 0不登陆 1登录
  * @param sign 检验参数
  */
+
+@Serializable
 data class CreateAccountParam (
     /* 账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter */
     val user_type: String,
@@ -73,7 +77,7 @@ data class CreateAccountParam (
     /* 手机区号，当手机号注册时必填 */
     val phone_area_code: String? = null,
     /* 手机号，当手机号注册时必填 */
-    val phone: Long? = null,
+    val phone: String? = null,
     /* 用户真实名称 */
     val real_name: String? = null,
     /* 身份证号 */

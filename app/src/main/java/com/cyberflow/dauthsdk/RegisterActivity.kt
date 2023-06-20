@@ -10,8 +10,8 @@ import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import kotlinx.coroutines.launch
 
-class RegisterActivity: AppCompatActivity() {
-    private var _binding: ActivityRegisterLayoutBinding?= null
+class RegisterActivity : BaseActivity() {
+    private var _binding: ActivityRegisterLayoutBinding? = null
     private val binding: ActivityRegisterLayoutBinding get() = _binding!!
 
     companion object {
@@ -28,7 +28,7 @@ class RegisterActivity: AppCompatActivity() {
         initView()
     }
 
-    private fun initView() {
+     override fun initView() {
 
         binding.ivBack.setOnClickListener {
             finish()

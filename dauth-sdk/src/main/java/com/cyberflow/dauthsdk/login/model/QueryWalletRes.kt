@@ -1,13 +1,18 @@
 package com.cyberflow.dauthsdk.login.model
 
 import com.cyberflow.dauthsdk.login.network.BaseResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 class QueryWalletRes : BaseResponse(){
-    var data: Data? = null
+    var data: @Contextual Data? = null
+    @Serializable
     class Data {
         val authid: String? = null
 
-        val appid: String? = null
+        val appid: Int? = null
 
         val address: String? = null
 

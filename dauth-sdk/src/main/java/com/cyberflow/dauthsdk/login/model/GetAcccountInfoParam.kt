@@ -11,18 +11,23 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
  * @param openudid 用户id
  * @param user_type 登录来源
  */
+
+@Serializable
 data class GetAcccountInfoParam (
     /* 用户id */
     val openudid: String,
     /* 登录来源 */
     val user_type: Int,
-     val accessTokenInHeader: AccessTokenInHeader? = null
+     val accessTokenInHeader: @Contextual AccessTokenInHeader? = null
 ) {
 
 }

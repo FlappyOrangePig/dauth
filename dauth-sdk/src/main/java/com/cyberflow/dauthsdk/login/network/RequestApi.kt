@@ -179,8 +179,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      */
     fun login(body: LoginParam?): LoginRes? {
         val localVariableConfig = setCommonParams("/account/v1/login")
-        val response = request<LoginRes>(localVariableConfig, body)
-        return response
+        return request<LoginRes>(localVariableConfig, body)
     }
 
     /**

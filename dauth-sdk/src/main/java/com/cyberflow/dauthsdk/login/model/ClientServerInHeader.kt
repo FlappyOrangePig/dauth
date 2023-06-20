@@ -11,12 +11,16 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 
  * @param ClientID 所属应用id
  * @param ClientKey app标识key
  */
+
+@Serializable
 data class ClientServerInHeader (
     /* 所属应用id */
     val ClientID: String? = null,

@@ -11,6 +11,8 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * 
  * @param  
@@ -22,6 +24,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param code_challenge 
  * @param code_challenge_method 
  */
+
+@Serializable
 data class AuthorizeParam (
     /* 账号类型 */
     val user_type: Int,

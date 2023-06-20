@@ -19,6 +19,8 @@ ext {
         constraintlayout             : "2.1.4",
         lifecycle                    : "2.2.0",
         coroutine                    : "1.6.1",
+        kotlinx_coroutines_jdk8      : "1.6.4",
+        kotlinx_coroutines_core      : "1.6.4",
         kotlin_stdlib                : "1.8.0",
         room                         : "2.5.0",
         retrofit                     : "2.9.0",
@@ -30,6 +32,19 @@ ext {
         // 3rd
         web3j_core                   : "4.8.8-android",
         webview                      : "webkit:1.7.0",
+
+        // google
+        google_service_auth          : "play-services-auth:20.5.0",
+        google_service_base          : "play-services-auth:18.2.0",
+
+        // twitter
+        twitter                      : "twitter:3.1.1",
+        twitter_core                 : "twitter-core:3.1.1@aar",
+
+        //jwt
+        jwt                          : "jjwt:0.9.1",
+        commons_lang                 : "commons-lang3:3.7",
+        commons_beanutils            : "commons-beanutils:1.9.4",
 ]
 
 ext {
@@ -55,6 +70,8 @@ ext {
         coroutine                     : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutine",
         coroutines_play_services      : "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions.coroutine",
         coroutines_test               : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutine",
+        kotlinx_coroutines_jdk8       : "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$versions.kotlinx_coroutines_jdk8",
+        kotlinx_coroutines_core       : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.kotlinx_coroutines_core",
 
         room_runtime                  : "androidx.room:room-runtime:$versions.room",
         room_compiler                 : "androidx.room:room-compiler:$versions.room",
@@ -73,4 +90,17 @@ ext {
         web3j_core                    : "org.web3j:core:$versions.web3j_core",
         web3j_contract                : "org.web3j:contracts:$versions.web3j_core",
         webview                       : "androidx.webkit:$versions.webview",
+
+        // google
+        google_service_auth           : "com.google.android.gms:$versions.google_service_auth",
+        google_service_base           : "com.google.android.gms:$versions.google_service_base",
+
+        // twitter
+        twitter                       : "com.twitter.sdk.android:$versions.twitter",
+        twitter_core                  : "com.twitter.sdk.android:$versions.twitter_core",
+
+        // jwt
+        jwt                           : "io.jsonwebtoken:$versions.jwt",
+        commons_lang                  : "org.apache.commons:$versions.commons_lang",
+        commons_beanutils             : "commons-beanutils:$versions.commons_beanutils",
 ]

@@ -11,6 +11,7 @@
 */
 package com.cyberflow.dauthsdk.login.model
 
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -22,6 +23,8 @@ package com.cyberflow.dauthsdk.login.model
  * @param user_type 登录来源
  * @param sign 
  */
+
+@Serializable
 data class AuthorizeToken2Param (
     /* access_token */
     var access_token: String? = null,
