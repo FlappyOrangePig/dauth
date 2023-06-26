@@ -24,12 +24,11 @@ class LoginActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
-        initView()
     }
 
     override fun initView() {
+        loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
         // 邮箱登录
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()

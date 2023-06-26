@@ -260,8 +260,9 @@ class DAuthLogin : ILoginApi {
     }
 
 
-    override fun logout(openUid: String) {
-        val requestBody = LogoutParam(openUid)
+    override fun logout() {
+        val openId = LoginPrefs(context).getAuthId()
+        val requestBody = LogoutParam(openId)
         if(RequestApi().logout(requestBody)) {
             LoginPrefs(context).clearLoginStateInfo()
         }

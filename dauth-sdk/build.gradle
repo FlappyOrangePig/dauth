@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlinx-serialization'
 }
 
 android {
@@ -52,7 +51,7 @@ dependencies {
     implementation libraries.google_service_auth
     implementation libraries.google_service_base
 
-    //twitter
+    // twitter
     implementation libraries.twitter
     implementation libraries.twitter_core
 
@@ -69,11 +68,11 @@ dependencies {
     implementation libraries.lifecycle_runtime_ktx
     implementation libraries.lifecycle_livedata_ktx
 
-    //webview
+    // webview
     implementation libraries.webview
     implementation libraries.activity_ktx
 
-    //jwt
+    // jwt
     implementation libraries.jwt
 
     // web3j

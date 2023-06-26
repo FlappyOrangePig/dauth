@@ -19,9 +19,7 @@ class ResetPasswordActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityResetPwdLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
-        initView()
     }
 
     companion object {
@@ -31,7 +29,8 @@ class ResetPasswordActivity : BaseActivity() {
         }
     }
 
-     override fun initView() {
+    override fun initView() {
+        _binding = ActivityResetPwdLayoutBinding.inflate(LayoutInflater.from(this))
         binding.ivBack.setOnClickListener {
             finish()
         }
@@ -40,7 +39,7 @@ class ResetPasswordActivity : BaseActivity() {
             val account = binding.edtAccount.text.toString()
             val password = binding.edtNewPwd.text.toString()
             val verifyCode = binding.edtVerifyCode.text.toString()
-            if(password.length < 8) {
+            if (password.length < 8) {
                 ToastUtil.show(this, "请输入8-16位包括大小写英文和数字的密码")
             } else {
                 lifecycleScope.launch {
@@ -51,11 +50,13 @@ class ResetPasswordActivity : BaseActivity() {
                     val setPasswordData = DAuthSDK.instance.setRecoverPassword(params)
                     if (setPasswordData.code == 0) {
                         ToastUtil.show(
-                            this@ResetPasswordActivity, "重置密码成功")
+                            this@ResetPasswordActivity, "重置密码成功"
+                        )
                         this@ResetPasswordActivity.finish()
                     } else {
                         ToastUtil.show(
-                            this@ResetPasswordActivity, "${setPasswordData.msg}")
+                            this@ResetPasswordActivity, "${setPasswordData.msg}"
+                        )
                     }
                 }
             }
@@ -65,7 +66,7 @@ class ResetPasswordActivity : BaseActivity() {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
                 val response = DAuthSDK.instance.sendEmailVerifyCode(account)
-                if(response?.iRet == 0) {
+                if (response?.iRet == 0) {
                     ToastUtil.show(this@ResetPasswordActivity, "验证码发送成功")
                 }
             }

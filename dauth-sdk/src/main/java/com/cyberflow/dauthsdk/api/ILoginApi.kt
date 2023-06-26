@@ -37,7 +37,7 @@ interface ILoginApi {
     /**
      * 登出
      */
-    fun logout(openUid: String)
+    fun logout()
 
 
     /**
