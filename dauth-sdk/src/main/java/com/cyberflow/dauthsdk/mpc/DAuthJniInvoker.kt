@@ -1,19 +1,20 @@
 package com.cyberflow.dauthsdk.mpc
 
 import androidx.annotation.Keep
-import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.mpc.entity.JniOutBuffer
 import com.cyberflow.dauthsdk.mpc.ext.runSpending
+import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
+import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
+import com.cyberflow.dauthsdk.wallet.util.sha3
+import com.cyberflow.dauthsdk.wallet.util.sha3String
+import com.cyberflow.dauthsdk.wallet.util.toHexString
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import org.web3j.crypto.Hash
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.crypto.Sign.SignatureData
-import java.util.ArrayList
 import kotlin.random.Random
 
 private const val TAG = "DAuthJniInvoker"
@@ -65,7 +66,7 @@ object DAuthJniInvoker {
         }*/
 
         val msg = genRandomMsg()
-        val msgHash = Hash.sha3String(genRandomMsg()).removePrefix("0x")
+        val msgHash = genRandomMsg().sha3String().cleanHexPrefix()
 
         /*runSpending(TAG, "localSign") {
             val account = generateEoaAddress(msg, keys)
@@ -130,12 +131,11 @@ object DAuthJniInvoker {
         DAuthLogger.d("equals=${r1==r2}", TAG)
     }
 
-    fun localSignMsg(msg: String, keys: Array<String>): SignResult? {
+    fun localSignMsg(msgHash: String, keys: Array<String>): SignResult? {
         val keyIds = MpcKeyIds.getKeyIds()
         DAuthLogger.d("localSignMsg: ${keyIds.contentToString()}", TAG)
-        val msgHash = Hash.sha3String(msg).removePrefix("0x")
         val signedResultJson = jni.localSignMsg(
-            msgHash,
+            msgHash.cleanHexPrefix(),
             keyIds.take(2).toTypedArray(),
             keys.take(2).toTypedArray()
         )
@@ -143,20 +143,21 @@ object DAuthJniInvoker {
         return signedResultJson.toSignResult()
     }
 
-    @VisibleForTesting
-    fun getWalletAddressBySignature(msg: String, sd: SignatureData): String {
-        val signedPublicKey = Sign.signedMessageToKey(msg.toByteArray(), sd)
-        return "0x" + Keys.getAddress(signedPublicKey)
+    fun getWalletAddress(msgHash: ByteArray, sd: SignatureData): String {
+        val signedPublicKey = Sign.signedMessageHashToKey(msgHash, sd)
+        return Keys.getAddress(signedPublicKey).prependHexPrefix()
     }
 
-    fun generateEoaAddress(msg: String, keys: Array<String>): String? {
-        val signResult = localSignMsg(msg, keys)
+    fun generateEoaAddress(msg: ByteArray, keys: Array<String>): String? {
+        val msgHash = msg.sha3()
+        val msgHashHex = msgHash.toHexString()
+        val signResult = localSignMsg(msgHashHex, keys)
         if (signResult == null) {
             DAuthLogger.e("signResult null", TAG)
             return null
         }
         val sd = signResult.toSignatureData()
-        return getWalletAddressBySignature(msg, sd)
+        return getWalletAddress(msgHash, sd)
     }
 
     /**
@@ -169,7 +170,7 @@ object DAuthJniInvoker {
         return long.toString()
     }
 
-    private fun String.toSignResult() = try {
+    fun String.toSignResult() = try {
         val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
         val adapter = moshi.adapter(SignResult::class.java)
         adapter.fromJson(this)

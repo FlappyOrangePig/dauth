@@ -44,7 +44,7 @@ class MainActivity : BaseActivity() {
         initView()
     }
 
-    override fun initView() {
+    fun initView() {
         binding.btnQueryBalance.setOnClickListener {
             lifecycleScope.launch {
                 val sb = StringBuilder()

@@ -53,6 +53,11 @@ class SdkConfig {
     var useTestNetwork: Boolean = false
 
     /**
+     * 打开日志
+     */
+    var isLogOpen = true
+
+    /**
      * @param rpcUrl rpc节点
      */
     class ChainInfo(

@@ -28,7 +28,7 @@ class RegisterActivity : BaseActivity() {
         initView()
     }
 
-     override fun initView() {
+     fun initView() {
 
         binding.ivBack.setOnClickListener {
             finish()

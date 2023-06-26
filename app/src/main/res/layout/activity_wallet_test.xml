@@ -1,22 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btn_create_wallet"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/create_wallet"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <Button
-        android:id="@+id/btn_sign"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sign"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_create_wallet"/>
+        android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/btn_create_wallet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_wallet" />
+
+        <Button
+            android:id="@+id/btn_sign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sign" />
+
+        <Button
+            android:id="@+id/btn_create_aa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="执行UserOperation" />
+
+        <Button
+            android:id="@+id/btn_transfer_money_to_aa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="使用eoa账号转eth" />
+
+        <Button
+            android:id="@+id/btn_get_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查询余额" />
+
+        <Button
+            android:id="@+id/btn_aa_exists"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="判断是否存在aa账号" />
+
+    </LinearLayout>
+
+</ScrollView>

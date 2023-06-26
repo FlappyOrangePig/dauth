@@ -6,13 +6,20 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.CoSignerUser
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
+import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker.toSignResult
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.entity.MpcWsHeader
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.util.ZipUtil
+import com.cyberflow.dauthsdk.wallet.impl.ConfigurationManager
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import com.cyberflow.dauthsdk.wallet.util.ThreadUtil
+import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
+import com.cyberflow.dauthsdk.wallet.util.sha3String
+import com.cyberflow.dauthsdk.wallet.util.toHexString
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -21,35 +28,52 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import org.web3j.crypto.Hash
+import org.web3j.crypto.Sign.SignatureData
+import org.web3j.utils.Numeric
+import java.lang.IllegalStateException
+import java.lang.RuntimeException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 private const val TAG = "WebSocket"
 private const val MPC_REQUEST_HEADER = "WebSocket-Mpc-Request"
 
 class WebsocketManager private constructor() {
     companion object {
-        private const val ECHO_SERVER_URL = "wss://ws.postman-echo.com/raw"
-
-        //private const val SERVER_URL = "ws://api.infras.online/mpc/sign"
-        private const val SERVER_URL = "ws://172.16.12.35:9001/" // Tyler-local
         val instance by lazy { WebsocketManager() }
     }
 
-    fun createDefaultSession(): DAuthWsSession? {
-        return createSession(SERVER_URL)
+    private val serverUrl get() = ConfigurationManager.getAddressesByStage().webSocketUrl()
+
+    suspend fun mpcSign(msgHash: String): SignatureData? {
+        //必须在主线程调用，onEvent也在主线程回调
+        ThreadUtil.assertInMainThread(true)
+        val r = suspendCancellableCoroutine { continuation ->
+            val s = createSession(msgHash.cleanHexPrefix())
+            if (s == null) {
+                continuation.resume(null)
+            } else {
+                s.onEvent = { event ->
+                    if (event == DAuthWsSession.RESULT_SUCCESS) {
+                        continuation.resume(s.signatureData!!)
+                    } else {
+                        continuation.resume(null)
+                    }
+                }
+            }
+        }
+        DAuthLogger.d("mpcSign result:${MoshiUtil.toJson(r)}")
+        return r
     }
 
-    private fun createSession(url: String): DAuthWsSession? {
+    private fun createSession(msgHash: String): DAuthWsSession? {
+        val url = serverUrl
         DAuthLogger.d("create socket $url", TAG)
 
-        // 获取另一篇远端签名key的id
-        val remoteId = MpcKeyIds.getRemoteIdsToSign()
-        //WebSocket-Mpc-Request:{"signtype":"gg18","src":"co_signer1","openid":"014ebdf3a3789e211f81d9b8c771d717","token":"accesstoken"}
         val sp = LoginPrefs(DAuthSDK.impl.context)
         val accessToken = sp.getAccessToken()
         val openId = sp.getAuthId()
 
-        val msg = DAuthJniInvoker.genRandomMsg()
-        val msgHash = Hash.sha3String(msg).removePrefix("0x")
         val localKey = MpcKeyStore.getLocalKey()
         DAuthLogger.d("localKey len=${localKey.length}", TAG)
         if (localKey.isEmpty()) {
@@ -85,7 +109,7 @@ class WebsocketManager private constructor() {
             client = HttpClient.client,
             request = request,
             signed = signed,
-            user = user
+            user = user,
         )
     }
 }
@@ -95,23 +119,23 @@ class DAuthWsSession(
     request: Request,
     private val signed: ByteArray,
     private val user: CoSignerUser,
-
 ) : WebSocketListener() {
 
     companion object {
         const val RESULT_SUCCESS = 4001
         const val RESULT_FAILURE = 4002
 
-        private const val SEND_TIMEOUT = 500_000L
+        private const val SEND_TIMEOUT = 5_000L
     }
 
     var onEvent: ((event: Int) -> Unit)? = null
     private var timer: CountDownTimer? = null
+    var signatureData: SignatureData? = null
 
     private val listener = object : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             super.onOpen(webSocket, response)
-            ThreadUtil.runOnMainThread{
+            ThreadUtil.runOnMainThread {
                 DAuthLogger.d("connect opened, send ...", TAG)
                 trySendWithIoSwitch(signed)
             }
@@ -135,6 +159,12 @@ class DAuthWsSession(
                 val (result, outBuffer) = user.signRound(decompressed)
                 DAuthLogger.d("signRound: $result", TAG)
                 if (result) {
+                    val data = String(outBuffer).toSignResult()?.toSignatureData()
+                    if (data == null) {
+                        closeWith(RESULT_FAILURE)
+                        return@runOnMainThread
+                    }
+                    this@DAuthWsSession.signatureData = data
                     closeWith(RESULT_SUCCESS)
                 } else {
                     trySendWithIoSwitch(outBuffer)
@@ -144,7 +174,7 @@ class DAuthWsSession(
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             super.onFailure(webSocket, t, response)
-            ThreadUtil.runOnMainThread{
+            ThreadUtil.runOnMainThread {
                 DAuthLogger.d("connection failed: ${t.stackTraceToString()}", TAG)
                 dispatchEvent(RESULT_FAILURE)
             }
@@ -152,7 +182,7 @@ class DAuthWsSession(
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
             super.onClosed(webSocket, code, reason)
-            ThreadUtil.runOnMainThread{
+            ThreadUtil.runOnMainThread {
                 DAuthLogger.d("connection closed: $reason", TAG)
 
                 if (code == RESULT_SUCCESS) {
@@ -176,10 +206,10 @@ class DAuthWsSession(
         ws.close(event, "")
     }
 
-    private fun trySendWithIoSwitch(byteArray: ByteArray){
-        ThreadUtil.runOnWorkerThread{
+    private fun trySendWithIoSwitch(byteArray: ByteArray) {
+        ThreadUtil.runOnWorkerThread {
             val zipped = ZipUtil.compress(byteArray)
-            ThreadUtil.runOnMainThread{
+            ThreadUtil.runOnMainThread {
                 trySend(zipped)
             }
         }
