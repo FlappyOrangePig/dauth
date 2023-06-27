@@ -17,12 +17,10 @@ import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.MergeResultUtil
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
+import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.web3j.abi.datatypes.Function
 import org.web3j.protocol.core.methods.response.TransactionReceipt
 import java.math.BigInteger

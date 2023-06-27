@@ -1,7 +1,7 @@
 package com.cyberflow.dauthsdk
 
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.MergeResultUtil
+import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.mpc.SignResult
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.squareup.moshi.Moshi

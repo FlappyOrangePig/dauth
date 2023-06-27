@@ -1,11 +1,8 @@
-package com.cyberflow.dauthsdk.mpc
+package com.cyberflow.dauthsdk.mpc.util
 
 import android.util.Base64
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import java.io.ByteArrayOutputStream
 import java.math.BigInteger
-import java.util.zip.Deflater
-import java.util.zip.Inflater
 
 private const val TAG = "MergeResultUtil"
 
@@ -38,7 +35,7 @@ object MergeResultUtil {
         //log("sum=$sum")
 
         // 压缩
-        val compressed = compress(sum.toString().toByteArray())
+        val compressed = ZipUtil.compress(sum.toString().toByteArray())
         // base64
         val compressedBase64 = Base64.encodeToString(compressed, Base64.DEFAULT)
         log("compressedBase64 len=${compressedBase64.length}")
@@ -49,7 +46,7 @@ object MergeResultUtil {
         // 解base64
         val decompressedBase64 = Base64.decode(compressedBase64, Base64.DEFAULT)
         // 解压
-        val decompressed = decompress(decompressedBase64)
+        val decompressed = ZipUtil.decompress(decompressedBase64)
         val decompressedSum = BigInteger(String(decompressed))
 
         // 相减
@@ -104,34 +101,5 @@ object MergeResultUtil {
             result = result.minus(bi)
         }
         return fromBigInt(result)
-    }
-
-    private fun compress(data: ByteArray): ByteArray {
-        val deflater = Deflater()
-        deflater.setInput(data)
-        deflater.finish()
-
-        val buffer = ByteArray(1024)
-        val outputStream = ByteArrayOutputStream()
-        while (!deflater.finished()) {
-            val count = deflater.deflate(buffer)
-            outputStream.write(buffer, 0, count)
-        }
-        outputStream.close()
-        return outputStream.toByteArray()
-    }
-
-    private fun decompress(data: ByteArray): ByteArray {
-        val inflater = Inflater()
-        inflater.setInput(data)
-
-        val buffer = ByteArray(1024)
-        val outputStream = ByteArrayOutputStream()
-        while (!inflater.finished()) {
-            val count = inflater.inflate(buffer)
-            outputStream.write(buffer, 0, count)
-        }
-        outputStream.close()
-        return outputStream.toByteArray()
     }
 }
