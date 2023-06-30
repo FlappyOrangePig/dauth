@@ -31,7 +31,7 @@ class ResetPasswordActivity : BaseActivity() {
         }
     }
 
-     override fun initView() {
+     fun initView() {
         binding.ivBack.setOnClickListener {
             finish()
         }

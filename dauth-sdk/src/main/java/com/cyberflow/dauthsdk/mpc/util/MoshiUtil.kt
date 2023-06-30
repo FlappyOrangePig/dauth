@@ -5,11 +5,13 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 object MoshiUtil {
 
-    inline fun <reified T> toJson(obj: T): String {
+    inline fun <reified T> toJson(obj: T) = try {
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
         val adapter = moshi.adapter(T::class.java)
-        return adapter.toJson(obj)
-    }
+        adapter.toJson(obj)
+    } catch (t: Throwable) {
+        null
+    }.orEmpty()
 }

@@ -5,4 +5,8 @@
     <string name="google_play_service_id">209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com</string>
     <string name="create_wallet">创建钱包</string>
     <string name="sign">签名</string>
+    <string name="success">成功</string>
+    <string name="failure">失败</string>
+    <string name="create_aa">创建aa</string>
+    <string name="transfer_money_to_aa">给aa转钱</string>
 </resources>
