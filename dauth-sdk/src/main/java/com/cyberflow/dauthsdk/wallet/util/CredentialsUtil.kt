@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.wallet.util
 
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.wallet.ext.app
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Bip39Wallet
 import org.web3j.crypto.Bip44WalletUtils
@@ -9,17 +10,16 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.MnemonicUtils
 import org.web3j.crypto.WalletUtils
 import java.io.File
-import java.lang.IllegalStateException
 
 /**
  * 凭据工具类
  */
 object CredentialsUtil {
 
-    private val context get() = DAuthSDK.impl.context
+    private val context get() = app()
     private val config get() = DAuthSDK.impl.config
-    private val useTestNetwork get() = config.useTestNetwork
-    private val useInnerAccount get() = config.useInnerTestAccount
+    private val useTestNetwork get() = false
+    private val useInnerAccount get() = false
     private const val PASSWORD = ""
     private const val MNEMONIC = "nominee video milk cake style decide blind sponsor rabbit mule dutch vanish"
     private const val WALLECT_ADDRESS = "0xd3Ca5938af1Cce97A4B45ea775E8a291eF53BA8C"

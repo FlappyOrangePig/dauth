@@ -5,6 +5,7 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.ext.runSpending
+import com.cyberflow.dauthsdk.wallet.ext.app
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.sha3
@@ -66,7 +67,7 @@ object DAuthJniInvoker {
         }*/
 
         val msg = genRandomMsg()
-        val msgHash = genRandomMsg().sha3String().cleanHexPrefix()
+        val msgHash = msg.sha3String().cleanHexPrefix()
 
         /*runSpending(TAG, "localSign") {
             val account = generateEoaAddress(msg, keys)
@@ -92,43 +93,7 @@ object DAuthJniInvoker {
         }*/
 
         // 模拟多轮签名
-        val u1 = CoSignerUser("coSigner1", msgHash, keys[0], MpcKeyIds.getLocalId(), MpcKeyIds.getRemoteIdsToSign())
-        val u2 = CoSignerUser("coSigner2", msgHash, keys[1], MpcKeyIds.getRemoteIdsToSign(), MpcKeyIds.getLocalId())
-
-        val out1: ByteArray = u1.startRemoveSign()
-        val out2: ByteArray = u2.startRemoveSign()
-
-        var temp1 : Pair<Boolean, ByteArray>? = null
-        var temp2 : Pair<Boolean, ByteArray>? = null
-
-        var result1 : Pair<Boolean, ByteArray> = false to out1
-        var result2 : Pair<Boolean, ByteArray> = false to out2
-
-        var index = 1
-
-        while (true) {
-            DAuthLogger.v("poll ${index++}", TAG)
-
-            if (!result1.first){
-                temp2 = u2.signRound(result1.second)
-            }
-            if (!result2.first){
-                temp1 = u1.signRound(result2.second)
-            }
-
-            result2 = temp2!!
-            result1 = temp1!!
-
-            // 都完成就退出
-            if (result2.first && result1.first){
-                break
-            }
-        }
-
-        val r1 = String(result1.second)
-        val r2 = String(result2.second)
-        DAuthLogger.d("\ncoSignResult1=${r1}\ncoSignResult2=${r2}", TAG)
-        DAuthLogger.d("equals=${r1==r2}", TAG)
+        LocalMpcSign.mpcSign(msg)
     }
 
     fun localSignMsg(msgHash: String, keys: Array<String>): SignResult? {
@@ -143,9 +108,15 @@ object DAuthJniInvoker {
         return signedResultJson.toSignResult()
     }
 
-    fun getWalletAddress(msgHash: ByteArray, sd: SignatureData): String {
-        val signedPublicKey = Sign.signedMessageHashToKey(msgHash, sd)
-        return Keys.getAddress(signedPublicKey).prependHexPrefix()
+    fun getWalletAddress(msgHash: ByteArray, sd: SignatureData): String? {
+        return try {
+            // 这个方法有时候崩溃，比如返回的r是31位
+            val signedPublicKey = Sign.signedMessageHashToKey(msgHash, sd)
+            Keys.getAddress(signedPublicKey).prependHexPrefix()
+        } catch (e: Exception) {
+            DAuthLogger.e(e.stackTraceToString())
+            null
+        }
     }
 
     fun generateEoaAddress(msg: ByteArray, keys: Array<String>): String? {
@@ -181,7 +152,7 @@ object DAuthJniInvoker {
 
     fun generateSignKeys(): Array<String> {
         // 3签2
-        val authId = LoginPrefs(DAuthSDK.impl.context).getAuthId()
+        val authId = LoginPrefs().getAuthId()
         if (authId.isEmpty()) {
             DAuthLogger.e("auth id empty", TAG)
             return emptyArray()

@@ -2,12 +2,22 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="aa:0xdebf3d2b159235c668a4413be3dbbb711ae988c6\nsigner:0xdebf3d2b159235c668a4413be3dbbb711ae988c6"
+            android:textSize="12sp"
+            android:textColor="@color/black"
+            android:textIsSelectable="true"/>
 
         <Button
             android:id="@+id/btn_create_wallet"
@@ -22,28 +32,34 @@
             android:text="@string/sign" />
 
         <Button
-            android:id="@+id/btn_create_aa"
+            android:id="@+id/btn_execute_user_op"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="执行UserOperation" />
+            android:text="执行UserOp（没部署则部署+UserOp）" />
 
         <Button
             android:id="@+id/btn_transfer_money_to_aa"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="使用eoa账号转eth" />
+            android:text="用内置账号给AA账号转点钱" />
 
         <Button
             android:id="@+id/btn_get_balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="查询余额" />
+            android:text="查询AA账户的余额" />
 
         <Button
             android:id="@+id/btn_aa_exists"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="判断是否存在aa账号" />
+            android:text="判断地址是否部署了代码" />
+
+        <Button
+            android:id="@+id/btn_connect_wallet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="连接钱包" />
 
     </LinearLayout>
 

@@ -1,18 +1,18 @@
 package com.cyberflow.dauthsdk.login.impl
 
-import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.wallet.ext.app
 
 
 class ThirdPlatformLogin private constructor() {
 
-    private val context get() = DAuthSDK.impl.context
+    private val context get() = app()
     companion object {
         val instance by lazy {
             ThirdPlatformLogin()
@@ -30,7 +30,7 @@ class ThirdPlatformLogin private constructor() {
             val refreshToken = authorizeToken2Res.data?.refreshToken.orEmpty()
             val authId = googleUserInfo.sub.orEmpty()
             val expireTime = authorizeToken2Res.data?.expireIn
-            LoginPrefs(context).putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime)
+            LoginPrefs().putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime)
             val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
             //没有钱包  返回errorCode
             if (queryWalletRes?.data?.address.isNullOrEmpty()) {

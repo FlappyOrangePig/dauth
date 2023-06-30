@@ -1,6 +1,7 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import androidx.annotation.VisibleForTesting
+import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
@@ -8,14 +9,17 @@ import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
+import com.cyberflow.dauthsdk.mpc.MpcKeyStore
+import com.cyberflow.dauthsdk.mpc.entity.Web3jResponseError
+import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccountFactory
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
 import com.cyberflow.dauthsdk.wallet.util.CredentialsUtil
+import com.cyberflow.dauthsdk.wallet.util.FunctionEncodeUtil
 import com.cyberflow.dauthsdk.wallet.util.SignUtil
-import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.hexStringToByteArray
 import com.cyberflow.dauthsdk.wallet.util.sha3
@@ -24,7 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.TypeEncoder
-import org.web3j.abi.TypeReference
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.DynamicBytes
 import org.web3j.abi.datatypes.Function
@@ -50,6 +53,7 @@ import org.web3j.tx.TransactionManager
 import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.tx.gas.StaticGasProvider
 import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import java.math.BigInteger
 
 
@@ -153,9 +157,9 @@ private fun encodeRelCode(
 }
 
 /**
- * 追加签名字段
+ * 重新调用构造方法执行父类行为，使其在执行时可以被正确地序列化
  */
-private fun UserOperation.addSignature(signature: ByteArray) = UserOperation(
+private fun UserOperation.reload() = UserOperation(
     sender,
     nonce,
     initCode,
@@ -174,7 +178,7 @@ object Web3Manager {
     private val web3j: Web3j by lazy {
         Web3j.build(
             HttpService(
-                ConfigurationManager.getAddressesByStage().providerRpc(),
+                ConfigurationManager.urls().providerRpc,
                 HttpClient.client
             )
         )
@@ -217,6 +221,21 @@ object Web3Manager {
     private suspend fun <T> RemoteCall<T>.awaitLite(): T? {
         return (await() as? DAuthResult.Success)?.data
     }
+
+    private suspend fun <S, T : Response<*>> Request<S, T>.awaitException(): String? =
+        withContext(Dispatchers.IO) {
+            try {
+                val r = send()
+                if (r.hasError()) {
+                    r.error.data
+                } else {
+                    null
+                }
+            } catch (t: Throwable) {
+                DAuthLogger.e(t.stackTraceToString(), TAG)
+                null
+            }
+        }
 
     private fun transactionManager(ownerWalletAddress: String): TransactionManager {
         return ClientTransactionManager(web3j, ownerWalletAddress)
@@ -358,8 +377,8 @@ object Web3Manager {
     }
 
     suspend fun getAaAddressByEoaAddress(eoaAddress: String): String? {
-        val addresses = ConfigurationManager.getAddressesByStage()
-        val faAddress = addresses.factoryAddress()
+        val addresses = ConfigurationManager.addresses()
+        val faAddress = addresses.factoryAddress
         val accountFactory = DAuthAccountFactory.load(
             faAddress,
             web3j,
@@ -371,15 +390,15 @@ object Web3Manager {
         return aaAddress
     }
 
-    private suspend fun executeUserOperation(
+    suspend fun executeUserOperation(
         eoaAddress: String,
         callData: ByteArray
     ): DAuthResult<String> {
         DAuthLogger.d("executeUserOperation eoaAddress=$eoaAddress", TAG)
 
-        val addresses = ConfigurationManager.getAddressesByStage()
-        val faAddress = addresses.factoryAddress()
-        val entryPointAddress = addresses.entryPointAddress()
+        val addresses = ConfigurationManager.addresses()
+        val faAddress = addresses.factoryAddress
+        val entryPointAddress = addresses.entryPointAddress
 
         // 部署aa账号的eoa账号地址，最终部署在服务端，entryPoint的TransactionManager需要
         val relayerEoaAddress = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
@@ -424,7 +443,7 @@ object Web3Manager {
 
             // 生成initCode
             // initCode需要把工厂地址和方法打在一起
-            val funcCreateAccount = getCreateAccountFunction(eoaAddress)
+            val funcCreateAccount = FunctionEncodeUtil.getCreateAccountFunction(eoaAddress)
             val initCodeHex = encodePacked(Address(faAddress), DynamicBytes(funcCreateAccount))
             DAuthLogger.d("initCodeHex=$initCodeHex", TAG)
             initCodeHex.hexStringToByteArray()
@@ -442,7 +461,7 @@ object Web3Manager {
             callData,
             BigInteger("2100000"),
             BigInteger("21000000"),
-            BigInteger("2100000"),
+            BigInteger.ZERO,
             gasPrice,
             gasPrice,
             emptyCallData(),
@@ -454,6 +473,30 @@ object Web3Manager {
             "paymasterAndData=${userOperation.paymasterAndData.sha3().toHexString()}",
             TAG
         )
+
+        // 预估费用
+        val funcSimulateHandleOp = FunctionEncodeUtil.getSimulateHandleOpFunction(userOperation)
+        val funcSimulateHandleOpHex = funcSimulateHandleOp.toHexString()
+        val funcCallTx = Transaction.createFunctionCallTransaction(null, null, null, null, entryPointAddress, funcSimulateHandleOpHex)
+        val gasException = web3j.ethEstimateGas(funcCallTx).awaitException()
+        if (gasException == null) {
+            DAuthLogger.e("estimate gas error", TAG)
+            return DAuthResult.SdkError()
+        }
+        val estimateInfo = MoshiUtil.fromJson<Web3jResponseError>(gasException)
+        if (estimateInfo == null) {
+            DAuthLogger.e("estimateInfo error", TAG)
+            return DAuthResult.SdkError()
+        }
+        val estimateData = estimateInfo.data.cleanHexPrefix()
+        val verificationGasLimit = Numeric.toBigInt(estimateData.substring(8, 8 + 64))
+        val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64))
+        DAuthLogger.d("estimateData=$estimateData", TAG)
+        DAuthLogger.d("verificationGasLimit=$verificationGasLimit", TAG)
+        DAuthLogger.d("callGasLimit=$callGasLimit", TAG)
+
+        userOperation.verificationGasLimit = verificationGasLimit
+        userOperation.callGasLimit = callGasLimit
 
         val code = userOperation.encodeUserOp()
         DAuthLogger.d("code=$code", TAG)
@@ -479,16 +522,22 @@ object Web3Manager {
         val ethMsgHashHex = ethMsgHash.toHexString()
         DAuthLogger.d("toBeSignedHex=$ethMsgHashHex", TAG)
 
-        // 本地签
-        /*val privateKey = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
-        val signatureData = SignUtil.signMessage(
-            ethMsgHash,
-            Credentials.create(privateKey).ecKeyPair
-        )*/
-        // 本地签2片
-        //val signatureData = DAuthJniInvoker.localSignMsg(ethMsgHashHex, MpcKeyStore.getAllKeys().toTypedArray())!!.toSignatureData()
-        // mpc签
-        val signatureData = WebsocketManager.instance.mpcSign(ethMsgHashHex)
+        val localSign = DAuthSDK.impl.config.localSign
+        val signatureData = if (localSign) {
+            // 本地2片签
+            DAuthJniInvoker.localSignMsg(ethMsgHashHex, MpcKeyStore.getAllKeys().toTypedArray())!!
+                .toSignatureData()
+
+            // 模拟多轮签名
+            //LocalMpcSign.mpcSign(ethMsgHashHex)
+        } else if (true) {
+            // mpc签
+            WebsocketManager.instance.mpcSign(ethMsgHashHex)
+        } else {
+            // 本地内置密钥普通签
+            val privateKey = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
+            SignUtil.signMessage(ethMsgHash, Credentials.create(privateKey).ecKeyPair)
+        }
         if (signatureData == null) {
             DAuthLogger.e("mpc sign error")
             return DAuthResult.SdkError()
@@ -499,65 +548,41 @@ object Web3Manager {
             ethMsgHash,
             signatureData
         )
+        if (signer == null){
+            DAuthLogger.e("signer error")
+            return DAuthResult.SdkError()
+        }
+
         DAuthLogger.d("signer=$signer", TAG)
 
-        val userOpCopy = userOperation.addSignature(signature)
+        userOperation.signature = signature
+
+        val userOpCopy = userOperation.reload()
         DAuthLogger.d("signature=${signature.toHexString()} ${signature.size}", TAG)
 
-        val receipt = entryPoint.handleOp(userOpCopy).awaitLite()
-        DAuthLogger.d("handleOp receipt=$receipt", TAG)
+        val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
+        if (useLocalRelayer) {
+            val receipt = entryPoint.handleOp(userOpCopy).awaitLite()
+            DAuthLogger.d("handleOp receipt=$receipt", TAG)
 
-        val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
-        DAuthLogger.d("transactionHash=$transactionHash", TAG)
-        return DAuthResult.Success(transactionHash)
-    }
-
-    suspend fun executeMyUserOperation(): DAuthResult<String> {
-        val eoaAddress = WalletPrefsV2().getEoaAddress()
-        return executeUserOperation(eoaAddress = eoaAddress)
-    }
-
-    suspend fun executeUserOperation(eoaAddress: String): DAuthResult<String> {
-        /*val function = Function(
-            DAuthAccountFactory.FUNC_GETADDRESS,
-            listOf<Type<*>>(
-                Address(eoaAddress),
-                Uint256(0)
-            ),
-            listOf<TypeReference<*>>(object : TypeReference<Address?>() {})
-            val encoded = FunctionEncoder.encode(function)
-        )*/
-
-        val nonce = BigInteger.valueOf(1)
-        val gasPrice = DefaultGasProvider.GAS_PRICE
-        val gasLimit = DefaultGasProvider.GAS_LIMIT
-        val to = "0x1234567890abcdef"
-        val value = BigInteger.valueOf(1L)
-        val rawTransaction: RawTransaction =
-            RawTransaction.createEtherTransaction(nonce, gasPrice, gasLimit, to, value)
-        val encoded = TransactionEncoder.encode(rawTransaction).toHexString()
-
-
-        val ba = encoded.hexStringToByteArray()
-        return executeUserOperation(eoaAddress, ba)
-    }
-
-    private fun getCreateAccountFunction(eoaAddress: String): ByteArray {
-        val func = Function(
-            DAuthAccountFactory.FUNC_CREATEACCOUNT,
-            listOf<Type<*>>(
-                Address(eoaAddress),
-                Uint256(0)
-            ), emptyList<TypeReference<*>>()
-        )
-        val encoded = FunctionEncoder.encode(func)
-        return encoded.hexStringToByteArray()
-    }
-
-    suspend fun transferMoneyToAa(eoaAccount: String, aaAccount: String, eoaPrivateKey: String){
-        val nonce = web3j.ethGetTransactionCount(eoaAccount, DefaultBlockParameterName.LATEST).awaitLite {
-            it.transactionCount
+            val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
+            DAuthLogger.d("transactionHash=$transactionHash", TAG)
+            return DAuthResult.Success(transactionHash)
+        } else {
+            val sendResult = RelayerRequester.sendRequest(userOpCopy)
+            DAuthLogger.d("sendResult=$sendResult", TAG)
+            if (!sendResult) {
+                return DAuthResult.SdkError()
+            }
+            return DAuthResult.Success("")
         }
+    }
+
+    suspend fun transferMoneyToAa(eoaAccount: String, aaAccount: String, eoaPrivateKey: String): String? {
+        val nonce =
+            web3j.ethGetTransactionCount(eoaAccount, DefaultBlockParameterName.LATEST).awaitLite {
+                it.transactionCount
+            }
         DAuthLogger.d("nonce=$nonce", TAG)
 
         val value = Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
@@ -577,6 +602,7 @@ object Web3Manager {
             it.transactionHash
         }
         DAuthLogger.d("transactionHash=$transactionHash", TAG)
+        return transactionHash
     }
 
     @Deprecated("使用entryPoint.getNonce")

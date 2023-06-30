@@ -6,7 +6,7 @@ import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import java.math.BigInteger
 
 suspend fun myAddress() =
-    (DAuthSDK.instance.queryWalletAddress() as? DAuthResult.Success)?.data?.address
+    (DAuthSDK.instance.queryWalletAddress() as? DAuthResult.Success)?.data?.aaAddress
 
 fun WalletBalanceData.mount() = when (this) {
     is WalletBalanceData.Eth -> {

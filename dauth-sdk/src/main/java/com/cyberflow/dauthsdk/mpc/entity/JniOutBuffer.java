@@ -1,5 +1,8 @@
 package com.cyberflow.dauthsdk.mpc.entity;
 
+import androidx.annotation.Keep;
+
+@Keep
 public class JniOutBuffer {
     private final byte[] bytes;
     private final String id;
