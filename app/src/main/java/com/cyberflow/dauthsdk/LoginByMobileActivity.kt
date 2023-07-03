@@ -53,7 +53,7 @@ class LoginByMobileActivity: BaseActivity() {
     private fun handleLoginResult(loginResultData: LoginResultData?) {
         when (loginResultData) {
             is LoginResultData.Success -> {
-                val idToken = loginResultData.idToken
+                val idToken = loginResultData.accessToken
                 // 处理登录成功逻辑
                 MainActivity.launch(this@LoginByMobileActivity)
                 DAuthLogger.d("登录成功，返回的ID令牌：$idToken")

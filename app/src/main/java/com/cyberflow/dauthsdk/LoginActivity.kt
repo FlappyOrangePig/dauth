@@ -42,7 +42,7 @@ class LoginActivity : BaseActivity() {
                 )
                 when (loginResultData) {
                     is LoginResultData.Success -> {
-                        val idToken = loginResultData.idToken
+                        val idToken = loginResultData.accessToken
                         // 处理登录成功逻辑
                         MainActivity.launch(this@LoginActivity)
                         DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
@@ -117,7 +117,7 @@ class LoginActivity : BaseActivity() {
     private fun handleLoginResult(loginResultData: LoginResultData?) {
         when (loginResultData) {
             is LoginResultData.Success -> {
-                val idToken = loginResultData.idToken
+                val idToken = loginResultData.accessToken
                 // 处理登录成功逻辑
                 MainActivity.launch(this@LoginActivity)
                 DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
