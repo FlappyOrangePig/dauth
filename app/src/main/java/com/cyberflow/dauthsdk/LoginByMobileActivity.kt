@@ -27,11 +27,12 @@ class LoginByMobileActivity: BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        _binding = ActivityMobileLoginLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
+        initView()
     }
 
-    override fun initView() {
-        _binding = ActivityMobileLoginLayoutBinding.inflate(LayoutInflater.from(this))
+    fun initView() {
         binding.tvSendCode.setOnClickListener {
             val phone = binding.edtAccount.text.toString()
             lifecycleScope.launch {

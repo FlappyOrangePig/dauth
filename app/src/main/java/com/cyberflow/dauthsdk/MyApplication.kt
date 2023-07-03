@@ -16,10 +16,10 @@ class MyApplication : Application() {
             twitterConsumerSecret = CONSUMER_SECRET
             chain = SdkConfig.ChainInfo(
                 // seplia-test
-                rpcUrl = "https://rpc.sepolia.org/",
+                //rpcUrl = "https://rpc.sepolia.org/",
 
                 // 本地服务器
-                //rpcUrl = Web3Const.RPC_URL
+                rpcUrl = Web3Const.RPC_URL
 
                 // ETMP-live
                 //rpcUrl = "https://rpc.etm.network",

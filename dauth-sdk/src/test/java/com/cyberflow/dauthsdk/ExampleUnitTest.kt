@@ -1,20 +1,28 @@
 package com.cyberflow.dauthsdk
 
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.mpc.SignResult
+import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
+import com.cyberflow.dauthsdk.wallet.util.SignUtil
+import com.cyberflow.dauthsdk.wallet.util.sha3
+import com.cyberflow.dauthsdk.wallet.util.sha3String
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.junit.Test
 import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.TypeEncoder
 import org.web3j.abi.TypeReference
 import org.web3j.abi.datatypes.Address
+import org.web3j.abi.datatypes.DynamicBytes
+import org.web3j.abi.datatypes.DynamicStruct
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.Type
 import org.web3j.abi.datatypes.generated.Bytes4
 import org.web3j.abi.datatypes.generated.Uint256
-import org.web3j.crypto.Hash
+import org.web3j.crypto.Credentials
+import org.web3j.utils.Numeric
+import java.math.BigInteger
 import java.util.Arrays
 import kotlin.random.Random
 
@@ -47,7 +55,7 @@ class ExampleUnitTest {
         val random = Random(seed)
         val long = random.nextLong()
         println("long=$long")
-        val result = Hash.sha3String(long.toString())
+        val result = long.toString().sha3String()
         println("sha3: [${result.length}]$result")
     }
 
@@ -81,7 +89,8 @@ class ExampleUnitTest {
         )
         println("localSignMsg $signResult")
         val sd = signResult.toSignatureData()
-        val eoaAddress = invoker.getWalletAddressBySignature(msg, sd)
+        val msgHash = msg.toByteArray().sha3()
+        val eoaAddress = invoker.getWalletAddress(msgHash, sd)
         println("address=$eoaAddress")
     }
 
@@ -103,5 +112,67 @@ class ExampleUnitTest {
         val result = decoded == key3
         println("result=$result")
         assert(result)
+    }
+
+    @Test
+    fun testEncodeAndEncodePacked() {
+        val faAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+        val zaAddress = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e05fbfb9cf000000000000000000000000df3e18d64bc6a983f673ab319ccae4f1a57c70970000000000000000000000000000000000000000000000000000000000000000"
+        val aaAddress = "9fe46736679d2d9a65f0992f2272de9f3c7fa6e00x5fbfb9cf000000000000000000000000dd2fd4581271e230360230f9337d5c0430bf44c00000000000000000000000000000000000000000000000000000000000000000"
+
+        val address = Address(faAddress)
+        val encodedPacked = TypeEncoder.encodePacked(address)
+        println("encodedPacked=$encodedPacked")
+        val encoded = TypeEncoder.encode(address)
+        println("encoded=$encoded")
+    }
+
+    @Test
+    fun testEncodeParameter() {
+        // 获取当前链的 chainId
+        val v1 = Uint256(BigInteger("123"))
+        val v2 = DynamicBytes(Numeric.hexStringToByteArray("0x123"))
+
+        // 1.FunctionEncoder
+        val params = listOf<Type<*>>(
+            v1,
+            v2
+        )
+        val e1: String = FunctionEncoder.encodeConstructorPacked(params)
+        println("e1=$e1")
+
+        // 2.DIY
+        val e2 = StringBuilder().append(TypeEncoder.encodePacked(v1)).append(TypeEncoder.encodePacked(v2)).toString()
+        println("e2=$e2")
+
+        // 3.DIY + DynamicStruct
+        val dynamicStruct = DynamicStruct(v1, v2)
+        val e3 = TypeEncoder.encodePacked(dynamicStruct)
+        println("e3:$e3")
+
+        // 4.FunctionEncoder + DynamicStruct
+        val e4: String = FunctionEncoder.encodeConstructorPacked(listOf(dynamicStruct))
+        println("e4:$e4")
+    }
+
+    @Test
+    fun testSignedMessageToKey() {
+        // 这个账号是苟建的测试账号（有很多eth）
+        val eoa = "0xdd2fd4581271e230360230f9337d5c0430bf44c0"
+        val privateKey = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
+
+        val msg = DAuthJniInvoker.genRandomMsg().toByteArray()
+        val msgHash = msg.sha3()
+
+        val signatureData = SignUtil.signMessage(
+            msgHash,
+            Credentials.create(privateKey).ecKeyPair
+        )
+
+        val signer = DAuthJniInvoker.getWalletAddress(msgHash, signatureData)
+        println("signer=$signer")
+
+        // 确认getWalletAddress方法的正确性
+        assert(eoa == signer)
     }
 }

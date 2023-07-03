@@ -1,16 +1,29 @@
 package com.cyberflow.dauthsdk
 
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 
 open class BaseActivity : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        initView()
+    override fun onPause() {
+        super.onPause()
+        if (isFinishing) {
+            dispatchRelease()
+        }
     }
 
-    open fun initView() {
-
+    override fun onDestroy() {
+        super.onDestroy()
+        dispatchRelease()
     }
+
+    private var dispatched = false
+
+    private fun dispatchRelease() {
+        if (!dispatched) {
+            dispatched = true
+            onRelease()
+        }
+    }
+
+    open fun onRelease() = Unit
 }

@@ -23,11 +23,13 @@ class RegisterActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        _binding = ActivityRegisterLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
+        initView()
     }
 
-    override fun initView() {
-        _binding = ActivityRegisterLayoutBinding.inflate(LayoutInflater.from(this))
+     fun initView() {
+
         binding.ivBack.setOnClickListener {
             finish()
         }
@@ -36,18 +38,16 @@ class RegisterActivity : BaseActivity() {
             val account = binding.edtAccount.text.toString()
             val password = binding.edtPassword.text.toString()
             val ensurePassword = binding.edtEnsurePassword.text.toString()
-            if (account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
+            if(account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
                 lifecycleScope.launch {
                     val code =
                         DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
-                    if (code != null) {
-                        if (code == 0) {
+                    if(code != null) {
+                        if(code == 0) {
                             MainActivity.launch(this@RegisterActivity)
                         } else {
-                            ToastUtil.show(
-                                this@RegisterActivity,
-                                "创建自有账号失败 errorCode: $code"
-                            )
+                            ToastUtil.show(this@RegisterActivity,
+                                "创建自有账号失败 errorCode: $code")
                         }
                     }
                 }

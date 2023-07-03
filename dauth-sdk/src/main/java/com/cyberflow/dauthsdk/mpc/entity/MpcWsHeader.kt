@@ -1,5 +1,8 @@
 package com.cyberflow.dauthsdk.mpc.entity
 
+import androidx.annotation.Keep
+
+@Keep
 class MpcWsHeader(
     val signtype: String = "gg18",
     val src: String,

@@ -4,8 +4,6 @@ import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 
 class DAuthSDK private constructor(
@@ -27,10 +25,10 @@ class DAuthSDK private constructor(
     internal val config get() = _config ?: throw RuntimeException("please call initSDK() first")
 
     override fun initSDK(context: Context, config: SdkConfig) {
-        DAuthLogger.i("init sdk")
         val appContext = context.applicationContext as Application
         this._context = appContext
         this._config = config
+        DAuthLogger.i("init sdk")
         initializeCheck()
         loginApi.initSDK(context, config)
         //DAuthJniInvoker.initialize()

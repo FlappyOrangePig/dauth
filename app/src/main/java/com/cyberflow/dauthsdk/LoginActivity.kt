@@ -24,11 +24,12 @@ class LoginActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
+        initView()
     }
 
-    override fun initView() {
-        loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
+    fun initView() {
         // 邮箱登录
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
@@ -162,11 +163,11 @@ class LoginActivity : BaseActivity() {
             ToastUtil.show(this@LoginActivity, tokenIds.toString())*/
 
             // 查询sepolia-test上面某人的BULL_TOKEN
-            val balance = DAuthSDK.instance.queryWalletBalance(
+            /*val balance = DAuthSDK.instance.queryWalletBalance(
                 Web3Const.ANY_ONE_WHO_RECEIVE_BULL_TOKEN_ON_SEPOLIA_TEST_NETWORK,
                 TokenType.ERC20(Web3Const.BULL_TOKEN_CONTRACT_ADDRESS)
             )
-            ToastUtil.show(this@LoginActivity, balance.toString())
+            ToastUtil.show(this@LoginActivity, balance.toString())*/
         }
     }
 }
