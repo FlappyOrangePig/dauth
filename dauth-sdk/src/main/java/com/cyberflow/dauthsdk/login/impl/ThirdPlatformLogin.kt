@@ -34,7 +34,7 @@ class ThirdPlatformLogin private constructor() {
             val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
             //没有钱包  返回errorCode
             if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                loginResultData = LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE)
+                loginResultData = LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, didToken, authId)
             } else {
                 // 该邮箱绑定过钱包
                 loginResultData = LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, didToken, authId)
