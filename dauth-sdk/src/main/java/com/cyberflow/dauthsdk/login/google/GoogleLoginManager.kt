@@ -9,6 +9,7 @@ import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.login.utils.ToastUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -17,6 +18,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.web3j.abi.datatypes.Bool
 
 
 private const val REQUEST_CODE = 9004
@@ -52,18 +54,23 @@ class GoogleLoginManager {
     //登录
     fun googleSignInAuth(activity: Activity) {
         val code = checkGooglePlayServiceExist(activity)
-        onCheckGooglePlayServices(activity, code)
-        val signInIntent: Intent = signInClient(activity)!!.signInIntent
-        activity.startActivityForResult(signInIntent, REQUEST_CODE)
+        if(onCheckGooglePlayServices(activity, code)) {
+            val signInIntent: Intent = signInClient(activity)!!.signInIntent
+            activity.startActivityForResult(signInIntent, REQUEST_CODE)
+        } else {
+            ToastUtil.show(activity.applicationContext,"Google service is unavailable")
+            activity.finish()
+        }
     }
 
-    private fun onCheckGooglePlayServices(activity: Activity, code: Int) {
+    private fun onCheckGooglePlayServices(activity: Activity, code: Int) : Boolean {
         // 验证是否已在此设备上安装并启用Google Play服务，以及此设备上安装的旧版本是否为此客户端所需的版本
         GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(activity)
         // 通过isUserResolvableError来确定是否可以通过用户操作解决错误
         if (GoogleApiAvailability.getInstance().isUserResolvableError(code)) {
-            GoogleApiAvailability.getInstance().getErrorDialog(activity, code, 200)?.show()
+            return false
         }
+        return true
     }
 
     private fun checkGooglePlayServiceExist(activity: Activity): Int {
@@ -88,18 +95,20 @@ class GoogleLoginManager {
     }
 
      suspend fun googleAuthLogin(data: Intent?) : LoginResultData? {
-        val accountIdToken = getGoogleIdToken(data)
          var loginResultData: LoginResultData? = null
-         val authorizeParam = AuthorizeToken2Param(
-            access_token = null,
-            refresh_token = null,
-            AUTH_TYPE_OF_GOOGLE,
-            commonHeader = null,
-            id_token = accountIdToken
-        )
-        withContext(Dispatchers.IO) {
-            loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
-        }
+         val accountIdToken = getGoogleIdToken(data)
+         if(accountIdToken.isNotEmpty()) {
+             val authorizeParam = AuthorizeToken2Param(
+                 access_token = null,
+                 refresh_token = null,
+                 AUTH_TYPE_OF_GOOGLE,
+                 commonHeader = null,
+                 id_token = accountIdToken
+             )
+             withContext(Dispatchers.IO) {
+                 loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
+             }
+         }
         return loginResultData
     }
 

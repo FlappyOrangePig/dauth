@@ -56,8 +56,7 @@ dependencies {
     implementation libraries.twitter_core
 
     implementation libraries.moshi
-    implementation libraries.commons_lang
-    implementation libraries.commons_beanutils
+
     implementation libraries.kotlinx_coroutines_core
     // 协程Android支持库
     implementation libraries.coroutine

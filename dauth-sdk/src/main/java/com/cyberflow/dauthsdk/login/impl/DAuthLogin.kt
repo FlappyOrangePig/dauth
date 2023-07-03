@@ -47,6 +47,7 @@ class DAuthLogin : ILoginApi {
         val instance: ILoginApi by lazy {
             DAuthLogin()
         }
+        var clientId: String? = null
     }
 
     override fun initSDK(context: Context, config: SdkConfig) {
@@ -57,6 +58,7 @@ class DAuthLogin : ILoginApi {
             val appContext = context.applicationContext as Application
             appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
         }
+        clientId = config.clientId
     }
 
 

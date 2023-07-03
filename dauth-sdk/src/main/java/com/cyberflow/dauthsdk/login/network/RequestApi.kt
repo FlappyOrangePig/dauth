@@ -11,6 +11,7 @@
  */
 package com.cyberflow.dauthsdk.login.network
 
+import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.infrastructure.ApiClient
 import com.cyberflow.dauthsdk.login.infrastructure.MultiValueMap
@@ -23,14 +24,14 @@ import kotlinx.coroutines.*
 
 private const val BASE_TEST_URL = "https://api-dev.infras.online"
 private const val BASE_FORMAL_URL = "https://api.infras.online/"
-private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
 private const val CLIENT_SECRET = "4657*@cde"
+private const val CLIENT_ID_KEY = "client_id"
 
 class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
     private fun setCommonParams(url: String): RequestConfig {
         val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val contentHeaders: Map<String, String> = mapOf(CLIENT_ID_KEY to DAuthLogin.clientId.orEmpty())
         val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders.putAll(contentHeaders)
@@ -54,7 +55,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
     suspend fun ownAuthorize(body: AuthorizeParam, didToken: String): AuthorizeRes? = awaitRequest {
         val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val contentHeaders: Map<String, String> = mapOf("client_id" to DAuthLogin.clientId.orEmpty())
         val contentIdHeaders: Map<String, String> = mapOf("Authorization" to didToken)
         val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
@@ -209,7 +210,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
     suspend fun ownOauth2Token(body: TokenAuthenticationParam, didToken: String?): TokenAuthenticationRes? = awaitRequest {
         val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val contentHeaders: Map<String, String> = mapOf("client_id" to DAuthLogin.clientId.orEmpty())
         val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
         val authHeaders: Map<String, String> = mapOf("Authorization" to didToken.orEmpty())
         val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
@@ -397,7 +398,7 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      */
     suspend fun setPassword(body: SetPasswordParam, didToken: String?) : BaseResponse? = awaitRequest {
         val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf("client_id" to CLIENT_ID)
+        val contentHeaders: Map<String, String> = mapOf("client_id" to DAuthLogin.clientId.orEmpty())
         val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
         val authHeaders: Map<String, String> = mapOf("Authorization" to didToken.orEmpty())
         val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")

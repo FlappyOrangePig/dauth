@@ -130,7 +130,9 @@ class LoginActivity : BaseActivity() {
                     handleCreateWallet()
                 }
             }
-            else -> {}
+            else -> {
+                DAuthLogger.e("用户取消授权")
+            }
         }
     }
 

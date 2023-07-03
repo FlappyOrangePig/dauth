@@ -42,8 +42,8 @@ ext {
 
         // jwt
         jwt                          : "jjwt:0.9.1",
-        commons_lang                 : "commons-lang3:3.7",
-        commons_beanutils            : "commons-beanutils:1.9.4",
+//        commons_lang                 : "commons-lang3:3.7",
+//        commons_beanutils            : "commons-beanutils:1.9.4",
 
         // moshi
         moshi                        : "moshi-kotlin:1.12.0",
@@ -102,8 +102,6 @@ ext {
 
         // jwt
         jwt                           : "io.jsonwebtoken:$versions.jwt",
-        commons_lang                  : "org.apache.commons:$versions.commons_lang",
-        commons_beanutils             : "commons-beanutils:$versions.commons_beanutils",
 
         //moshi
         moshi                         : "com.squareup.moshi:$versions.moshi",

@@ -58,6 +58,11 @@ class SdkConfig {
     var isLogOpen = true
 
     /**
+     * clientId 在DAuth后台注册得到的clientId
+     */
+    var clientId: String? = null
+
+    /**
      * @param rpcUrl rpc节点
      */
     class ChainInfo(

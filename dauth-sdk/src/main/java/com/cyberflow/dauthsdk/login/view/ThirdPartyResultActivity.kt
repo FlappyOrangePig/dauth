@@ -49,8 +49,8 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
                         override fun failure(exception: TwitterException?) {
                             DAuthLogger.e("twitter授权失败：$exception")
+                            finish()
                         }
-
                     })
             }
         }
@@ -62,12 +62,11 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        var loginResultData : LoginResultData? = null
         lifecycleScope.launch {
             when (requestCode) {
                 GOOGLE_REQUEST_CODE -> {
                     lifecycleScope.launch {
-                        loginResultData = GoogleLoginManager.instance.googleAuthLogin(data)
+                        val loginResultData = GoogleLoginManager.instance.googleAuthLogin(data)
                         dispatchResult(loginResultData)
                         finish()
                     }
@@ -75,7 +74,7 @@ class ThirdPartyResultActivity : AppCompatActivity() {
 
                 TWITTER_REQUEST_CODE -> {
                     lifecycleScope.launch {
-                        loginResultData = TwitterLoginManager.instance.twitterAuthLogin(
+                        val loginResultData = TwitterLoginManager.instance.twitterAuthLogin(
                                 requestCode,
                                 resultCode,
                                 data
