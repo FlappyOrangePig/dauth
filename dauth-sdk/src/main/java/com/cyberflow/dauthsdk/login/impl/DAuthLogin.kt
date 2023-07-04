@@ -250,10 +250,10 @@ class DAuthLogin : ILoginApi {
 
             if (queryWalletRes?.data?.address.isNullOrEmpty()) {
                 // 该邮箱没有钱包
-                return@withContext LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, didToken, authId)
+                return@withContext LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, accessToken, authId)
             } else {
                 // 该邮箱绑定过钱包
-                return@withContext LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, didToken, authId)
+                return@withContext LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
             }
         } else {
             // 其他错误
