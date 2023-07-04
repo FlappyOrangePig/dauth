@@ -1,31 +1,70 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-object ConfigurationManager {
-    fun getAddressesByStage(): DAuthAddress {
-        return TestAddress
+internal object ConfigurationManager {
+    private fun configuration() = Test
+    internal fun urls() = configuration().getServerUrls
+    internal fun addresses() = configuration().getAddress
+
+    /**
+     * 测试开关
+     */
+    internal const val saveAllKeys = true
+}
+
+internal interface DAuthConfiguration {
+    val getAddress: DAuthAddress
+    val getServerUrls: DAuthServerUrls
+}
+
+internal interface DAuthAddress {
+    val factoryAddress: String
+    val entryPointAddress: String
+    val nftAddress: String
+}
+
+internal interface DAuthServerUrls {
+    val providerRpc: String
+    val webSocketUrl: String
+    val relayerUrl: String
+}
+
+private object Test : DAuthConfiguration {
+    override val getAddress: DAuthAddress = object : DAuthAddress {
+        override val factoryAddress: String
+            get() = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+        override val entryPointAddress: String
+            get() = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+        override val nftAddress: String
+            get() = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+    }
+
+    override val getServerUrls: DAuthServerUrls = object : DAuthServerUrls {
+        override val providerRpc: String
+            get() = "http://172.16.13.155:8545"
+        override val webSocketUrl: String
+            get() = "ws://api-dev.infras.online/mpc/sign"
+        override val relayerUrl: String
+            get() = "https://api-dev.infras.online/relayer/committrans"
     }
 }
 
-interface DAuthAddress {
-    fun providerRpc(): String
-    fun factoryAddress(): String
-    fun entryPointAddress(): String
-    fun nftAddress(): String
-    fun webSocketUrl(): String
-}
+/*
+private object Live : DAuthConfiguration {
+    override val getAddress: DAuthAddress = object : DAuthAddress {
+        override val factoryAddress: String
+            get() = "0xaB308475416e673fcAbC6B9AD06D6bDa124DBB96"
+        override val entryPointAddress: String
+            get() = "0x0f6423874F25052c6B242ce6169dAC00f3E5E3C2"
+        override val nftAddress: String
+            get() = "0xb5605D6DEfc9e09d9a937ac49B3a4A959Ad73432"
+    }
 
-object TestAddress : DAuthAddress {
-    override fun providerRpc() = "http://172.16.13.155:8545"
-    override fun factoryAddress() = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-    override fun entryPointAddress() = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-    override fun nftAddress(): String = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
-    override fun webSocketUrl() = "ws://api-dev.infras.online/mpc/sign"
-}
-
-object LiveAddress : DAuthAddress {
-    override fun providerRpc() = "https://rpc.pioneer.etm.network"
-    override fun factoryAddress() = "0xaB308475416e673fcAbC6B9AD06D6bDa124DBB96"
-    override fun entryPointAddress() = "0x0f6423874F25052c6B242ce6169dAC00f3E5E3C2"
-    override fun nftAddress(): String = "0xb5605D6DEfc9e09d9a937ac49B3a4A959Ad73432"
-    override fun webSocketUrl() = "ws://api.infras.online/mpc/sign"
-}
+    override val getServerUrls: DAuthServerUrls = object : DAuthServerUrls {
+        override val providerRpc: String
+            get() = "https://rpc.pioneer.etm.network"
+        override val webSocketUrl: String
+            get() = "ws://api.infras.online/mpc/sign"
+        override val relayerUrl: String
+            get() = "https://api.infras.online/relayer/committrans"
+    }
+}*/

@@ -14,37 +14,66 @@ package com.cyberflow.dauthsdk.login.network
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.infrastructure.ApiClient
-import com.cyberflow.dauthsdk.login.infrastructure.MultiValueMap
 import com.cyberflow.dauthsdk.login.infrastructure.RequestConfig
 import com.cyberflow.dauthsdk.login.infrastructure.RequestMethod
-import com.cyberflow.dauthsdk.login.model.*
+import com.cyberflow.dauthsdk.login.model.AccountRes
+import com.cyberflow.dauthsdk.login.model.AuthorizeParam
+import com.cyberflow.dauthsdk.login.model.AuthorizeRes
+import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
+import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Res
+import com.cyberflow.dauthsdk.login.model.BindAcoountParam
+import com.cyberflow.dauthsdk.login.model.BindEmailParam
+import com.cyberflow.dauthsdk.login.model.BindPhoneParam
+import com.cyberflow.dauthsdk.login.model.BindRealInfoParam
+import com.cyberflow.dauthsdk.login.model.BindWalletParam
+import com.cyberflow.dauthsdk.login.model.CreateAccountParam
+import com.cyberflow.dauthsdk.login.model.CreateAccountRes
+import com.cyberflow.dauthsdk.login.model.GetParticipantsParam
+import com.cyberflow.dauthsdk.login.model.GetParticipantsRes
+import com.cyberflow.dauthsdk.login.model.LoginParam
+import com.cyberflow.dauthsdk.login.model.LoginRes
+import com.cyberflow.dauthsdk.login.model.LogoutParam
+import com.cyberflow.dauthsdk.login.model.MiniAccountRealInfoRes
+import com.cyberflow.dauthsdk.login.model.QueryByAuthIdParam
+import com.cyberflow.dauthsdk.login.model.QueryByEMailParam
+import com.cyberflow.dauthsdk.login.model.QueryByPhoneParam
+import com.cyberflow.dauthsdk.login.model.QueryRealInfoParam
+import com.cyberflow.dauthsdk.login.model.QueryWalletParam
+import com.cyberflow.dauthsdk.login.model.QueryWalletRes
+import com.cyberflow.dauthsdk.login.model.RefreshTokenParam
+import com.cyberflow.dauthsdk.login.model.RefreshTokenParamRes
+import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
+import com.cyberflow.dauthsdk.login.model.SendEmailVerifyCodeParam
+import com.cyberflow.dauthsdk.login.model.SendPhoneVerifyCodeParam
+import com.cyberflow.dauthsdk.login.model.SetPasswordParam
+import com.cyberflow.dauthsdk.login.model.TokenAuthenticationParam
+import com.cyberflow.dauthsdk.login.model.TokenAuthenticationRes
+import com.cyberflow.dauthsdk.login.model.UnbindEmailParam
+import com.cyberflow.dauthsdk.login.model.UnbindPhoneParam
+import com.cyberflow.dauthsdk.login.model.UpdateBaseInfoParam
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import kotlinx.coroutines.*
 
 
 private const val BASE_TEST_URL = "https://api-dev.infras.online"
 private const val BASE_FORMAL_URL = "https://api.infras.online/"
-private const val CLIENT_SECRET = "4657*@cde"
+internal const val CLIENT_SECRET = "4657*@cde"
 private const val CLIENT_ID_KEY = "client_id"
 
 class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
 
-    private fun setCommonParams(url: String): RequestConfig {
-        val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf(CLIENT_ID_KEY to DAuthLogin.clientId.orEmpty())
-        val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-
-        return RequestConfig(
+    private fun setCommonParams(url: String, vararg moreHeaders: Pair<String, String>) =
+        RequestConfig(
             RequestMethod.POST,
             url,
-            query = localVariableQuery,
-            headers = localVariableHeaders
+            headers = mutableMapOf(
+                CLIENT_ID_KEY to DAuthLogin.clientId.orEmpty(),
+                "Accept" to "application/json"
+            ).apply {
+                moreHeaders.forEach {
+                    put(it.first, it.second)
+                }
+            }
         )
-
-    }
 
     /**
      * 自定义账号认证登录，返回临时 code
@@ -54,7 +83,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      */
 
     suspend fun ownAuthorize(body: AuthorizeParam, didToken: String): AuthorizeRes? = awaitRequest {
-        val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to DAuthLogin.clientId.orEmpty())
         val contentIdHeaders: Map<String, String> = mapOf("Authorization" to didToken)
         val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
@@ -66,7 +94,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
         val localVariableConfig = RequestConfig(
             RequestMethod.POST,
             "/account/v1/oauth2/auth",
-            query = localVariableQuery,
             headers = localVariableHeaders
         )
         val response = request<AuthorizeRes>(localVariableConfig, body)
@@ -209,7 +236,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      */
 
     suspend fun ownOauth2Token(body: TokenAuthenticationParam, didToken: String?): TokenAuthenticationRes? = awaitRequest {
-        val localVariableQuery: MultiValueMap = mapOf()
         val contentHeaders: Map<String, String> = mapOf("client_id" to DAuthLogin.clientId.orEmpty())
         val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
         val authHeaders: Map<String, String> = mapOf("Authorization" to didToken.orEmpty())
@@ -223,7 +249,6 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
         val localVariableConfig = RequestConfig(
             RequestMethod.POST,
             "/account/v1/oauth2/token",
-            query = localVariableQuery,
             headers = localVariableHeaders
         )
         val response = request<TokenAuthenticationRes>(localVariableConfig, body)
@@ -396,27 +421,21 @@ class RequestApi(basePath: String = BASE_TEST_URL) : ApiClient(basePath) {
      * 设置密码
      * @param body password 密码 Authorization 登录后的didtoken
      */
-    suspend fun setPassword(body: SetPasswordParam, didToken: String?) : BaseResponse? = awaitRequest {
-        val localVariableQuery: MultiValueMap = mapOf()
-        val contentHeaders: Map<String, String> = mapOf("client_id" to DAuthLogin.clientId.orEmpty())
-        val secretHeaders: Map<String, String> = mapOf("client_secret" to CLIENT_SECRET)
-        val authHeaders: Map<String, String> = mapOf("Authorization" to didToken.orEmpty())
-        val acceptsHeaders: Map<String, String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        localVariableHeaders.putAll(secretHeaders)
-        localVariableHeaders.putAll(authHeaders)
+    suspend fun setPassword(body: SetPasswordParam, didToken: String?): BaseResponse? =
+        awaitRequest {
+            val headers = setCommonParams(
+                "/account/v1/password/set",
+                "client_secret" to CLIENT_SECRET,
+                "Authorization" to didToken.orEmpty()
+            )
+            request<BaseResponse>(headers, body)
+        }
 
-        val localVariableConfig = RequestConfig(
-            RequestMethod.POST,
-            "/account/v1/password/set",
-            query = localVariableQuery,
-            headers = localVariableHeaders
-        )
-        var response: BaseResponse? = null
-        response = request<BaseResponse>(localVariableConfig, body)
-        response
+    suspend fun getParticipants(body: GetParticipantsParam) = awaitRequest {
+        TokenManager.instance.authenticatedRequest { accessToken ->
+            body.access_token = accessToken.orEmpty()
+            val localVariableConfig = setCommonParams("/wallet/v1/participants/get")
+            request<GetParticipantsRes>(localVariableConfig, body)
+        }
     }
-
 }

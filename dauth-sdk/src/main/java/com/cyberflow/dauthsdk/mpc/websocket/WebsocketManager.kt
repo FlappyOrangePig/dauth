@@ -5,7 +5,6 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.CoSignerUser
-import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker.toSignResult
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
@@ -16,9 +15,6 @@ import com.cyberflow.dauthsdk.wallet.impl.ConfigurationManager
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import com.cyberflow.dauthsdk.wallet.util.ThreadUtil
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
-import com.cyberflow.dauthsdk.wallet.util.sha3String
-import com.cyberflow.dauthsdk.wallet.util.toHexString
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -27,13 +23,8 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
-import org.web3j.crypto.Hash
 import org.web3j.crypto.Sign.SignatureData
-import org.web3j.utils.Numeric
-import java.lang.IllegalStateException
-import java.lang.RuntimeException
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 private const val TAG = "WebSocket"
 private const val MPC_REQUEST_HEADER = "WebSocket-Mpc-Request"
@@ -41,9 +32,13 @@ private const val MPC_REQUEST_HEADER = "WebSocket-Mpc-Request"
 class WebsocketManager private constructor() {
     companion object {
         val instance by lazy { WebsocketManager() }
+        private val useDevServer get() = DAuthSDK.impl.config.useDevWebSocketServer
+        private val serverUrl = if (useDevServer) {
+            "ws://172.16.12.117:9001/"
+        } else {
+            ConfigurationManager.urls().webSocketUrl
+        }
     }
-
-    private val serverUrl get() = ConfigurationManager.getAddressesByStage().webSocketUrl()
 
     suspend fun mpcSign(msgHash: String): SignatureData? {
         //必须在主线程调用，onEvent也在主线程回调
@@ -70,7 +65,7 @@ class WebsocketManager private constructor() {
         val url = serverUrl
         DAuthLogger.d("create socket $url", TAG)
 
-        val sp = LoginPrefs(DAuthSDK.impl.context)
+        val sp = LoginPrefs()
         val accessToken = sp.getAccessToken()
         val openId = sp.getAuthId()
 
@@ -156,7 +151,14 @@ class DAuthWsSession(
                 stopCloseTimer()
                 DAuthLogger.d("received binary data: $bytes", TAG)
 
-                val (result, outBuffer) = user.signRound(decompressed)
+                val (result, outBuffer) = try {
+                    user.signRound(decompressed)
+                } catch (t: Throwable) {
+                    DAuthLogger.e(t.stackTraceToString(), TAG)
+                    closeWith(RESULT_FAILURE)
+                    return@runOnMainThread
+                }
+
                 DAuthLogger.d("signRound: $result", TAG)
                 if (result) {
                     val data = String(outBuffer).toSignResult()?.toSignatureData()

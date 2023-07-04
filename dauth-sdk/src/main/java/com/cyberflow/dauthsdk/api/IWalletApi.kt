@@ -7,16 +7,12 @@ import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
-import org.web3j.abi.datatypes.Function
-import org.web3j.protocol.core.methods.response.TransactionReceipt
+import org.web3j.abi.FunctionEncoder
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.utils.Numeric
 import java.math.BigInteger
 
 interface IWalletApi {
-
-    /**
-     * 切换链
-     */
-    fun initWallet(chain: SdkConfig.ChainInfo)
 
     /**
      * 创建钱包
@@ -57,11 +53,11 @@ interface IWalletApi {
     suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData>
 
     /**
-     * 执行合约
-     * @param dest 合约地址
-     * @param value 当合约账户余额不足时会扣调用者的费用
-     * @param func
+     * 执行callData
+     * 使用 [TransactionEncoder.encode]得到callData
+     * 或者使用[FunctionEncoder.encode]再[Numeric.toHexString]得到callData
+     * @param callData 执行数据
      * @return 执行结果
      */
-    suspend fun execute(dest: String, value: BigInteger, func: Function): DAuthResult<TransactionReceipt>
+    suspend fun execute(callData: ByteArray): DAuthResult<String>
 }

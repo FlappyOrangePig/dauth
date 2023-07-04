@@ -1,13 +1,13 @@
 package com.cyberflow.dauthsdk.mpc
 
 import android.annotation.SuppressLint
-import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.wallet.ext.app
 
 private const val FILE = "mpc_keystore"
 
 object MpcKeyStore {
 
-    private val context get() = DAuthSDK.impl.context
+    private val context get() = app()
     private val file get() = context.getSharedPreferences(FILE, 0)
 
     fun getAllKeys(): List<String> {

@@ -4,11 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.wallet.ext.app
 import com.cyberflow.dauthsdk.login.utils.ToastUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -25,7 +25,7 @@ private const val REQUEST_CODE = 9004
 private const val AUTH_TYPE_OF_GOOGLE = "30"
 
 class GoogleLoginManager {
-    val context get() = DAuthSDK.impl.context
+    val context get() = app()
     companion object {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             GoogleLoginManager()

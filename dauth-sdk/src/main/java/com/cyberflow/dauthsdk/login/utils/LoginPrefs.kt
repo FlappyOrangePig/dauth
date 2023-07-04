@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.login.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.cyberflow.dauthsdk.wallet.ext.app
 
 private const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
 private const val ACCESS_TOKEN = "access_token"
@@ -13,8 +14,9 @@ private const val EXPIRE_TIME = "expire_in"
 private const val USER_TYPE = "user_type"
 private const val DEFAULT_USER_TYPE = 0
 
-class LoginPrefs(val context: Context)  {
+class LoginPrefs {
 
+    private val context get() = app()
     private val defaultAsync = true
     private val sp get() = context.getSharedPreferences(LOGIN_STATE_INFO, Context.MODE_PRIVATE)!!
 
