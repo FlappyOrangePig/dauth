@@ -29,9 +29,9 @@ import kotlin.coroutines.resume
 private const val TAG = "WebSocket"
 private const val MPC_REQUEST_HEADER = "WebSocket-Mpc-Request"
 
-class WebsocketManager private constructor() {
+internal class WebsocketManager private constructor() {
     companion object {
-        val instance by lazy { WebsocketManager() }
+        internal val instance by lazy { WebsocketManager() }
         private val useDevServer get() = DAuthSDK.impl.config.useDevWebSocketServer
         private val serverUrl = if (useDevServer) {
             "ws://172.16.12.117:9001/"

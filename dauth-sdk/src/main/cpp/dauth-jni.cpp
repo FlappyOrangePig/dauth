@@ -221,7 +221,7 @@ jlong Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignMsg
     return contextHandle;
 }
 
-jboolean Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
+jint Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
         (JNIEnv *env, jobject, jlong context, jstring remoteId, jbyteArray buffer,
          jobject outBuffer) {
     void *contextHandler = reinterpret_cast<void *>(context);
@@ -235,13 +235,25 @@ jboolean Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
 
     SignOutBuffer* ptrOutBuffer = nullptr;
     unsigned int outBufferSize = 0;
-    bool finished = remoteSignRound(contextHandler, strRemoteId.c_str(), cBufferBytes, bufferLen, &ptrOutBuffer, outBufferSize);
-    LOGD("outBufferSize=%d finish=%d", outBufferSize, finished)
+
+
+    bool ret;
+    try {
+        bool finished = remoteSignRound(contextHandler, strRemoteId.c_str(), cBufferBytes, bufferLen, &ptrOutBuffer, outBufferSize);
+        ret = static_cast<int>(finished);
+    } catch (std::exception &e) {
+        LOGE("exception %s", e.what())
+        ret = -1;
+        goto release;
+    }
+
+    LOGD("outBufferSize=%d finish=%d", outBufferSize, ret)
     putBytesToBytesArrayList(env, outBuffer, ptrOutBuffer, outBufferSize);
 
+release:
     // 释放输入buffer
     env->ReleaseByteArrayElements(buffer, jBufferBytes, JNI_ABORT);
-    return finished;
+    return ret;
 }
 
 jstring Java_com_cyberflow_dauthsdk_mpc_DAuthJni_getSignature

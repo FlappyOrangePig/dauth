@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.mpc
 
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.entity.JniOutBuffer
+import kotlin.jvm.Throws
 
 private const val TAG = "CoSignerUser"
 
@@ -22,15 +23,15 @@ class CoSignerUser(
         return outBuffer.first().bytes
     }
 
+    @Throws(IllegalStateException::class)
     fun signRound(input: ByteArray): Pair<Boolean, ByteArray> {
         DAuthLogger.d("$logTag signRound", TAG)
         val handle = contextHandler ?: throw IllegalStateException("please call startRemoveSign first")
         val outBuffer = ArrayList<JniOutBuffer>()
-        val finished = jni.remoteSignRound(handle, remote, input, outBuffer)
-        return if (finished) {
-            true to jni.getSignature(handle).toByteArray()
-        } else {
-            false to outBuffer.first().bytes
+        return when (jni.remoteSignRound(handle, remote, input, outBuffer)) {
+            1 -> true to jni.getSignature(handle).toByteArray()
+            0 -> false to outBuffer.first().bytes
+            else -> throw IllegalStateException("remote key mismatch")
         }
     }
 }

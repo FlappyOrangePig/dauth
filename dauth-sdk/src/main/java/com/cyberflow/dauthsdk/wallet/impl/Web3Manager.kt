@@ -13,7 +13,6 @@ import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.entity.Web3jResponseError
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
-import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccountFactory
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
@@ -30,7 +29,6 @@ import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.TypeEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.DynamicBytes
-import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.Type
 import org.web3j.abi.datatypes.generated.Bytes32
 import org.web3j.abi.datatypes.generated.Uint256
@@ -46,7 +44,6 @@ import org.web3j.protocol.core.RemoteCall
 import org.web3j.protocol.core.Request
 import org.web3j.protocol.core.Response
 import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.ClientTransactionManager
 import org.web3j.tx.TransactionManager
@@ -175,7 +172,7 @@ private fun UserOperation.reload() = UserOperation(
 
 object Web3Manager {
 
-    private val web3j: Web3j by lazy {
+    internal val web3j: Web3j by lazy {
         Web3j.build(
             HttpService(
                 ConfigurationManager.urls().providerRpc,
@@ -354,28 +351,6 @@ object Web3Manager {
         return DAuthResult.Success(WalletBalanceData.ERC721(arrayList))
     }
 
-    suspend fun execute(
-        dest: String,
-        value: BigInteger,
-        func: Function
-    ): DAuthResult<TransactionReceipt> {
-        val encoded = FunctionEncoder.encode(func)
-        val dAuthAccount = withContext(Dispatchers.IO) {
-            val dauthAccountAddress = DAUTH_FORWARDER_ADDRESS
-            val transactionManager = ClientTransactionManager(web3j, dauthAccountAddress)
-            DAuthAccount.load(
-                dest,
-                web3j, transactionManager, DefaultGasProvider()
-            )
-        }
-        val r = dAuthAccount.execute(dest, value, encoded.toByteArray()).await()
-        DAuthLogger.d(
-            "execute dest=$dest value=$value func=${FunctionWrapper(func)} result=$r",
-            TAG
-        )
-        return r
-    }
-
     suspend fun getAaAddressByEoaAddress(eoaAddress: String): String? {
         val addresses = ConfigurationManager.addresses()
         val faAddress = addresses.factoryAddress
@@ -420,6 +395,22 @@ object Web3Manager {
             return DAuthResult.SdkError()
         }
 
+        val balanceResult = getBalance(aaAddress)
+        if (balanceResult !is DAuthResult.Success) {
+            DAuthLogger.e("balance error")
+            return DAuthResult.SdkError()
+        }
+        val balanceData = balanceResult.data
+        DAuthLogger.d("balance=$balanceData", TAG)
+        if (balanceData !is WalletBalanceData.Eth) {
+            DAuthLogger.e("balance type error")
+            return DAuthResult.SdkError()
+        }
+        if (balanceData.amount <= BigInteger.ZERO) {
+            DAuthLogger.e("no balance")
+            return DAuthResult.SdkError()
+        }
+
         val entryPoint = EntryPoint.load(
             entryPointAddress,
             web3j,
@@ -459,8 +450,8 @@ object Web3Manager {
             nonce,
             initCode,
             callData,
-            BigInteger("2100000"),
-            BigInteger("21000000"),
+            BigInteger.ZERO,
+            BigInteger.ZERO,
             BigInteger.ZERO,
             gasPrice,
             gasPrice,
@@ -479,18 +470,24 @@ object Web3Manager {
         val funcSimulateHandleOpHex = funcSimulateHandleOp.toHexString()
         val funcCallTx = Transaction.createFunctionCallTransaction(null, null, null, null, entryPointAddress, funcSimulateHandleOpHex)
         val gasException = web3j.ethEstimateGas(funcCallTx).awaitException()
+        DAuthLogger.d("gasException=$gasException", TAG)
         if (gasException == null) {
             DAuthLogger.e("estimate gas error", TAG)
             return DAuthResult.SdkError()
         }
-        val estimateInfo = MoshiUtil.fromJson<Web3jResponseError>(gasException)
+        val estimateInfo = kotlin.runCatching {
+            MoshiUtil.fromJson<Web3jResponseError>(gasException)?.data
+        }.getOrNull() ?: kotlin.runCatching {
+            MoshiUtil.fromJson<String>(gasException)
+        }.getOrNull()
         if (estimateInfo == null) {
             DAuthLogger.e("estimateInfo error", TAG)
             return DAuthResult.SdkError()
         }
-        val estimateData = estimateInfo.data.cleanHexPrefix()
+        val estimateData = estimateInfo.cleanHexPrefix()
         val verificationGasLimit = Numeric.toBigInt(estimateData.substring(8, 8 + 64))
-        val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64))
+        val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64)).multiply(BigInteger("10"))
+        //val callGasLimit = BigInteger("11173926")
         DAuthLogger.d("estimateData=$estimateData", TAG)
         DAuthLogger.d("verificationGasLimit=$verificationGasLimit", TAG)
         DAuthLogger.d("callGasLimit=$callGasLimit", TAG)

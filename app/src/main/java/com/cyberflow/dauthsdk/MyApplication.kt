@@ -16,7 +16,7 @@ class MyApplication : Application() {
             twitterConsumerSecret = CONSUMER_SECRET
             clientId = CLIENT_ID
             isLogOpen = true
-            localSign = true
+            localSign = false
             useLocalRelayer = false
             useDevWebSocketServer = false
             useDevRelayerServer = false

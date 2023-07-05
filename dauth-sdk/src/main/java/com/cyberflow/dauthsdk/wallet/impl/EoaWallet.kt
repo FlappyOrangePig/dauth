@@ -21,11 +21,22 @@ import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
+import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
+import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
+import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.TypeReference
+import org.web3j.abi.datatypes.Address
+import org.web3j.abi.datatypes.DynamicBytes
 import org.web3j.abi.datatypes.Function
-import org.web3j.protocol.core.methods.response.TransactionReceipt
+import org.web3j.abi.datatypes.Type
+import org.web3j.abi.datatypes.generated.Uint256
+import org.web3j.crypto.Sign
+import org.web3j.protocol.Web3j
+import org.web3j.utils.Numeric
 import java.math.BigInteger
 
 private const val TAG = "EoaWallet"
@@ -173,15 +184,35 @@ class EoaWallet internal constructor(): IWalletApi {
     }
 
     override suspend fun execute(
-        callData: ByteArray
+        contractAddress: String,
+        balance: BigInteger,
+        func: ByteArray
     ): DAuthResult<String> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
             return DAuthResult.SdkError()
         }
-        val address = addressResult.data.signerAddress
-        val execResult = Web3Manager.executeUserOperation(address, callData)
-        DAuthLogger.d("execute $execResult", TAG)
+        val signerAddress = addressResult.data.signerAddress
+        val function = Function(
+            DAuthAccount.FUNC_EXECUTE,
+            listOf<Type<*>>(
+                Address(contractAddress.prependHexPrefix()),
+                Uint256(balance),
+                DynamicBytes(func)
+            ), emptyList<TypeReference<*>>()
+        )
+        val encodedFunction = FunctionEncoder.encode(function)
+        val callData = Numeric.hexStringToByteArray(encodedFunction)
+        val execResult = Web3Manager.executeUserOperation(signerAddress, callData)
+        DAuthLogger.d("execute $contractAddress $balance ${func.size} result=$execResult", TAG)
         return execResult
+    }
+
+    override fun getWeb3j(): Web3j {
+        return Web3Manager.web3j
+    }
+
+    override suspend fun mpcSign(msgHash: String): Sign.SignatureData? {
+        return WebsocketManager.instance.mpcSign(msgHash)
     }
 }

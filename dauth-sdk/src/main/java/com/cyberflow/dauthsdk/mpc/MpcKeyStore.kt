@@ -36,7 +36,7 @@ object MpcKeyStore {
     }
 
     fun getLocalKey(): String {
-        return file.getString(0.toString(), null).orEmpty()
+        return file.getString(0.toString(), null).orEmpty()/*.replace("0", "1")*/
     }
 
     @SuppressLint("ApplySharedPref")

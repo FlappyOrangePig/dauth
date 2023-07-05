@@ -52,7 +52,7 @@ JNIEXPORT jlong JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignMsg
  * Method:    remoteSignRound
  * Signature: (JI[C[B)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
+JNIEXPORT jint JNICALL Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
         (JNIEnv *, jobject, jlong, jstring, jbyteArray, jobject);
 
 /*

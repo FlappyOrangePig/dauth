@@ -50,6 +50,12 @@
             android:text="查询AA账户的余额" />
 
         <Button
+            android:id="@+id/btn_get_dest_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查询转账目标的余额" />
+
+        <Button
             android:id="@+id/btn_aa_exists"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
