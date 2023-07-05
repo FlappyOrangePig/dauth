@@ -7,8 +7,10 @@ import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
+import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import org.web3j.abi.FunctionEncoder
-import org.web3j.crypto.TransactionEncoder
+import org.web3j.crypto.Sign
+import org.web3j.protocol.Web3j
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 
@@ -53,11 +55,22 @@ interface IWalletApi {
     suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData>
 
     /**
-     * 执行callData
-     * 使用 [TransactionEncoder.encode]得到callData
-     * 或者使用[FunctionEncoder.encode]再[Numeric.toHexString]得到callData
-     * @param callData 执行数据
+     * 调用合约
+     * 调用方法参见[DAuthAccount.execute]
+     * 用法1：转账。填目标账户contractAddress和金额balance
+     * 用法2：调用合约。填目标合约地址contractAddress和编码的函数func
+     *
+     * @param contractAddress 合约地址。如果是转账则填AA账户地址
+     * @param balance 金额。调用合约时填[BigInteger.ZERO]
+     * @param func 执行函数。使用[FunctionEncoder.encode]和[Numeric.toHexString]得到func
      * @return 执行结果
      */
-    suspend fun execute(callData: ByteArray): DAuthResult<String>
+    suspend fun execute(contractAddress: String, balance: BigInteger, func: ByteArray): DAuthResult<String>
+
+    fun getWeb3j(): Web3j
+
+    /**
+     * 分布式签名
+     */
+    suspend fun mpcSign(msgHash: String): Sign.SignatureData?
 }

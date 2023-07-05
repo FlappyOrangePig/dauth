@@ -55,7 +55,7 @@ public final class DAuthJni {
      * @param outBuffer 输出buffer
      * @return 是否结束，结束时outBuffer将返回签名结果
      */
-    public native boolean remoteSignRound(long context, String remoteId, byte[] buffer, ArrayList<JniOutBuffer> outBuffer);
+    public native int remoteSignRound(long context, String remoteId, byte[] buffer, ArrayList<JniOutBuffer> outBuffer);
 
     /**
      * 在remoteSignRound成功时获取签名结果

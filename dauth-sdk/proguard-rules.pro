@@ -21,7 +21,7 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class com.cyberflow.dauthsdk.login.** { *; }
--keep class com.cyberflow.dauthsdk.wallet.api.** { *; }
+-keep class com.cyberflow.dauthsdk.wallet.sol.** { *; }
 -keep class com.cyberflow.dauthsdk.mpc.entity.** { *; }
 -keep class com.cyberflow.dauthsdk.api.** { *; }
 

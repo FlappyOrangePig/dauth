@@ -79,7 +79,7 @@ dependencies {
     implementation libraries.web3j_contract
 
     // WalletConnect sign-sdk
-    implementation(platform("com.walletconnect:android-bom:1.12.0"))
+    /*implementation(platform("com.walletconnect:android-bom:1.12.0"))
     implementation("com.walletconnect:android-core") {
         // 与web3j重复
         exclude group: 'org.bouncycastle'
@@ -87,7 +87,7 @@ dependencies {
     implementation("com.walletconnect:sign") {
         // 与web3j重复
         exclude group: 'org.bouncycastle'
-    }
+    }*/
 }
 
 apply from: '../maven_publish.gradle'

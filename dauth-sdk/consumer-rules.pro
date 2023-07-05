@@ -24,6 +24,9 @@
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
+#walletconnect
+-keepclassmembers class com.walletconnect.** { ; }
+
 ########################################
 # DAuth
 ########################################
