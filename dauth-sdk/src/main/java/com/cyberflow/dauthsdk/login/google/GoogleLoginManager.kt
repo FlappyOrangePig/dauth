@@ -8,6 +8,7 @@ import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.wallet.ext.app
 import com.cyberflow.dauthsdk.login.utils.ToastUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -35,13 +36,10 @@ class GoogleLoginManager {
     //Google sdk init
     private fun signInClient(activity: Activity): GoogleSignInClient? {
         try {
-            val applicationInfo = activity.packageManager.getApplicationInfo(activity.packageName,
-                PackageManager.GET_META_DATA)
-            val metaData = applicationInfo.metaData
-            val serverClientId = metaData.getString("com.google.android.gms.games.APP_ID").orEmpty()
+            val googleClientId = LoginPrefs().getGoogleClientId()
             //requestIdToken需要使用Web客户端ID才能成功，不要使用安卓ClientID
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(serverClientId)
+                .requestIdToken(googleClientId)
                 .requestEmail()
                 .build()
             return GoogleSignIn.getClient(activity, gso)

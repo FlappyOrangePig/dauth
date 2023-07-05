@@ -12,7 +12,7 @@ interface ILoginApi {
 
     fun initSDK(context: Context, config: SdkConfig)
 
-    suspend fun login(account: String, passWord: String) : Int?
+    suspend fun login(account: String, passWord: String) : LoginResultData?
 
     /**
      * @param type 第三方账号类型 GOOGLE TWITTER FACEBOOK

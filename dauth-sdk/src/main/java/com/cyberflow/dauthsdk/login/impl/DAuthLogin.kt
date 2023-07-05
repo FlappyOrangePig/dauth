@@ -61,30 +61,14 @@ class DAuthLogin : ILoginApi {
     }
 
 
-    override suspend fun login(account: String, passWord: String): Int? {
+    override suspend fun login(account: String, passWord: String): LoginResultData? {
         val loginParam = LoginParam(
-            ACCOUNT_TYPE_OF_OWN.toInt(),
+            ACCOUNT_TYPE_OF_EMAIL.toInt(),
             account = account,
             password = passWord,
+            is_register = IS_REGISTER
         )
-
-        val loginRes = RequestApi().login(loginParam)
-
-        if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
-            val didToken = loginRes.data?.didToken
-            //DAuth 授权接口测试获取临时code
-            val codeVerifier = JwtChallengeCode().generateCodeVerifier()
-            val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
-            DAuthLogger.d("codeVerify == $codeVerifier")
-            val code =loginAuth(codeChallenge, didToken.orEmpty())
-            //DAuth 授权接口测试获取token
-            val tokenAuthenticationRes = getDAuthToken(codeVerifier, code, didToken)
-            DAuthLogger.e("sdk授权登录返回：$tokenAuthenticationRes.")
-            DAuthLogger.e("登录成功 didToken == $didToken")
-        } else {
-            DAuthLogger.e("登录失败：${loginRes?.sMsg}")
-        }
-        return loginRes?.iRet
+        return mobileOrEmailCommonReq(loginParam)
     }
 
     /**
