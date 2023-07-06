@@ -18,7 +18,6 @@ class LoginPrefs {
 
     private val context get() = app()
     private val defaultAsync = true
-    private val sp get() = context.getSharedPreferences(LOGIN_STATE_INFO, Context.MODE_PRIVATE)!!
 
     private fun getPrefs(): SharedPreferences {
         return context.getSharedPreferences(LOGIN_STATE_INFO, Context.MODE_PRIVATE)
@@ -132,7 +131,7 @@ class LoginPrefs {
     }
 
     protected fun modify(async: Boolean = true, block: (editor: SharedPreferences.Editor) -> Unit) {
-        sp.edit().apply {
+        getPrefs().edit().apply {
             block.invoke(this)
             if (async) {
                 apply()

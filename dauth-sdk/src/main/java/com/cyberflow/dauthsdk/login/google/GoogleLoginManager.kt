@@ -105,9 +105,7 @@ class GoogleLoginManager {
                  commonHeader = null,
                  id_token = accountIdToken
              )
-             withContext(Dispatchers.IO) {
-                 loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
-             }
+             loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(authorizeParam)
          }
         return loginResultData
     }

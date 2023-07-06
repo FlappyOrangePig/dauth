@@ -1,5 +1,6 @@
 package com.cyberflow.dauthsdk.login.utils
 
+import android.app.Application
 import android.util.Log
 import com.cyberflow.dauthsdk.api.DAuthSDK
 
@@ -18,6 +19,12 @@ object DAuthLogger {
         log: String,
         crossinline block: (tag: String, log: String) -> Unit
     ) {
+        // 单元测试
+        if (DAuthSDK.impl.context !is Application) {
+            println(log)
+            return
+        }
+
         if (isOpenLog) {
             // 使用统一的前缀，方便过滤所有的SDK日志
             val finalTag = "DAuth-$tag"

@@ -1,6 +1,15 @@
 package com.cyberflow.dauthsdk
 
+import android.content.Context
+import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.SdkConfig
+import com.cyberflow.dauthsdk.login.impl.TokenManager
+import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
+import com.cyberflow.dauthsdk.login.model.GetSecretKeyRes
+import com.cyberflow.dauthsdk.login.network.RequestApiMpc
+import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
+import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.SignResult
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
@@ -9,7 +18,11 @@ import com.cyberflow.dauthsdk.wallet.util.sha3
 import com.cyberflow.dauthsdk.wallet.util.sha3String
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.runBlocking
+import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.TypeEncoder
 import org.web3j.abi.TypeReference
@@ -23,26 +36,60 @@ import org.web3j.abi.datatypes.generated.Uint256
 import org.web3j.crypto.Credentials
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.util.Arrays
 import kotlin.random.Random
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
+
+private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
+private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
+private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
+private const val CLIENT_SECRET = "4657*@cde"
+
 class ExampleUnitTest {
+
+    private lateinit var context: Context
+    private lateinit var loginPrefs: LoginPrefs
+
+    @Before
+    fun setup() {
+        context = mock(Context::class.java)
+        val config = SdkConfig().apply {
+            twitterConsumerKey = CONSUMER_KEY
+            twitterConsumerSecret = CONSUMER_SECRET
+            clientId = CLIENT_ID
+            clientSecret = CLIENT_SECRET
+            isLogOpen = true
+            localSign = false
+            useLocalRelayer = false
+            useDevWebSocketServer = false
+            useDevRelayerServer = false
+        }
+        val accessToken = "at66a345f7c948eef04707f178548c0b39"
+        val authId = "d6a2a49bd1bd251e32cbf80ae6a52f1b"
+        val didToken = ""
+
+        mock(LoginPrefs::class.java).apply {
+            `when`(getAccessToken()).thenReturn(accessToken)
+            `when`(getAuthId()).thenReturn(authId)
+            `when`(getDidToken()).thenReturn(didToken)
+            `when`(getExpireTime()).thenReturn(Long.MAX_VALUE)
+            loginPrefs = this
+            TokenManager.instance.testPrefs = this
+        }
+
+        (DAuthSDK.instance as DAuthSDK).initSDKForTest(context, config)
+    }
+
     @Test
-    fun addition_isCorrect() {
+    fun testCallContract() {
         val function = Function(
             DAuthAccount.FUNC_ONERC1155RECEIVED,
-            Arrays.asList<Type<*>>(
+            listOf<Type<*>>(
                 Address("123"),
                 Address("234"),
                 Uint256(123L),
                 Uint256(213L)
             ),
-            Arrays.asList<TypeReference<*>>(object : TypeReference<Bytes4?>() {})
+            listOf<TypeReference<*>>(object : TypeReference<Bytes4?>() {})
         )
 
         val encoded = FunctionEncoder.encode(function)
@@ -60,7 +107,7 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testMoshi(){
+    fun testMoshi() {
         val src = "{\n" +
                 "    rh:9C1EBE663DEC7297A789865C093AD4316A2C439A45AB678AD2E33B99B3036C40\n" +
                 "    sh:7B70CDA795A9D7E531D3235C0942BFC5EFF3AE9FEE04A87E2D09077DE827962C\n" +
@@ -117,8 +164,10 @@ class ExampleUnitTest {
     @Test
     fun testEncodeAndEncodePacked() {
         val faAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-        val zaAddress = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e05fbfb9cf000000000000000000000000df3e18d64bc6a983f673ab319ccae4f1a57c70970000000000000000000000000000000000000000000000000000000000000000"
-        val aaAddress = "9fe46736679d2d9a65f0992f2272de9f3c7fa6e00x5fbfb9cf000000000000000000000000dd2fd4581271e230360230f9337d5c0430bf44c00000000000000000000000000000000000000000000000000000000000000000"
+        val zaAddress =
+            "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e05fbfb9cf000000000000000000000000df3e18d64bc6a983f673ab319ccae4f1a57c70970000000000000000000000000000000000000000000000000000000000000000"
+        val aaAddress =
+            "9fe46736679d2d9a65f0992f2272de9f3c7fa6e00x5fbfb9cf000000000000000000000000dd2fd4581271e230360230f9337d5c0430bf44c00000000000000000000000000000000000000000000000000000000000000000"
 
         val address = Address(faAddress)
         val encodedPacked = TypeEncoder.encodePacked(address)
@@ -142,7 +191,8 @@ class ExampleUnitTest {
         println("e1=$e1")
 
         // 2.DIY
-        val e2 = StringBuilder().append(TypeEncoder.encodePacked(v1)).append(TypeEncoder.encodePacked(v2)).toString()
+        val e2 = StringBuilder().append(TypeEncoder.encodePacked(v1))
+            .append(TypeEncoder.encodePacked(v2)).toString()
         println("e2=$e2")
 
         // 3.DIY + DynamicStruct
@@ -174,5 +224,36 @@ class ExampleUnitTest {
 
         // 确认getWalletAddress方法的正确性
         assert(eoa == signer)
+    }
+
+    @Test
+    fun testGetParticipants() = runBlocking {
+        val mergeResult = StringBuilder().apply {
+            for (i in 1..1001) {
+                append("1234567890")
+            }
+        }.toString()
+        val key = "2c7dcea8766c27a1c43c9da169947caa"
+
+        val mpcApi = RequestApiMpc(loginPrefs)
+        val servers = mpcApi.getParticipants()!!
+        val participants = servers.data.participants
+
+        val index = MpcKeyIds.KEY_INDEX_DAUTH_SERVER
+
+        mpcApi.setKey(
+            participants[index].set_key_url,
+            key,
+            mergeResult
+        )
+
+        val keyResult = mpcApi.getKey(participants[index].get_key_url, GetSecretKeyParam.TYPE_KEY)
+        assert(keyResult?.isSuccess() == true)
+        println("key=${keyResult?.data}")
+
+        val mergeResultResult =
+            mpcApi.getKey(participants[index].get_key_url, GetSecretKeyParam.TYPE_MERGE_RESULT)
+        assert(mergeResultResult?.isSuccess() == true)
+        println("mergeResult=${mergeResultResult?.data}")
     }
 }

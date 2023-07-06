@@ -6,12 +6,10 @@ class SdkConfig {
      * clientId 在DAuth后台注册得到的clientId
      */
     var clientId: String? = null
-
     /**
-     * AppServerKey要提交到的AppServer-URL
-     * 同步方法，将被执行在IO线程
+     * clientSecret 在DAuth后台注册得到的clientSecret
      */
-    var appSubmitServerKeyToAppServer: ((key: String) -> Boolean)? = null
+    var clientSecret: String? = null
 
     /**
      * Twitter key

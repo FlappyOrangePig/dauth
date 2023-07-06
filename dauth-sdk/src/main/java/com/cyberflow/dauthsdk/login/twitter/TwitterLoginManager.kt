@@ -23,9 +23,7 @@ import com.twitter.sdk.android.core.TwitterSession
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
 import com.twitter.sdk.android.core.internal.CommonUtils
 import com.twitter.sdk.android.core.models.User
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 
 private const val TYPE_OF_TWITTER = "110"
@@ -98,17 +96,15 @@ class TwitterLoginManager private constructor() {
         }catch (e: Exception) {
             DAuthLogger.e("suspendCancellableCoroutine exception:$e")
         }
-        withContext(Dispatchers.IO) {
-            val body = AuthorizeToken2Param(
-                access_token = null,
-                refresh_token = null,
-                user_type = TYPE_OF_TWITTER,
-                commonHeader = null,
-                id_token = null,
-                user_data = twitterUser
-            )
-            loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
-        }
+        val body = AuthorizeToken2Param(
+            access_token = null,
+            refresh_token = null,
+            user_type = TYPE_OF_TWITTER,
+            commonHeader = null,
+            id_token = null,
+            user_data = twitterUser
+        )
+        loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
         return loginResultData
     }
 

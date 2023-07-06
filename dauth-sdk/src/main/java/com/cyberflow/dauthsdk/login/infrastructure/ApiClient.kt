@@ -1,11 +1,12 @@
 package com.cyberflow.dauthsdk.login.infrastructure
 
+import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import kotlinx.coroutines.*
 import okhttp3.*
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -15,25 +16,27 @@ import java.util.regex.Pattern
 
 
 //账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter
-open class ApiClient(val baseUrl: String) {
+open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
     companion object {
+        internal const val BASE_TEST_URL = "https://api-dev.infras.online"
+        internal const val BASE_FORMAL_URL = "https://api.infras.online/"
         protected const val ContentType = "Content-Type"
         protected const val Accept = "Accept"
         protected const val JsonMediaType = "application/json"
         protected const val FormDataMediaType = "multipart/form-data"
-        protected const val XmlMediaType = "application/xml"
+
+        private val clientId get() = DAuthSDK.impl.config.clientId.orEmpty()
+        private val clientSecret get() = DAuthSDK.impl.config.clientSecret.orEmpty()
 
         @JvmStatic
         var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
             mapOf(
                 ContentType to FormDataMediaType,
-                Accept to JsonMediaType
+                Accept to JsonMediaType,
+                "client_id" to clientId,
+                "client_secret" to clientSecret,
             )
         )
-
-        @JvmStatic
-        val jsonHeaders: Map<String, String> =
-            mapOf(ContentType to JsonMediaType, Accept to JsonMediaType)
     }
 
     protected inline fun <reified T> requestBody(
@@ -82,7 +85,6 @@ open class ApiClient(val baseUrl: String) {
         if (response.body == null) return null
         val body = response.body
         val rb = body?.string()
-        DAuthLogger.e("接口返回：$rb")
         if (T::class.java == java.io.File::class.java) {
             return downloadFileFromResponse(response) as T
         } else if (T::class == Unit::class) {
@@ -110,19 +112,42 @@ open class ApiClient(val baseUrl: String) {
         return null
     }
 
-    protected inline fun <reified T : Any?> request(requestConfig: RequestConfig, body: Any?): T? {
+    protected suspend inline fun <reified RESPONSE> awaitRequest(crossinline block: suspend () -> RESPONSE?): RESPONSE? {
+        return try {
+            withContext(Dispatchers.IO) {
+                block.invoke()
+            }
+        } catch (t: Throwable) {
+            DAuthLogger.e(t.stackTraceToString())
+            null
+        }
+    }
+
+    protected suspend inline fun <reified T : Any?> request(
+        requestConfig: RequestConfig,
+        body: Any,
+        auth: Boolean = false,
+    ): T? = awaitRequest {
+        if (auth) {
+            TokenManager.instance.authenticatedRequest { accessToken ->
+                val bodyClazz = body::class.java
+                kotlin.runCatching {
+                    val accessTokenFields = bodyClazz.getDeclaredField("access_token")
+                    accessTokenFields.isAccessible = true
+                    accessTokenFields.set(body, accessToken.orEmpty())
+                    accessTokenFields.isAccessible = false
+                }
+                requestInner(requestConfig, body)
+            }
+        } else {
+            requestInner(requestConfig, body)
+        }
+    }
+
+    protected inline fun <reified T : Any?> requestInner(requestConfig: RequestConfig, body: Any): T? {
         var response: Response? = null
         var result: T? = null
-        val httpUrl =
-            baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
-        val urlBuilder = httpUrl.newBuilder()
-            .addPathSegments(requestConfig.path.trimStart('/'))
-        requestConfig.query.forEach { query ->
-            query.value.forEach { queryValue ->
-                urlBuilder.addQueryParameter(query.key, queryValue)
-            }
-        }
-        val url = urlBuilder.build()
+        val url = requestConfig.reqUrl.getUrl(requestConfig, baseUrl)
         val headers = defaultHeaders + requestConfig.headers
         if ((headers[ContentType] ?: "") == "") {
             throw IllegalStateException("Missing Content-Type header. This is required.")
