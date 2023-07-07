@@ -8,6 +8,7 @@ import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.wallet.ext.app
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import java.util.concurrent.TimeUnit
 
 val context get() = app()
@@ -20,9 +21,7 @@ class TokenManager private constructor() {
         }
     }
 
-    @VisibleForTesting
-    var testPrefs: LoginPrefs? = null
-    val prefs get() = testPrefs ?: LoginPrefs()
+    val prefs get() = Managers.loginPrefs
 
     suspend fun validateToken(): Boolean {
         val tokenExpirationTime = prefs.getExpireTime()

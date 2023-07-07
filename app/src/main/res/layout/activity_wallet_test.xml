@@ -73,6 +73,12 @@
             android:layout_height="wrap_content"
             android:text="签名、密钥服务列表" />
 
+        <Button
+            android:id="@+id/btn_clear_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="清除数据" />
+
     </LinearLayout>
 
 </ScrollView>

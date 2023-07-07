@@ -10,11 +10,10 @@ import com.cyberflow.dauthsdk.login.model.GetSecretKeyRes
 import com.cyberflow.dauthsdk.login.model.SetSecretKeyParam
 import com.cyberflow.dauthsdk.login.model.SetSecretKeyRes
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 
-class RequestApiMpc(
-    private val loginPrefs: LoginPrefs
-) : ApiClient() {
-
+class RequestApiMpc : ApiClient() {
+    private val loginPrefs get() = Managers.loginPrefs
     private val accessToken get() = loginPrefs.getAccessToken()
     private val authId get() = loginPrefs.getAuthId()
 

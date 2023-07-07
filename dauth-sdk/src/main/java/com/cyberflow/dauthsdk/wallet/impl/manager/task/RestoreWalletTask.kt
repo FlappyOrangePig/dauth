@@ -7,6 +7,7 @@ import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.ext.runSpending
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.impl.manager.KeysToRestoreResult
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.util.WalletTaskUtil
 import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 
@@ -24,17 +25,25 @@ class RestoreWalletTask(
                 arrayOf(restoreKeyInfo.k1, restoreKeyInfo.k2)
             )
         }
+        DAuthLogger.d("localKey len=${localKey.length}", TAG)
 
         val newKeys = arrayOf(localKey, restoreKeyInfo.k1, restoreKeyInfo.k2)
-        val addressResult = WalletTaskUtil.generateAddress(newKeys) ?: return DAuthResult.SdkError()
+        val addressResult = WalletTaskUtil.generateAddress(newKeys)
+        DAuthLogger.d("addressResult=$addressResult", TAG)
+        if (addressResult == null) {
+            return DAuthResult.SdkError()
+        }
 
-        MpcKeyStore.setLocalKey(localKey)
+        DAuthLogger.d("setLocalKey", TAG)
+        Managers.mpcKeyStore.setLocalKey(localKey)
 
-        return if (WalletPrefsV2.setAddresses(addressResult.first, addressResult.second)) {
+        val r = if (Managers.walletPrefsV2.setAddresses(addressResult.first, addressResult.second)) {
             DAuthResult.Success(CreateWalletData(addressResult.second))
         } else {
             DAuthLogger.e("sp error", TAG)
             DAuthResult.SdkError()
         }
+        DAuthLogger.d("submit result=$r", TAG)
+        return r
     }
 }

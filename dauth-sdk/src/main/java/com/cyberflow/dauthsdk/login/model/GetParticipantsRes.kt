@@ -5,7 +5,7 @@ import com.cyberflow.dauthsdk.login.network.BaseResponse
 class GetParticipantsRes(
     val data: Data,
 ) : BaseResponse() {
-    class Data(val participants: Array<Participant>)
+    class Data(val participants: List<Participant>)
     class Participant(
         val id: Int,
         val get_key_url: String,

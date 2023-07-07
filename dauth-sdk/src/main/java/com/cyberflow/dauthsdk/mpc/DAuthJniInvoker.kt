@@ -6,6 +6,7 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.ext.runSpending
 import com.cyberflow.dauthsdk.wallet.ext.app
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.sha3
@@ -35,7 +36,6 @@ object DAuthJniInvoker {
     private const val THRESHOLD = 2
     private const val PARTIES = 3
     private val jni by lazy { DAuthJni.getInstance() }
-    private val keystore get() = MpcKeyStore
 
     fun initialize(){
 
@@ -52,7 +52,8 @@ object DAuthJniInvoker {
     private fun initializeInner() {
         jni.init()
 
-        val keyInSp = MpcKeyStore.getAllKeys()/*.let { emptyList<String>() }*/
+        val keystore = Managers.mpcKeyStore
+        val keyInSp = keystore.getAllKeys()/*.let { emptyList<String>() }*/
         val keys = if (keyInSp.isEmpty()) {
             runSpending(TAG, "generateSignKeys") {
                 generateSignKeys().also {
@@ -152,7 +153,7 @@ object DAuthJniInvoker {
 
     fun generateSignKeys(): Array<String> {
         // 3签2
-        val authId = LoginPrefs().getAuthId()
+        val authId = Managers.loginPrefs.getAuthId()
         if (authId.isEmpty()) {
             DAuthLogger.e("auth id empty", TAG)
             return emptyArray()

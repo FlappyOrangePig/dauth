@@ -9,10 +9,10 @@ import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.entity.Web3jResponseError
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccountFactory
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
@@ -522,7 +522,7 @@ object Web3Manager {
         val localSign = DAuthSDK.impl.config.localSign
         val signatureData = if (localSign) {
             // 本地2片签
-            DAuthJniInvoker.localSignMsg(ethMsgHashHex, MpcKeyStore.getAllKeys().toTypedArray())!!
+            DAuthJniInvoker.localSignMsg(ethMsgHashHex, Managers.mpcKeyStore.getAllKeys().toTypedArray())!!
                 .toSignatureData()
 
             // 模拟多轮签名

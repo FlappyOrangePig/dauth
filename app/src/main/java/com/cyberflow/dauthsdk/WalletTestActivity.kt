@@ -13,6 +13,8 @@ import com.cyberflow.dauthsdk.ext.mount
 import com.cyberflow.dauthsdk.mpc.MpcServers
 import com.cyberflow.dauthsdk.util.LogUtil
 import com.cyberflow.dauthsdk.util.Web3jHelper
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -189,6 +191,9 @@ class WalletTestActivity : BaseActivity() {
                 }
                 ToastUtil.show(context, r.toString())
             }
+        }
+        btnClearData.setOnClickListener {
+            Managers.walletManager.clearData()
         }
     }
 

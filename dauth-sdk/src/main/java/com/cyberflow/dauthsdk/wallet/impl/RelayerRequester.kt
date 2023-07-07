@@ -6,6 +6,7 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.entity.CommitTransRes
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
@@ -29,7 +30,7 @@ object RelayerRequester {
     }
 
     suspend fun sendRequest(userOperation: UserOperation): Boolean {
-        val sp = LoginPrefs()
+        val sp = Managers.loginPrefs
         val accessToken = sp.getAccessToken()
         val openId = sp.getAuthId()
 

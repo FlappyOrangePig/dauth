@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.mpc
 
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker.toSignResult
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.sha3String
 import org.web3j.crypto.Sign.SignatureData
@@ -15,7 +16,7 @@ object LocalMpcSign {
 
         val msgHash = msg.sha3String().cleanHexPrefix()
 
-        val keys = MpcKeyStore.getAllKeys()
+        val keys = Managers.mpcKeyStore.getAllKeys()
 
         keys.forEachIndexed { i, e ->
             DAuthLogger.d("$i)key ${e.length} ${e.substring(20)}", TAG)

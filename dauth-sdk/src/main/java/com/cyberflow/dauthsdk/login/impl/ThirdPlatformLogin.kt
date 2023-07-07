@@ -7,12 +7,12 @@ import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.wallet.ext.app
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 
 
 class ThirdPlatformLogin private constructor() {
 
-    private val context get() = app()
     companion object {
         val instance by lazy {
             ThirdPlatformLogin()
@@ -30,16 +30,20 @@ class ThirdPlatformLogin private constructor() {
             val refreshToken = authorizeToken2Res.data?.refreshToken.orEmpty()
             val authId = googleUserInfo.sub.orEmpty()
             val expireTime = authorizeToken2Res.data?.expireIn
-            LoginPrefs().putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime)
-            val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
-            //没有钱包  返回errorCode
-            if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                loginResultData = LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, accessToken, authId)
-            } else {
-                // 该邮箱绑定过钱包
-                loginResultData = LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
-                DAuthLogger.d("第三方账号已绑定钱包，直接进入主页")
+            Managers.loginPrefs.putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime)
+
+            // 钱包未创建
+            if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
+                return LoginResultData.Failure(
+                    ResponseCode.AA_WALLET_IS_NOT_CREATE,
+                    accessToken,
+                    authId
+                )
             }
+
+            // 该邮箱绑定过钱包
+            loginResultData = LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
+            DAuthLogger.d("第三方账号已绑定钱包，直接进入主页")
         } else {
             val loginResCode = authorizeToken2Res?.iRet
             loginResultData = LoginResultData.Failure(loginResCode)

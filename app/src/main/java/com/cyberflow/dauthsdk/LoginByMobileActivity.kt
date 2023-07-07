@@ -11,12 +11,14 @@ import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_MOBILE = 60  // 手机号登录
 class LoginByMobileActivity: BaseActivity() {
     private var _binding: ActivityMobileLoginLayoutBinding?  = null
     private val binding: ActivityMobileLoginLayoutBinding get() = _binding!!
+    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     companion object {
         fun launch(context: Context) {
@@ -73,7 +75,9 @@ class LoginByMobileActivity: BaseActivity() {
     //创建aa钱包
     private fun handleCreateWallet() {
         lifecycleScope.launch {
+            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
             val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
+            loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address
                 DAuthLogger.d("创建的aa钱包地址：$address")

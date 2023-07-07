@@ -3,17 +3,19 @@ package com.cyberflow.dauthsdk
 import android.content.Context
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.SdkConfig
-import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
-import com.cyberflow.dauthsdk.login.model.GetSecretKeyRes
 import com.cyberflow.dauthsdk.login.network.RequestApiMpc
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
+import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.SignResult
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.SignUtil
+import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 import com.cyberflow.dauthsdk.wallet.util.sha3
 import com.cyberflow.dauthsdk.wallet.util.sha3String
 import com.squareup.moshi.Moshi
@@ -21,6 +23,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.anyList
+import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.web3j.abi.FunctionEncoder
@@ -46,12 +50,12 @@ private const val CLIENT_SECRET = "4657*@cde"
 
 class ExampleUnitTest {
 
-    private lateinit var context: Context
-    private lateinit var loginPrefs: LoginPrefs
+    private var allKeys : MutableList<String> = mutableListOf()
+    private var mergeResult: String? = null
 
     @Before
     fun setup() {
-        context = mock(Context::class.java)
+        val context = mock(Context::class.java)
         val config = SdkConfig().apply {
             twitterConsumerKey = CONSUMER_KEY
             twitterConsumerSecret = CONSUMER_SECRET
@@ -63,7 +67,7 @@ class ExampleUnitTest {
             useDevWebSocketServer = false
             useDevRelayerServer = false
         }
-        val accessToken = "at66a345f7c948eef04707f178548c0b39"
+        val accessToken = "at115bec87af40a985853cda9b9e75c7a7"
         val authId = "d6a2a49bd1bd251e32cbf80ae6a52f1b"
         val didToken = ""
 
@@ -72,9 +76,34 @@ class ExampleUnitTest {
             `when`(getAuthId()).thenReturn(authId)
             `when`(getDidToken()).thenReturn(didToken)
             `when`(getExpireTime()).thenReturn(Long.MAX_VALUE)
-            loginPrefs = this
-            TokenManager.instance.testPrefs = this
+            Managers.loginPrefs = this
         }
+        mock(MpcKeyStore::class.java).apply {
+            `when`(getAllKeys()).thenReturn(listOf())
+            `when`(getLocalKey()).thenReturn("")
+            `when`(getMergeResult()).thenReturn("")
+            `when`(this.setAllKeys(anyList())).then {
+                println("setAllKeys")
+                allKeys = (it.arguments[0] as List<String>).toMutableList()
+                Unit
+            }
+            `when`(this.setLocalKey(anyString())).then {
+                println("setLocalKey")
+                allKeys.clear()
+                allKeys.add(it.arguments[0] as String)
+                Unit
+            }
+            `when`(this.setMergeResult(anyString())).then {
+                println("setMergeResult")
+                mergeResult = it.arguments[0] as String
+                Unit
+            }
+            Managers.mpcKeyStore = this
+        }
+        mock(WalletPrefsV2::class.java).apply {
+            Managers.walletPrefsV2 = this
+        }
+        Managers.walletManager = WalletManager()
 
         (DAuthSDK.instance as DAuthSDK).initSDKForTest(context, config)
     }
@@ -235,7 +264,7 @@ class ExampleUnitTest {
         }.toString()
         val key = "2c7dcea8766c27a1c43c9da169947caa"
 
-        val mpcApi = RequestApiMpc(loginPrefs)
+        val mpcApi = RequestApiMpc()
         val servers = mpcApi.getParticipants()!!
         val participants = servers.data.participants
 

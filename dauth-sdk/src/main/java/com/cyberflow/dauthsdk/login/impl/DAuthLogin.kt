@@ -27,6 +27,9 @@ import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import com.cyberflow.dauthsdk.wallet.ext.app
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
+import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -48,7 +51,7 @@ class DAuthLogin : ILoginApi {
         }
     }
 
-    private val prefs get() = LoginPrefs()
+    private val prefs get() = Managers.loginPrefs
 
     override fun initSDK(context: Context, config: SdkConfig) {
         DAuthLogger.i("DAuthLogin init sdk")
@@ -222,15 +225,16 @@ class DAuthLogin : ILoginApi {
             prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime)
             DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken")
 
-            val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
-
-            if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                // 该邮箱没有钱包
-                return LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, accessToken, authId)
-            } else {
-                // 该邮箱绑定过钱包
-                return LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
+            // 钱包未创建
+            if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
+                return LoginResultData.Failure(
+                    ResponseCode.AA_WALLET_IS_NOT_CREATE,
+                    accessToken,
+                    authId
+                )
             }
+
+            return LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
         } else {
             // 其他错误
             return LoginResultData.Failure(loginRes?.iRet)
@@ -239,7 +243,7 @@ class DAuthLogin : ILoginApi {
 
 
     override suspend fun logout() {
-        val openId = LoginPrefs().getAuthId()
+        val openId = prefs.getAuthId()
         val requestBody = LogoutParam(openId)
         RequestApi().logout(requestBody)
         prefs.clearLoginStateInfo()

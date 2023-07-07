@@ -107,7 +107,7 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
                 return null
             }
         } catch (e: java.lang.Exception) {
-            DAuthLogger.e("responseBody Serializer exception: $e")
+            DAuthLogger.e("responseBody Serializer exception: ${e.stackTraceToString()}")
         }
         return null
     }
@@ -178,7 +178,7 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
                 result = responseBody(response, accept)
             }
         } catch (e: Exception) {
-            DAuthLogger.e("request exception: $e")
+            DAuthLogger.e("request exception: ${e.stackTraceToString()}")
         } finally {
             response?.close()
         }
