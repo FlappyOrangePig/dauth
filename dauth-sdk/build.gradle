@@ -35,6 +35,7 @@ dependencies {
     implementation libraries.appcompat
     implementation libraries.material
     testImplementation libraries.junit
+    testImplementation 'org.mockito:mockito-core:+'
     androidTestImplementation libraries.ext_junit
     androidTestImplementation libraries.espresso_core
 

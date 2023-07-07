@@ -10,19 +10,11 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.ext.mount
+import com.cyberflow.dauthsdk.mpc.MpcServers
 import com.cyberflow.dauthsdk.util.LogUtil
 import com.cyberflow.dauthsdk.util.Web3jHelper
-import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
-import org.web3j.abi.FunctionEncoder
-import org.web3j.abi.TypeReference
-import org.web3j.abi.datatypes.Address
-import org.web3j.abi.datatypes.DynamicBytes
-import org.web3j.abi.datatypes.Function
-import org.web3j.abi.datatypes.Type
-import org.web3j.abi.datatypes.generated.Uint256
-import org.web3j.utils.Numeric
 import java.math.BigInteger
 
 private const val TAG = "WalletTestActivity"
@@ -188,6 +180,15 @@ class WalletTestActivity : BaseActivity() {
                     }
                 }
             }*/
+        }
+        btnServicesList.setOnClickListener {
+            lifecycleScope.launch{
+                val r = MpcServers.getServers()
+                if (r == null){
+
+                }
+                ToastUtil.show(context, r.toString())
+            }
         }
     }
 

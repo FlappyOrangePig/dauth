@@ -1,5 +1,6 @@
 package com.cyberflow.dauthsdk.login.impl
 
+import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.model.RefreshTokenParam
 import com.cyberflow.dauthsdk.login.network.BaseResponse
@@ -19,7 +20,9 @@ class TokenManager private constructor() {
         }
     }
 
-    private val prefs = LoginPrefs()
+    @VisibleForTesting
+    var testPrefs: LoginPrefs? = null
+    val prefs get() = testPrefs ?: LoginPrefs()
 
     suspend fun validateToken(): Boolean {
         val tokenExpirationTime = prefs.getExpireTime()
@@ -74,7 +77,7 @@ class TokenManager private constructor() {
     suspend inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T): T? {
         val isValidate = validateToken()
         return if (isValidate) {
-            val accessToken = LoginPrefs().getAccessToken()
+            val accessToken = prefs.getAccessToken()
             DAuthLogger.e("TokenManager accessToken is valid: $accessToken")
             val response = request(accessToken)
             val baseResponse = response as BaseResponse

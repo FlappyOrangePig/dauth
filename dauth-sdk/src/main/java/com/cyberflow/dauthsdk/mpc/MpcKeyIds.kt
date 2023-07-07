@@ -1,5 +1,9 @@
 package com.cyberflow.dauthsdk.mpc
 
+/**
+ * MPC角色标识映射
+ * sdk内部使用index来标记签名节点是什么角色，而服务端和so使用id来标记角色
+ */
 object MpcKeyIds {
     const val KEY_INDEX_LOCAL = 0
     const val KEY_INDEX_DAUTH_SERVER = 1
@@ -26,9 +30,5 @@ object MpcKeyIds {
 
     fun getRemoteIdsToSign(): String {
         return getKeyId(KEY_INDEX_DAUTH_SERVER)
-    }
-
-    fun getIdsToSign(): Array<String> {
-        return arrayOf(getLocalId(), getKeyId(KEY_INDEX_DAUTH_SERVER))
     }
 }

@@ -46,10 +46,9 @@ class DAuthLogin : ILoginApi {
         val instance: ILoginApi by lazy {
             DAuthLogin()
         }
-        var clientId: String? = null
     }
 
-    private val prefs = LoginPrefs()
+    private val prefs get() = LoginPrefs()
 
     override fun initSDK(context: Context, config: SdkConfig) {
         DAuthLogger.i("DAuthLogin init sdk")
@@ -59,7 +58,6 @@ class DAuthLogin : ILoginApi {
             val appContext = context.applicationContext as Application
             appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
         }
-        clientId = config.clientId
     }
 
 
@@ -78,9 +76,7 @@ class DAuthLogin : ILoginApi {
             val codeVerifier = JwtChallengeCode().generateCodeVerifier()
             val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
             DAuthLogger.d("codeVerify == $codeVerifier")
-            val code = withContext(Dispatchers.IO) {
-                loginAuth(codeChallenge, didToken.orEmpty())
-            }
+            val code =loginAuth(codeChallenge, didToken.orEmpty())
             //DAuth 授权接口测试获取token
             val tokenAuthenticationRes = getDAuthToken(codeVerifier, code, didToken)
             DAuthLogger.e("sdk授权登录返回：$tokenAuthenticationRes.")
@@ -97,9 +93,7 @@ class DAuthLogin : ILoginApi {
      */
     private suspend fun loginAuth(codeChallengeCode: String, didToken: String): String {
         val body = AuthorizeParam(USER_TYPE_OF_EMAIL, codeChallengeCode, SIGN_METHOD)
-        val authorizeParam = withContext(Dispatchers.IO) {
-            RequestApi().ownAuthorize(body, didToken)
-        }
+        val authorizeParam = RequestApi().ownAuthorize(body, didToken)
         val code = authorizeParam?.data?.code.orEmpty()  //获取临时code
         DAuthLogger.e("ownAuthorize 临时code： $code ")
         return code
@@ -164,21 +158,19 @@ class DAuthLogin : ILoginApi {
         passWord: String,
         confirmPwd: String
     ): Int? {
-        var code: Int?
-        withContext(Dispatchers.IO) {
-            val createAccountParam = CreateAccountParam(
-                ACCOUNT_TYPE_OF_OWN,
-                "123456",
-                is_login = 1,
-                password = passWord,
-                confirm_password = confirmPwd,
-                sex = 0,
-                account = account
-            )
+        val code: Int?
+        val createAccountParam = CreateAccountParam(
+            ACCOUNT_TYPE_OF_OWN,
+            "123456",
+            is_login = 1,
+            password = passWord,
+            confirm_password = confirmPwd,
+            sex = 0,
+            account = account
+        )
 
-            val createAccountRes = RequestApi().createAccount(createAccountParam)
-            code = createAccountRes?.iRet
-        }
+        val createAccountRes = RequestApi().createAccount(createAccountParam)
+        code = createAccountRes?.iRet
         return code
     }
 
@@ -223,7 +215,7 @@ class DAuthLogin : ILoginApi {
         return loginResultData
     }
 
-    private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam?): LoginResultData = withContext(Dispatchers.IO) {
+    private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam): LoginResultData {
         val loginRes = RequestApi().login(loginParam)
 
         if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
@@ -250,24 +242,23 @@ class DAuthLogin : ILoginApi {
 
             if (queryWalletRes?.data?.address.isNullOrEmpty()) {
                 // 该邮箱没有钱包
-                return@withContext LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, accessToken, authId)
+                return LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, accessToken, authId)
             } else {
                 // 该邮箱绑定过钱包
-                return@withContext LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
+                return LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
             }
         } else {
             // 其他错误
-            return@withContext LoginResultData.Failure(loginRes?.iRet)
+            return LoginResultData.Failure(loginRes?.iRet)
         }
     }
 
 
-    override fun logout() {
+    override suspend fun logout() {
         val openId = LoginPrefs().getAuthId()
         val requestBody = LogoutParam(openId)
-        if(RequestApi().logout(requestBody)) {
-            prefs.clearLoginStateInfo()
-        }
+        RequestApi().logout(requestBody)
+        prefs.clearLoginStateInfo()
     }
 
     /**
