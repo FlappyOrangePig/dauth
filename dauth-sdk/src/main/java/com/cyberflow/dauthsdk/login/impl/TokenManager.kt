@@ -73,13 +73,13 @@ class TokenManager private constructor() {
         prefs.setAccessToken(newToken.orEmpty())
     }
 
-    suspend inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T): T? {
+    suspend inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T?): T? {
         val isValidate = validateToken()
         return if (isValidate) {
             val accessToken = prefs.getAccessToken()
             DAuthLogger.e("TokenManager accessToken is valid: $accessToken")
             val response = request(accessToken)
-            val baseResponse = response as BaseResponse
+            val baseResponse = response as? BaseResponse ?: return null
             if (baseResponse.iRet == ResponseCode.TOKEN_IS_INVALIDATE) {
                 val newAccessToken = refreshToken()
                 request(newAccessToken)

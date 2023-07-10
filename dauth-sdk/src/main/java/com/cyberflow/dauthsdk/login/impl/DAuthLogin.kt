@@ -48,6 +48,7 @@ class DAuthLogin : ILoginApi {
     }
 
     private val prefs get() = Managers.loginPrefs
+    private val walletManager get() = Managers.walletManager
     @Volatile
     private var logOutJob: Job? = null
 
@@ -239,7 +240,7 @@ class DAuthLogin : ILoginApi {
         }
     }
 
-    override suspend fun logout() {
+    override fun logout() {
         val openId = prefs.getAuthId()
         val requestBody = LogoutParam(openId)
         logOutJob?.cancel()
@@ -250,6 +251,7 @@ class DAuthLogin : ILoginApi {
             }
         }
         prefs.clearLoginStateInfo()
+        walletManager.clearData()
     }
 
     /**

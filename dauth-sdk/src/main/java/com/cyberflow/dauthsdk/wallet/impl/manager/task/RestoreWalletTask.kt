@@ -7,7 +7,9 @@ import com.cyberflow.dauthsdk.mpc.ext.runSpending
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.impl.manager.KeysToRestoreResult
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager.Companion.STATE_INIT
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.util.WalletTaskUtil
+import com.cyberflow.dauthsdk.wallet.util.AssertUtil
 
 private const val TAG = "RestoreWalletTask"
 
@@ -16,6 +18,7 @@ class RestoreWalletTask(
 ) {
     suspend fun execute(): DAuthResult<CreateWalletData> {
         DAuthLogger.d("RestoreWalletTask execute", TAG)
+        AssertUtil.assert(Managers.walletPrefsV2.getWalletState() == STATE_INIT)
 
         val localKey = runSpending(TAG, "decode") {
             MergeResultUtil.decodeKey(

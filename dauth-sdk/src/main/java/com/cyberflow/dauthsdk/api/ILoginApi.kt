@@ -37,7 +37,7 @@ interface ILoginApi {
     /**
      * 登出
      */
-    suspend fun logout()
+    fun logout()
 
 
     /**

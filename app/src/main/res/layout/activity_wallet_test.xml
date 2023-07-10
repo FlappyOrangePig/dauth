@@ -77,13 +77,13 @@
             android:id="@+id/btn_clear_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="清除数据" />
+            android:text="清除钱包数据数据" />
 
         <Button
-            android:id="@+id/btn_quit_login"
+            android:id="@+id/btn_import_key"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="退出登录" />
+            android:text="导入测试账号的密钥" />
 
     </LinearLayout>
 

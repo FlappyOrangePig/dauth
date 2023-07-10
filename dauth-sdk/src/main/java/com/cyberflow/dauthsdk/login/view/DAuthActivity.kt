@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberflow.dauthsdk.databinding.ActivityAuthLayoutBinding
-import java.util.zip.Inflater
 
 class DAuthActivity: AppCompatActivity() {
 

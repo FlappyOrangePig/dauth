@@ -112,6 +112,11 @@ class MainActivity : BaseActivity() {
             }
         }
 
+        binding.btnQuit.setOnClickListener {
+            DAuthSDK.instance.logout()
+            finish()
+        }
+
     }
 
     override fun onDestroy() {

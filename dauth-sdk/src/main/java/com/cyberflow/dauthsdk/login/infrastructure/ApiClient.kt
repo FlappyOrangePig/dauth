@@ -99,7 +99,7 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
         try {
             return if (isJsonMime(contentType)) {
                 val adapter = Serializer.moshi.adapter(T::class.java)
-                adapter.fromJson(rb.toString())
+                adapter.fromJson(rb.orEmpty())
             } else if (contentType.equals(String.Companion::class.java)) {
                 response.body.toString() as T
             } else {

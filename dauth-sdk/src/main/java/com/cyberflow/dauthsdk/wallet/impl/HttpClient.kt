@@ -13,13 +13,22 @@ object HttpClient {
         getOkhttpClient()
     }
 
+    private val redactHeader
+        get() = arrayListOf(
+            "client_id",
+            "client_secret"
+        )
+
     private fun getOkhttpClient() = OkHttpClient().newBuilder().apply {
         connectTimeout(10, TimeUnit.SECONDS)
         readTimeout(10, TimeUnit.SECONDS)
-        addInterceptor(HttpLoggingInterceptor {
-            DAuthLogger.d(it, TAG)
+        addInterceptor(HttpLoggingInterceptor { message ->
+            DAuthLogger.d(message, TAG)
         }.apply {
             level = HttpLoggingInterceptor.Level.BODY
+            redactHeader.forEach {
+                redactHeader(it)
+            }
         })
     }.build()
 }

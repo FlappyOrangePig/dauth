@@ -13,6 +13,7 @@ import com.cyberflow.dauthsdk.mpc.MpcServers
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.CreateWalletTask
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.RestoreWalletTask
 import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
+import java.lang.RuntimeException
 
 sealed class KeysToRestoreResult {
     class KeyInfo(
@@ -40,8 +41,7 @@ class WalletManager {
 
         const val STATE_INIT = 0
         const val STATE_KEY_GENERATED = 1
-        const val STATE_MERGE_RESULT_GENERATED = 2
-        const val STATE_OK = 3
+        const val STATE_OK = 2
     }
 
     private val walletPrefsV2 get() = Managers.walletPrefsV2
@@ -50,7 +50,7 @@ class WalletManager {
 
     fun getState(): Int {
         val state = walletPrefsV2.getWalletState()
-        DAuthLogger.d("state=$state")
+        DAuthLogger.d("state=$state", TAG)
         return state
     }
 
@@ -74,34 +74,41 @@ class WalletManager {
         // 拉取MPC服务器信息
         val participantsResult = MpcServers.getServers()
         if (participantsResult == null) {
-            DAuthLogger.d("participantsResult error")
+            DAuthLogger.d("participantsResult error", TAG)
             return DAuthResult.SdkError()
         }
         val participants = participantsResult.participants
-        DAuthLogger.d("participants=$participants")
+        DAuthLogger.d("participants=$participants", TAG)
 
         val restoreKeyInfo =
-            if (state in STATE_INIT + 1 until STATE_OK
-            ) {
-                null
-            } else {
-                when (val keysResult = getKeysToRestore(mpcApi, participants)) {
-                    is KeysToRestoreResult.NetworkError -> {
-                        DAuthLogger.e("network error when check restore", TAG)
-                        return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GENERATE_EOA_ADDRESS)
-                    }
+            when (state) {
+                STATE_KEY_GENERATED -> {
+                    null
+                }
 
-                    is KeysToRestoreResult.CannotRestore -> {
-                        null
-                    }
+                STATE_INIT -> {
+                    when (val keysResult = getKeysToRestore(mpcApi, participants)) {
+                        is KeysToRestoreResult.NetworkError -> {
+                            DAuthLogger.e("network error when check restore", TAG)
+                            return DAuthResult.SdkError()
+                        }
 
-                    is KeysToRestoreResult.KeyInfo -> {
-                        keysResult
+                        is KeysToRestoreResult.CannotRestore -> {
+                            null
+                        }
+
+                        is KeysToRestoreResult.KeyInfo -> {
+                            keysResult
+                        }
                     }
+                }
+
+                else -> {
+                    throw RuntimeException("cannot happen")
                 }
             }
 
-        DAuthLogger.d("restoreKeyInfo=$restoreKeyInfo")
+        DAuthLogger.d("restoreKeyInfo=$restoreKeyInfo", TAG)
 
         // 恢复逻辑
         return if (restoreKeyInfo != null) {
@@ -122,15 +129,15 @@ class WalletManager {
     ): KeysToRestoreResult {
         val dauthParticipant = participants.find { it.id == MpcKeyIds.KEY_INDEX_DAUTH_SERVER }
         return if (dauthParticipant == null || !dauthParticipant.isValid()) {
-            DAuthLogger.d("dauthParticipant invalid")
+            DAuthLogger.d("dauthParticipant invalid", TAG)
             KeysToRestoreResult.CannotRestore
         } else {
             val appParticipant = participants.find { it.id == MpcKeyIds.KEY_INDEX_APP_SERVER }
-            if (appParticipant == null || !appParticipant.isValid()) {
-                DAuthLogger.d("appParticipant invalid")
+            if (appParticipant == null || appParticipant.get_key_url.isEmpty()) {
+                DAuthLogger.d("appParticipant invalid", TAG)
                 KeysToRestoreResult.CannotRestore
             } else {
-                DAuthLogger.d("check keys...")
+                DAuthLogger.d("check keys...", TAG)
                 // 检查密钥
                 // k1
                 val k1Result =
@@ -139,11 +146,11 @@ class WalletManager {
                         GetSecretKeyParam.TYPE_KEY
                     )
                 if (k1Result == null) {
-                    DAuthLogger.d("k1Result error")
+                    DAuthLogger.d("k1Result error", TAG)
                     return KeysToRestoreResult.NetworkError
                 }
                 val k1 = k1Result.data
-                DAuthLogger.d("k1:${k1.length}")
+                DAuthLogger.d("k1:${k1.length}", TAG)
 
                 // k2
                 val k2Result =
@@ -152,11 +159,11 @@ class WalletManager {
                         GetSecretKeyParam.TYPE_KEY
                     )
                 if (k2Result == null) {
-                    DAuthLogger.d("k2Result error")
+                    DAuthLogger.d("k2Result error", TAG)
                     return KeysToRestoreResult.NetworkError
                 }
                 val k2 = k2Result.data
-                DAuthLogger.d("k2:${k2.length}")
+                DAuthLogger.d("k2:${k2.length}", TAG)
 
                 // mr
                 val mrResult = mpcApi.getKey(
@@ -164,11 +171,11 @@ class WalletManager {
                     GetSecretKeyParam.TYPE_MERGE_RESULT
                 )
                 if (mrResult == null) {
-                    DAuthLogger.d("mrResult error")
+                    DAuthLogger.d("mrResult error", TAG)
                     return KeysToRestoreResult.NetworkError
                 }
                 val mr = mrResult.data
-                DAuthLogger.d("mr:${mr.length}")
+                DAuthLogger.d("mr:${mr.length}", TAG)
 
                 return if (k1.isEmpty() || k2.isEmpty() || mr.isEmpty()) {
                     KeysToRestoreResult.CannotRestore

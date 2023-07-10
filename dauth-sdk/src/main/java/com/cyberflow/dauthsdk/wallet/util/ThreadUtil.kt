@@ -2,8 +2,6 @@ package com.cyberflow.dauthsdk.wallet.util
 
 import android.os.Handler
 import android.os.Looper
-import androidx.viewbinding.BuildConfig
-import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import java.util.concurrent.Executors
 
 internal object ThreadUtil {
@@ -16,19 +14,9 @@ internal object ThreadUtil {
     }
 
     fun assertInMainThread(inOrNot: Boolean = true) {
-        val condition = if (inOrNot) {
-            !isMainThread()
-        } else {
-            isMainThread()
-        }
-        if (condition) {
-            val msg = "cannot be invoked in thread ${Thread.currentThread().id}"
-            if (BuildConfig.DEBUG) {
-                throw java.lang.RuntimeException(msg)
-            } else {
-                DAuthLogger.e(msg)
-            }
-        }
+        val isMainThread = isMainThread()
+        val match = isMainThread == inOrNot
+        AssertUtil.assert(match, "cannot be invoked in thread ${Thread.currentThread().id}")
     }
 
     fun runOnMainThread(delayed: Long = 0L, runnable: Runnable) {
