@@ -130,12 +130,13 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
     ): T? = awaitRequest {
         if (auth) {
             TokenManager.instance.authenticatedRequest { accessToken ->
-                val bodyClazz = body::class.java
-                kotlin.runCatching {
-                    val accessTokenFields = bodyClazz.getDeclaredField("access_token")
+                try {
+                    val accessTokenFields = body::class.java.getDeclaredField("access_token")
                     accessTokenFields.isAccessible = true
                     accessTokenFields.set(body, accessToken.orEmpty())
                     accessTokenFields.isAccessible = false
+                } catch (t: Throwable) {
+                    DAuthLogger.e(t.stackTraceToString())
                 }
                 requestInner(requestConfig, body)
             }

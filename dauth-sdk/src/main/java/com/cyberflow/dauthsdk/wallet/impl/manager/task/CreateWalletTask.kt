@@ -10,14 +10,11 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
-import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.ext.runSpending
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.util.WalletTaskUtil
-import com.cyberflow.dauthsdk.wallet.util.ThreadUtil
-import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 
 private const val TAG = "CreateWalletTask"
 
@@ -26,7 +23,6 @@ class CreateWalletTask(
     private val participants: List<GetParticipantsRes.Participant>
 ) {
     private val mpcApi: RequestApiMpc = RequestApiMpc()
-    private val skipGenerateMergeResult get() = false
     private val keystore get() = Managers.mpcKeyStore
     private val walletPrefsV2 get() = Managers.walletPrefsV2
 
@@ -46,11 +42,7 @@ class CreateWalletTask(
         // 秘钥求和
         if (keystore.getMergeResult().isEmpty()) {
             val mergeResult = runSpending(TAG, "merge keys") {
-                if (skipGenerateMergeResult) {
-                    "hahahaha"
-                } else {
-                    MergeResultUtil.encode(keys)
-                }
+                MergeResultUtil.encodeKey(keys)
             }
             val mergeResultLen = mergeResult.length
             DAuthLogger.d("key merge len=$mergeResultLen", TAG)

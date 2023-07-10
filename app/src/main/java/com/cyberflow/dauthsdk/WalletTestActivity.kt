@@ -195,6 +195,11 @@ class WalletTestActivity : BaseActivity() {
         btnClearData.setOnClickListener {
             Managers.walletManager.clearData()
         }
+        btnQuitLogin.setOnClickListener {
+            lifecycleScope.launch {
+                DAuthSDK.instance.logout()
+            }
+        }
     }
 
     override fun onResume() {
