@@ -13,6 +13,7 @@ private const val REFRESH_TOKEN = "refresh_token"
 private const val EXPIRE_TIME = "expire_in"
 private const val USER_TYPE = "user_type"
 private const val DEFAULT_USER_TYPE = 0
+private const val GOOGLE_CLIENT_ID = "google_client_id"
 
 class LoginPrefs {
 
@@ -69,6 +70,14 @@ class LoginPrefs {
 
     fun getUserType() : Int {
         return getPrefs().getInt(USER_TYPE, DEFAULT_USER_TYPE)
+    }
+
+    fun setGoogleClientId(clientId: String) {
+        getPrefs().edit().putString(GOOGLE_CLIENT_ID,clientId).apply()
+    }
+
+    fun getGoogleClientId(): String {
+        return getPrefs().getString(GOOGLE_CLIENT_ID,"").orEmpty()
     }
 
     fun putLoginInfo(

@@ -45,5 +45,10 @@ class SdkConfig {
      * 【test】
      */
     var useDevRelayerServer = false
+
+    /**
+     * Google ClientID
+     */
+    var googleClientId: String? = null
 }
 
