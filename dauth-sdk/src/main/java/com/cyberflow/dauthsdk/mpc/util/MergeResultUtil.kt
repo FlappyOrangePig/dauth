@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.mpc.util
 
 import android.util.Base64
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
 import java.math.BigInteger
 
 private const val TAG = "MergeResultUtil"
@@ -15,16 +16,16 @@ object MergeResultUtil {
 
     private fun log(log: String) {
         if (DEBUG) {
-            DAuthLogger.d(log, TAG)
+            DAuthLogger.v(log, TAG)
         }
     }
 
-    fun encodeKey(keys: Array<String>): String {
-        return encode(keys.map { it.toByteArray() })
+    fun encodeKey(keys: Array<String>): String? {
+        return runCatchingWithLog { encode(keys.map { it.toByteArray() }) }
     }
 
-    fun decodeKey(compressedBase64: String, keys: Array<String>): String {
-        return String(decode(compressedBase64, keys.map { it.toByteArray() }))
+    fun decodeKey(compressedBase64: String, keys: Array<String>): String? {
+        return runCatchingWithLog { String(decode(compressedBase64, keys.map { it.toByteArray() })) }
     }
 
     private fun encode(keys: List<ByteArray>): String {

@@ -49,7 +49,6 @@ import org.web3j.tx.ClientTransactionManager
 import org.web3j.tx.TransactionManager
 import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.tx.gas.StaticGasProvider
-import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 

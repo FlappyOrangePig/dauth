@@ -1,29 +1,26 @@
 package com.cyberflow.dauthsdk.login.impl
 
-import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.model.RefreshTokenParam
 import com.cyberflow.dauthsdk.login.network.BaseResponse
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.login.utils.maskSensitiveData
 import com.cyberflow.dauthsdk.wallet.ext.app
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import java.util.concurrent.TimeUnit
 
-val context get() = app()
-
-class TokenManager private constructor() {
+internal class TokenManager private constructor() {
 
     companion object {
-        val instance: TokenManager by lazy {
+        internal val instance: TokenManager by lazy {
             TokenManager()
         }
     }
 
-    val prefs get() = Managers.loginPrefs
+    private val prefs get() = Managers.loginPrefs
 
-    suspend fun validateToken(): Boolean {
+    private suspend fun validateToken(): Boolean {
         val tokenExpirationTime = prefs.getExpireTime()
         val currentTime = System.currentTimeMillis() / 1000
         // refreshToken过期时间
@@ -47,7 +44,7 @@ class TokenManager private constructor() {
         }
     }
 
-    suspend fun refreshToken(): String? {
+    private suspend fun refreshToken(): String? {
         // 刷新token
         val authId = prefs.getAuthId()
         val userType = prefs.getUserType()
@@ -73,11 +70,11 @@ class TokenManager private constructor() {
         prefs.setAccessToken(newToken.orEmpty())
     }
 
-    suspend inline fun <T> authenticatedRequest(crossinline request: (accessToken: String?) -> T?): T? {
+    internal suspend fun <T> authenticatedRequest(request: (accessToken: String?) -> T?): T? {
         val isValidate = validateToken()
         return if (isValidate) {
             val accessToken = prefs.getAccessToken()
-            DAuthLogger.e("TokenManager accessToken is valid: $accessToken")
+            DAuthLogger.e("TokenManager accessToken is valid: ${accessToken.maskSensitiveData()}")
             val response = request(accessToken)
             val baseResponse = response as? BaseResponse ?: return null
             if (baseResponse.iRet == ResponseCode.TOKEN_IS_INVALIDATE) {

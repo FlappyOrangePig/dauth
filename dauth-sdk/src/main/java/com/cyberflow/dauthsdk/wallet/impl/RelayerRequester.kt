@@ -3,7 +3,6 @@ package com.cyberflow.dauthsdk.wallet.impl
 import androidx.annotation.Keep
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.entity.CommitTransRes
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers

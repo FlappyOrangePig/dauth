@@ -18,6 +18,7 @@ import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
+import org.web3j.abi.datatypes.Bool
 import java.math.BigInteger
 
 private const val TAG = "WalletTestActivity"
@@ -46,10 +47,10 @@ class WalletTestActivity : BaseActivity() {
         binding.initView()
     }
 
-    private fun createWallet() {
+    private fun createWallet(force: Boolean) {
         lifecycleScope.launch {
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val result = api.createWallet("")
+            val result = api.createWallet(force)
             loadingDialog.dismiss()
             if (result !is DAuthResult.Success) {
                 ToastUtil.show(this@WalletTestActivity, "创建失败 ${result.getError()}")
@@ -62,7 +63,10 @@ class WalletTestActivity : BaseActivity() {
     private fun ActivityWalletTestBinding.initView() {
         val context = this.root.context
         btnCreateWallet.setOnClickListener {
-            createWallet()
+            createWallet(false)
+        }
+        btnCreateWalletForce.setOnClickListener {
+            createWallet(true)
         }
         btnSign.setOnClickListener {
             val msg = "abcdef"
@@ -208,7 +212,7 @@ class WalletTestActivity : BaseActivity() {
             )
             Managers.mpcKeyStore.setAllKeys(keys = keys)
             Managers.walletPrefsV2.setWalletState(WalletManager.STATE_KEY_GENERATED)
-            createWallet()
+            createWallet(false)
             initData()
         }
     }

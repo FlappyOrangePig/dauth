@@ -13,7 +13,7 @@ import org.jetbrains.annotations.TestOnly
 import java.lang.StringBuilder
 
 class DAuthSDK private constructor(
-    private val loginApi: ILoginApi,
+    internal val loginApi: ILoginApi,
     private val walletApi: IWalletApi
 ) : IDAuthApi, ILoginApi by loginApi,
     IWalletApi by walletApi {

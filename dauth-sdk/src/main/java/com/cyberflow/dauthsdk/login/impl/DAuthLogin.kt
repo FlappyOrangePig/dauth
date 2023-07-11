@@ -25,6 +25,7 @@ import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import kotlinx.coroutines.*
@@ -246,10 +247,14 @@ class DAuthLogin : ILoginApi {
         logOutJob?.cancel()
         @OptIn(DelicateCoroutinesApi::class)
         logOutJob = GlobalScope.launch {
-            runCatchingWithLog {
+            runCatchingWithLogSuspend {
                 RequestApi().logout(requestBody)
             }
         }
+        clearAccountInfo()
+    }
+
+    internal fun clearAccountInfo() {
         prefs.clearLoginStateInfo()
         walletManager.clearData()
     }

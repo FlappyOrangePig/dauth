@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.login.utils
 
 import android.app.Application
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.DAuthSDK
 
 object DAuthLogger {
@@ -61,5 +62,19 @@ object DAuthLogger {
 
     fun w(msg: String, tag: String = "") {
         log(tag, msg) { t, m -> Log.w(t, m) }
+    }
+}
+
+fun String.maskSensitiveData(): String {
+    val str = this
+    val maskBytes = 3
+    return if (length <= maskBytes * 2) {
+        "*".repeat(length)
+    } else {
+        val maskedString =
+            str.substring(0, maskBytes) + "*".repeat(str.length - maskBytes * 2) + str.substring(
+                str.length - maskBytes
+            )
+        maskedString
     }
 }

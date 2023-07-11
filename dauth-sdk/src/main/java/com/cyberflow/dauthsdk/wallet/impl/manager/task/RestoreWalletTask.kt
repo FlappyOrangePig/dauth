@@ -26,13 +26,18 @@ class RestoreWalletTask(
                 arrayOf(restoreKeyInfo.k1, restoreKeyInfo.k2)
             )
         }
-        DAuthLogger.d("localKey len=${localKey.length}", TAG)
+        DAuthLogger.d("localKey len=${localKey?.length}", TAG)
+        if (localKey.isNullOrEmpty()) {
+            DAuthLogger.d("localKey calc error", TAG)
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_RESTORE_KEY_BY_MERGE_RESULT)
+        }
 
         val newKeys = arrayOf(localKey, restoreKeyInfo.k1, restoreKeyInfo.k2)
         val addressResult = WalletTaskUtil.generateAddress(newKeys)
         DAuthLogger.d("addressResult=$addressResult", TAG)
         if (addressResult == null) {
-            return DAuthResult.SdkError()
+            DAuthLogger.d("address error", TAG)
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GENERATE_ADDRESS)
         }
 
         DAuthLogger.d("setLocalKey", TAG)
@@ -42,7 +47,7 @@ class RestoreWalletTask(
             DAuthResult.Success(CreateWalletData(addressResult.second))
         } else {
             DAuthLogger.e("sp error", TAG)
-            DAuthResult.SdkError()
+            DAuthResult.SdkError(DAuthResult.SDK_ERROR_UNKNOWN)
         }
         DAuthLogger.d("submit result=$r", TAG)
         return r

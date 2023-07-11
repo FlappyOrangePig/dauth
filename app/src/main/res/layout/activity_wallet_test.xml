@@ -26,6 +26,12 @@
             android:text="@string/create_wallet" />
 
         <Button
+            android:id="@+id/btn_create_wallet_force"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="强制创建钱包" />
+
+        <Button
             android:id="@+id/btn_sign"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

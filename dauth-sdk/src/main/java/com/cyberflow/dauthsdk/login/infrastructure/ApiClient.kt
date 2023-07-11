@@ -4,6 +4,7 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import kotlinx.coroutines.*
 import okhttp3.*
@@ -96,52 +97,46 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
         if(contentType == null) {
             contentType = JsonMediaType
         }
-        try {
-            return if (isJsonMime(contentType)) {
+        val r = try {
+            if (isJsonMime(contentType)) {
+                //DAuthLogger.d("responseBody json=${rb.orEmpty()}")
                 val adapter = Serializer.moshi.adapter(T::class.java)
                 adapter.fromJson(rb.orEmpty())
             } else if (contentType.equals(String.Companion::class.java)) {
                 response.body.toString() as T
             } else {
                 DAuthLogger.e("Fill in more types!")
-                return null
+                null
             }
-        } catch (e: java.lang.Exception) {
+        } catch (e: Exception) {
             DAuthLogger.e("responseBody Serializer exception: ${e.stackTraceToString()}")
-        }
-        return null
-    }
-
-    protected suspend inline fun <reified RESPONSE> awaitRequest(crossinline block: suspend () -> RESPONSE?): RESPONSE? {
-        return try {
-            withContext(Dispatchers.IO) {
-                block.invoke()
-            }
-        } catch (t: Throwable) {
-            DAuthLogger.e(t.stackTraceToString())
             null
         }
+        DAuthLogger.d("responseBody result=$r")
+        return r
     }
 
-    protected suspend inline fun <reified T : Any?> request(
+    internal suspend inline fun <reified T : Any?> request(
         requestConfig: RequestConfig,
         body: Any,
         auth: Boolean = false,
-    ): T? = awaitRequest {
-        if (auth) {
-            TokenManager.instance.authenticatedRequest { accessToken ->
-                try {
-                    val accessTokenFields = body::class.java.getDeclaredField("access_token")
-                    accessTokenFields.isAccessible = true
-                    accessTokenFields.set(body, accessToken.orEmpty())
-                    accessTokenFields.isAccessible = false
-                } catch (t: Throwable) {
-                    DAuthLogger.e(t.stackTraceToString())
+    ): T? = withContext(Dispatchers.IO) {
+        runCatchingWithLogSuspend {
+            if (auth) {
+                TokenManager.instance.authenticatedRequest { accessToken ->
+                    try {
+                        val accessTokenFields = body::class.java.getDeclaredField("access_token")
+                        accessTokenFields.isAccessible = true
+                        accessTokenFields.set(body, accessToken.orEmpty())
+                        accessTokenFields.isAccessible = false
+                    } catch (t: Throwable) {
+                        DAuthLogger.e(t.stackTraceToString())
+                    }
+                    requestInner(requestConfig, body)
                 }
+            } else {
                 requestInner(requestConfig, body)
             }
-        } else {
-            requestInner(requestConfig, body)
         }
     }
 

@@ -6,6 +6,7 @@ import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
 import com.cyberflow.dauthsdk.login.network.RequestApiMpc
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.login.utils.maskSensitiveData
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
@@ -210,7 +211,7 @@ class ExampleUnitTest {
             }
         }
         val decoded = runSpending("decode") {
-            MergeResultUtil.decodeKey(encoded, arrayOf(key1, key2)).also {
+            MergeResultUtil.decodeKey(encoded.orEmpty(), arrayOf(key1, key2)).also {
                 println("decode=$it")
             }
         }
@@ -313,5 +314,13 @@ class ExampleUnitTest {
             mpcApi.getKey(participants[index].get_key_url, GetSecretKeyParam.TYPE_MERGE_RESULT)
         assert(mergeResultResult?.isSuccess() == true)
         println("mergeResult=${mergeResultResult?.data}")
+    }
+
+    @Test
+    fun testMaskSensitiveData() {
+        val a = "1234567890asdfgh"
+        for (i in 0..a.length) {
+            println(a.substring(0, i).maskSensitiveData())
+        }
     }
 }

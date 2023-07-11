@@ -142,7 +142,7 @@ class LoginActivity : BaseActivity() {
     private fun handleCreateWallet() {
         lifecycleScope.launch {
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
+            val createWalletRes = DAuthSDK.instance.createWallet(false)
             loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address
