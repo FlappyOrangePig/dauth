@@ -10,6 +10,7 @@ import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 
 
@@ -21,6 +22,7 @@ private const val ACCOUNT_TYPE_OF_EMAIL = 10
 class LoginActivity : BaseActivity() {
     var loginBinding: ActivityLoginLayoutBinding? = null
     private val binding: ActivityLoginLayoutBinding get() = loginBinding!!
+    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,7 +141,9 @@ class LoginActivity : BaseActivity() {
     //创建aa钱包
     private fun handleCreateWallet() {
         lifecycleScope.launch {
-            val createWalletRes = DAuthSDK.instance.createWallet("Tt123456")
+            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+            val createWalletRes = DAuthSDK.instance.createWallet(false)
+            loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address
                 DAuthLogger.d("创建的aa钱包地址：$address")

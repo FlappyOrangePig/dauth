@@ -2,6 +2,8 @@ package com.cyberflow.dauthsdk.login.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.wallet.ext.app
 
 private const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
@@ -14,6 +16,8 @@ private const val EXPIRE_TIME = "expire_in"
 private const val USER_TYPE = "user_type"
 private const val DEFAULT_USER_TYPE = 0
 private const val GOOGLE_CLIENT_ID = "google_client_id"
+
+private const val TAG = "LoginPrefs"
 
 class LoginPrefs {
 
@@ -36,10 +40,6 @@ class LoginPrefs {
         return getPrefs().getString(AUTH_ID, null).orEmpty()
     }
 
-    fun setAuthID(authId: String) {
-        getPrefs().edit().putString(AUTH_ID, authId).apply()
-    }
-
     fun setDidToken(didToken: String) {
         getPrefs().edit().putString(DID_TOKEN, didToken).apply()
     }
@@ -52,20 +52,12 @@ class LoginPrefs {
         return getPrefs().getString(REFRESH_TOKEN, null).orEmpty()
     }
 
-    fun setRefreshToken(refreshToken: String) {
-        getPrefs().edit().putString(REFRESH_TOKEN, refreshToken).apply()
-    }
-
     fun setExpireTime(expireTime: Long) {
         getPrefs().edit().putLong(EXPIRE_TIME, expireTime).apply()
     }
 
     fun getExpireTime(): Long {
         return getPrefs().getLong(EXPIRE_TIME, 0L)
-    }
-
-    fun setUserType(type: Int) {
-        getPrefs().edit().putInt(USER_TYPE, type).apply()
     }
 
     fun getUserType() : Int {
@@ -107,6 +99,15 @@ class LoginPrefs {
         }
         user_type?.let {
             values.add(USER_TYPE to it)
+        }
+
+        val lastAuthId = getAuthId()
+        if (lastAuthId.isNotEmpty() && !authId.isNullOrEmpty()) {
+            DAuthLogger.d("set authId $lastAuthId -> $authId", TAG)
+            if (lastAuthId != authId) {
+                DAuthLogger.d("authId changed", TAG)
+                (DAuthSDK.impl.loginApi as? DAuthLogin)?.clearAccountInfo()
+            }
         }
 
         put(values, async)
@@ -151,10 +152,11 @@ class LoginPrefs {
     }
 
 
-    fun clearLoginStateInfo() {
+    internal fun clearLoginStateInfo() {
+        DAuthLogger.d("clear login state info!", TAG)
         val prefsEditor = getPrefs().edit()
         prefsEditor.clear()
-        prefsEditor.apply()
+        prefsEditor.commit()
     }
 
 }

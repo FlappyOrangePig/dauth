@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Button
@@ -25,7 +26,6 @@
         android:layout_height="50dp"
         android:layout_marginStart="100dp"
         android:layout_marginEnd="100dp"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_gas"
         android:layout_marginTop="50dp"
         android:background="@drawable/allow_btn_shape"
@@ -39,7 +39,6 @@
         android:layout_height="50dp"
         android:layout_marginStart="100dp"
         android:layout_marginEnd="100dp"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_query_balance"
         android:layout_marginTop="50dp"
         android:background="@drawable/allow_btn_shape"
@@ -56,11 +55,7 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:background="@drawable/allow_btn_shape"
-        app:layout_constraintTop_toBottomOf="@id/btn_send_transaction"
-        android:layout_marginBottom="50dp"
-        android:layout_marginTop="50dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/btn_send_transaction" />
 
     <Button
         android:id="@+id/btn_query_account_by_openid"
@@ -73,10 +68,7 @@
         android:textColor="@color/white"
         android:background="@drawable/allow_btn_shape"
         app:layout_constraintTop_toBottomOf="@id/btn_query_account"
-        android:layout_marginBottom="50dp"
-        android:layout_marginTop="50dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/btn_set_pwd"
@@ -84,9 +76,6 @@
         android:layout_height="50dp"
         android:layout_marginStart="100dp"
         android:layout_marginEnd="100dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_query_account_by_openid"
-        android:layout_marginTop="50dp"
         android:background="@drawable/allow_btn_shape"
         android:text="设置邮箱登录密码"
         android:textColor="@color/white" />
@@ -97,12 +86,19 @@
         android:layout_height="50dp"
         android:layout_marginStart="100dp"
         android:layout_marginEnd="100dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_set_pwd"
-        android:layout_marginTop="50dp"
         android:background="@drawable/allow_btn_shape"
         android:text="第三方登录绑定邮箱"
         android:textColor="@color/white" />
 
+    <Button
+        android:id="@+id/btn_quit"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:background="@drawable/allow_btn_shape"
+        android:text="退出登录"
+        android:textColor="@color/white" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

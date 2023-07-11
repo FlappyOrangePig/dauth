@@ -9,21 +9,11 @@ import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
-import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
-import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.TypeReference
@@ -45,26 +35,17 @@ private const val TAG = "EoaWallet"
  */
 class EoaWallet internal constructor(): IWalletApi {
 
-    private val loginPrefs by lazy { LoginPrefs() }
-    private val walletManager by lazy { WalletManager.instance }
-    @Volatile
-    private var lastDeferred : Deferred<*>? = null
+    private val walletPrefsV2 get() = Managers.walletPrefsV2
 
-    override suspend fun createWallet(passcode: String?): DAuthResult<CreateWalletData> {
-        return coroutineScope {
-            lastDeferred?.cancel()
-            async {
-                walletManager.initWallet(loginPrefs)
-            }.let {
-                lastDeferred = it
-                it.await()
-            }
+    override suspend fun createWallet(forceCreate: Boolean): DAuthResult<CreateWalletData> {
+        return withContext(Dispatchers.Default) {
+            Managers.walletManager.initWallet(forceCreate)
         }
     }
 
     override suspend fun queryWalletAddress(): DAuthResult<WalletAddressData> {
-        val aaAddress = WalletPrefsV2.getAaAddress()
-        val signerAddress = WalletPrefsV2.getEoaAddress()
+        val aaAddress = walletPrefsV2.getAaAddress()
+        val signerAddress = walletPrefsV2.getEoaAddress()
         DAuthLogger.i("queryWalletAddress $aaAddress/$signerAddress", TAG)
         return if (aaAddress.isNotEmpty() && signerAddress.isNotEmpty()) {
             DAuthResult.Success(

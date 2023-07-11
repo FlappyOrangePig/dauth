@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.mpc.util
 
 import android.util.Base64
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
 import java.math.BigInteger
 
 private const val TAG = "MergeResultUtil"
@@ -11,95 +12,62 @@ private const val TAG = "MergeResultUtil"
  */
 object MergeResultUtil {
 
-    private const val bytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-_"
-    private val reverseMap = HashMap<Char, Int>()
-
     private const val DEBUG = true
-    private const val BASE65 = 65
-
-    init {
-        bytes.forEachIndexed { index, c ->
-            reverseMap[c] = index
-        }
-    }
 
     private fun log(log: String) {
         if (DEBUG) {
-            DAuthLogger.d(log, TAG)
+            DAuthLogger.v(log, TAG)
         }
     }
 
-    fun encode(keys: Array<String>): String {
-        // 求和
-        val sum = keyAdd(keys)
-        //log("sum=$sum")
+    fun encodeKey(keys: Array<String>): String? {
+        return runCatchingWithLog { encode(keys.map { it.toByteArray() }) }
+    }
 
+    fun decodeKey(compressedBase64: String, keys: Array<String>): String? {
+        return runCatchingWithLog { String(decode(compressedBase64, keys.map { it.toByteArray() })) }
+    }
+
+    private fun encode(keys: List<ByteArray>): String {
         // 压缩
-        val compressed = ZipUtil.compress(sum.toString().toByteArray())
-        // base64
+        val bas = keys.map { ZipUtil.compress(it) }
+        // 求和
+        val sum = keyAdd(bas)
+        // zip
+        val compressed = ZipUtil.compress(sum)
+        // base64-encode
         val compressedBase64 = Base64.encodeToString(compressed, Base64.DEFAULT)
         log("compressedBase64 len=${compressedBase64.length}")
         return compressedBase64
     }
 
-    fun decode(compressedBase64: String, keys: Array<String>): String {
-        // 解base64
+    private fun decode(compressedBase64: String, keys: List<ByteArray>): ByteArray {
+        // base64-decode
         val decompressedBase64 = Base64.decode(compressedBase64, Base64.DEFAULT)
-        // 解压
+        // unzip
         val decompressed = ZipUtil.decompress(decompressedBase64)
-        val decompressedSum = BigInteger(String(decompressed))
-
-        // 相减
-        val result = keyMinus(decompressedSum, keys)
-        log("result=$result")
-        return result
+        // 差
+        val difference = keyMinus(decompressed, keys.map { ZipUtil.compress(it) })
+        // 解压
+        return ZipUtil.decompress(difference)
     }
 
-    private fun toBigInt(key: String): BigInteger {
-        var sum = BigInteger("0")
-        log("toBigInt key len=${key.length}")
-        for (i in key.indices) {
-            val v = key[key.length - 1 - i]
-            val index = reverseMap[v] ?: throw IllegalArgumentException("cannot find $v")
-            //log("toBigInt $i ${v.code}->$index")
-            val currentByteValue = BigInteger(BASE65.toString())
-                .pow(i)
-                .multiply(BigInteger(index.toString()))
-            sum = sum.add(currentByteValue)
+    private fun keyAdd(addends: List<ByteArray>): ByteArray {
+        var sum = BigInteger.ZERO
+        addends.forEach {
+            sum += BigInteger(it)
         }
-        //log("toBigInt sum=$sum")
-        return sum
+        log("keyAdd sum=$sum")
+        return sum.toByteArray()
     }
 
-    private fun fromBigInt(bigInt: BigInteger): String {
-        val bigInt = BigInteger(BASE65.toString())
-        var curBigInt = bigInt
-        val result = StringBuilder()
-        while (curBigInt > BigInteger("0")) {
-            val v = curBigInt.mod(bigInt)
-            curBigInt = curBigInt.divide(bigInt)
-            val char = bytes[v.toInt()]
-            result.insert(0, char)
+    private fun keyMinus(minuend: ByteArray, subtrahends: List<ByteArray>): ByteArray {
+        var difference = BigInteger(minuend)
+        log("keyMinus minuend=$difference")
+        subtrahends.forEach {
+            difference -= BigInteger(it)
         }
-        log("fromBigInt=$result")
-        return result.toString()
-    }
-
-    private fun keyAdd(keys: Array<String>): BigInteger {
-        var result = BigInteger("0")
-        for (i in keys.indices) {
-            val bi = toBigInt(keys[i])
-            result = result.add(bi)
-        }
-        return result
-    }
-
-    private fun keyMinus(sum: BigInteger, keys: Array<String>): String {
-        var result = sum
-        for (i in keys.indices) {
-            val bi = toBigInt(keys[i])
-            result = result.minus(bi)
-        }
-        return fromBigInt(result)
+        log("keyMinus difference=$difference")
+        return difference.toByteArray()
     }
 }

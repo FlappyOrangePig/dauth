@@ -9,10 +9,10 @@ import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.entity.Web3jResponseError
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccountFactory
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint
 import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
@@ -49,7 +49,6 @@ import org.web3j.tx.ClientTransactionManager
 import org.web3j.tx.TransactionManager
 import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.tx.gas.StaticGasProvider
-import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 
@@ -375,9 +374,6 @@ object Web3Manager {
         val faAddress = addresses.factoryAddress
         val entryPointAddress = addresses.entryPointAddress
 
-        // 部署aa账号的eoa账号地址，最终部署在服务端，entryPoint的TransactionManager需要
-        val relayerEoaAddress = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
-
         val gasPrice =
             web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
         DAuthLogger.d("gasPrice=$gasPrice", TAG)
@@ -414,7 +410,7 @@ object Web3Manager {
         val entryPoint = EntryPoint.load(
             entryPointAddress,
             web3j,
-            transactionManager(relayerEoaAddress),
+            transactionManager(eoaAddress),
             StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
         )
 
@@ -427,8 +423,14 @@ object Web3Manager {
 
         val isNew = nonce.isNewAccount()
         DAuthLogger.d("isNew=$isNew")
+        val isDeployed = isCodeExists(aaAddress)
+        if (isDeployed == null) {
+            DAuthLogger.e("not deployed")
+            return DAuthResult.SdkError()
+        }
 
-        val initCode = if (isNew) {
+        DAuthLogger.d("isDeployed=$isNew")
+        val initCode = if (isNew && !isDeployed) {
             // 创建新aa账号
             DAuthLogger.d("deploy aa account", TAG)
 
@@ -522,7 +524,7 @@ object Web3Manager {
         val localSign = DAuthSDK.impl.config.localSign
         val signatureData = if (localSign) {
             // 本地2片签
-            DAuthJniInvoker.localSignMsg(ethMsgHashHex, MpcKeyStore.getAllKeys().toTypedArray())!!
+            DAuthJniInvoker.localSignMsg(ethMsgHashHex, Managers.mpcKeyStore.getAllKeys().toTypedArray())!!
                 .toSignatureData()
 
             // 模拟多轮签名
@@ -559,7 +561,16 @@ object Web3Manager {
 
         val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
         if (useLocalRelayer) {
-            val receipt = entryPoint.handleOp(userOpCopy).awaitLite()
+            // 部署aa账号的eoa账号地址，最终部署在服务端，entryPoint的TransactionManager需要
+            val relayerEoaAddress = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
+            val entryPointDeploy = EntryPoint.load(
+                entryPointAddress,
+                web3j,
+                transactionManager(relayerEoaAddress),
+                StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
+            )
+
+            val receipt = entryPointDeploy.handleOp(userOpCopy).awaitLite()
             DAuthLogger.d("handleOp receipt=$receipt", TAG)
 
             val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
@@ -573,33 +584,6 @@ object Web3Manager {
             }
             return DAuthResult.Success("")
         }
-    }
-
-    suspend fun transferMoneyToAa(eoaAccount: String, aaAccount: String, eoaPrivateKey: String): String? {
-        val nonce =
-            web3j.ethGetTransactionCount(eoaAccount, DefaultBlockParameterName.LATEST).awaitLite {
-                it.transactionCount
-            }
-        DAuthLogger.d("nonce=$nonce", TAG)
-
-        val value = Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
-        val rawTransaction = RawTransaction.createEtherTransaction(
-            nonce,
-            BigInteger.valueOf(20000000000L),
-            BigInteger.valueOf(21000000L),
-            aaAccount,
-            value
-        )
-
-        val signedMessage =
-            TransactionEncoder.signMessage(rawTransaction, Credentials.create(eoaPrivateKey))
-        val hexValue = signedMessage.toHexString()
-        DAuthLogger.d("hexValue=$hexValue", TAG)
-        val transactionHash = web3j.ethSendRawTransaction(hexValue).awaitLite {
-            it.transactionHash
-        }
-        DAuthLogger.d("transactionHash=$transactionHash", TAG)
-        return transactionHash
     }
 
     @Deprecated("使用entryPoint.getNonce")

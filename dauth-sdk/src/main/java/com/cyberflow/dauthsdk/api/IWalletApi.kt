@@ -20,9 +20,10 @@ interface IWalletApi {
      * 创建钱包
      * 登录如果报钱包未创建的错误，则应该调此接口创建钱包。创建失败回到登录页；
      * 创建成功则表示注册成功并成功登录，此时也可以绑定其他信息（可选）。
+     * @param forceCreate 是否强制创建。强制创建每次都会创建钱包，不管是否可以恢复。
      * @return 创建结果
      */
-    suspend fun createWallet(passcode:String?): DAuthResult<CreateWalletData>
+    suspend fun createWallet(forceCreate: Boolean): DAuthResult<CreateWalletData>
 
     /**
      * 查询钱包地址

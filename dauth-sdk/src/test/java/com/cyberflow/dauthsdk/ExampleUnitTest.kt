@@ -3,17 +3,20 @@ package com.cyberflow.dauthsdk
 import android.content.Context
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.SdkConfig
-import com.cyberflow.dauthsdk.login.impl.TokenManager
 import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
-import com.cyberflow.dauthsdk.login.model.GetSecretKeyRes
 import com.cyberflow.dauthsdk.login.network.RequestApiMpc
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.login.utils.maskSensitiveData
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
+import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.SignResult
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.SignUtil
+import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
 import com.cyberflow.dauthsdk.wallet.util.sha3
 import com.cyberflow.dauthsdk.wallet.util.sha3String
 import com.squareup.moshi.Moshi
@@ -21,6 +24,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.anyList
+import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.web3j.abi.FunctionEncoder
@@ -44,14 +49,23 @@ private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eq
 private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
 private const val CLIENT_SECRET = "4657*@cde"
 
+private inline fun <T> runSpending(log: String, crossinline block: () -> T): T {
+    println("$log >>>")
+    val start = System.currentTimeMillis()
+    val r = block.invoke()
+    val spent = System.currentTimeMillis() - start
+    println("$log <<< spent $spent")
+    return r
+}
+
 class ExampleUnitTest {
 
-    private lateinit var context: Context
-    private lateinit var loginPrefs: LoginPrefs
+    private var allKeys : MutableList<String> = mutableListOf()
+    private var mergeResult: String? = null
 
     @Before
     fun setup() {
-        context = mock(Context::class.java)
+        val context = mock(Context::class.java)
         val config = SdkConfig().apply {
             twitterConsumerKey = CONSUMER_KEY
             twitterConsumerSecret = CONSUMER_SECRET
@@ -63,7 +77,7 @@ class ExampleUnitTest {
             useDevWebSocketServer = false
             useDevRelayerServer = false
         }
-        val accessToken = "at66a345f7c948eef04707f178548c0b39"
+        val accessToken = "at115bec87af40a985853cda9b9e75c7a7"
         val authId = "d6a2a49bd1bd251e32cbf80ae6a52f1b"
         val didToken = ""
 
@@ -72,9 +86,34 @@ class ExampleUnitTest {
             `when`(getAuthId()).thenReturn(authId)
             `when`(getDidToken()).thenReturn(didToken)
             `when`(getExpireTime()).thenReturn(Long.MAX_VALUE)
-            loginPrefs = this
-            TokenManager.instance.testPrefs = this
+            Managers.loginPrefs = this
         }
+        mock(MpcKeyStore::class.java).apply {
+            `when`(getAllKeys()).thenReturn(listOf())
+            `when`(getLocalKey()).thenReturn("")
+            `when`(getMergeResult()).thenReturn("")
+            `when`(this.setAllKeys(anyList())).then {
+                println("setAllKeys")
+                allKeys = (it.arguments[0] as List<String>).toMutableList()
+                Unit
+            }
+            `when`(this.setLocalKey(anyString())).then {
+                println("setLocalKey")
+                allKeys.clear()
+                allKeys.add(it.arguments[0] as String)
+                Unit
+            }
+            `when`(this.setMergeResult(anyString())).then {
+                println("setMergeResult")
+                mergeResult = it.arguments[0] as String
+                Unit
+            }
+            Managers.mpcKeyStore = this
+        }
+        mock(WalletPrefsV2::class.java).apply {
+            Managers.walletPrefsV2 = this
+        }
+        Managers.walletManager = WalletManager()
 
         (DAuthSDK.instance as DAuthSDK).initSDKForTest(context, config)
     }
@@ -142,6 +181,21 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testBigIntEncode() {
+        val ba = byteArrayOf(1,0)
+        val bi = BigInteger(ba)
+        println(bi)
+
+        val ba2 = "11".toByteArray()
+        val bi2 = BigInteger(ba2)
+        println(bi2)
+
+        val ba3 = bi2.toByteArray()
+        val bi3 = BigInteger(ba3)
+        println(bi3)
+    }
+
+    @Test
     fun testKeysMergeResult() {
         val key1 =
             "Cg5EQXV0aEdlbmVyYXRlchACGAMqrkYKC0RBdXRoUGFydHkwGgIwMTKnJAqABEM3RTczRDRGNDNENEEyNUE2RjU5RTdGNkRCNzhBMzFBMUI5NDQ4MjgyRjQ4MDdFQjE4QkY0MzIyNTVDNTgyMDk5MkUzQkE2NEQ2OUUwOTdCMjIyQTkzODE2MjQ0RTQwNjczQUQzMzc3MzY1MkVCQUUxMEQ0OUVEODMzNDc2MzBBNzAwRjYwMzhGMkFFNjY1MUUxN0ZBNjRGNkJFRDlGMkQxRUVERkI4MTdBNDMzNDY2RENFRTZGNDQ4RDlDREE5MkNDMzlDNDE4MDg3QkQxOTFGODNCQ0U4NTg3NDg0MjU4NUE0MjNDMUZCRjA3RTVFN0UwNzYyMjgyOTVFQzVCODU5M0U0OUYzRTc2QUVFRkYyOEQyMjJCQ0QyMEQ1MTVCQ0I4NEM5MTFCQjE4OUQ1QjE3NUM2NzFCNUU0RjNBODhGMUQ2M0JBNzFFNkFGM0Q3RTM3MTRFQjUyMzVDOTNCOUExQzY2QzZGMEVDNUY2QzU0NUVDNjU0MjFBODg1QkI3MjlERkU1REY5ODBFMjg2MTQ2NDI2NkIwQzY3MTdDQjNBNURBMThEQkI5REEwOEVGRTRDNzAxQkNENkZFQjBFNEFDMkQ3RjQ3NjI2MkY4NTJFRDEzMUFBM0Q1OEE2MzAzRjdDOUI0QzMzMkRFRjJCNzc1NEFBOEFFNkQ5OTBCQjc1EoAEQzdFNzNENEY0M0Q0QTI1QTZGNTlFN0Y2REI3OEEzMUExQjk0NDgyODJGNDgwN0VCMThCRjQzMjI1NUM1ODIwOTkyRTNCQTY0RDY5RTA5N0IyMjJBOTM4MTYyNDRFNDA2NzNBRDMzNzczNjUyRUJBRTEwRDQ5RUQ4MzM0NzYzMEE3MDBGNjAzOEYyQUU2NjUxRTE3RkE2NEY2QkVEOUYyRDFFRURGQjgxN0E0MzM0NjZEQ0VFNkY0NDhEOUNEQTkyQ0MzOUM0MTgwO"
@@ -151,11 +205,16 @@ class ExampleUnitTest {
             "Cg5EQXV0aEdlbmVyYXRlchACGAMqrkYKC0RBdXRoUGFydHkyGgIwMzKnJAqABEUxNjY0MkZBRTRGMzc4NERDQzk1MzdEM0M1QzY0RTM0NEUyQjgyMzAyNEY4QThEQjNBQkI5Njc1ODYzNkMzODMwMjU5NENGQjlBMEM0MzRBQjI0NUFGOTgxNDYxMUQ3NDU5RkZDRUUxOUQ4QjlBRDhCRDk2ODc4REJENEU1ODIzRjA1OTNGOEU5NzdDQzBEMThCQjY0NDE1QzQ5QjVGRTE4MDYxNUZEMDM5MzhDQUY3ODNCNEY1RkEwMTU2ODgxNzc1MUYyQzgzRjlDRTJGM0I1NEVDMTUxM0MwRTBCRTIwRkE5N0ExNTczRDkwNjY4Q0Y2MUM1REYzMDc1NDZGMkIzQ0I5RDJBMkMzN0Q2RDE0NEVCQkI3MDdCNkVEQjUxNERDMTcxQkZGQzIwMjc2OEZGRURGQzY5MUYzNjEzMzcyNjVBQkNBRDEyOURFNzJDNzIxRjU2ODZCOUZDOUQ5OTcyOURCRDk3MDBEOTI3NDEzQkZBOTQxQjQzNzA3Q0MzNEM5OTBDNzcwQzE5MDQzQ0FDOThGMTM4NDE1RTY4RjgwN0I0MDQ4NjhGNEVGNjlENEQ4OTY5MEIwRkU5NkM2NzYwMDlCODg5NDJFNzFFQUFDMkQ0QUVGMDg0RTUyNDE3ODY5MzhGMTRDMTkwNERCM0QyN0I5RUYwRkU2QzYzNjk1EoAERTE2NjQyRkFFNEYzNzg0RENDOTUzN0QzQzVDNjRFMzQ0RTJCODIzMDI0RjhBOERCM0FCQjk2NzU4NjM2QzM4MzAyNTk0Q0ZCOUEwQzQzNEFCMjQ1QUY5ODE0NjExRDc0NTlGRkNFRTE5RDhCOUFEOEJEOTY4NzhEQkQ0RTU4MjNGMDU5M0Y4RTk3N0NDMEQxOEJCNjQ0MTVDNDlCNUZFMTgwNjE1RkQwMzkzOENBRjc4M0I0RjVGQTAxNTY4ODE3NzUxRjJDODNGO"
 
         val input = arrayOf(key1, key2, key3)
-        val encoded = MergeResultUtil.encode(input)
-        println("encoded=$encoded")
-        val decoded =
-            MergeResultUtil.decode(encoded, arrayOf(key1, key2))
-
+        val encoded = runSpending("encode") {
+            MergeResultUtil.encodeKey(input).also {
+                println("encoded=$it")
+            }
+        }
+        val decoded = runSpending("decode") {
+            MergeResultUtil.decodeKey(encoded.orEmpty(), arrayOf(key1, key2)).also {
+                println("decode=$it")
+            }
+        }
         val result = decoded == key3
         println("result=$result")
         assert(result)
@@ -235,7 +294,7 @@ class ExampleUnitTest {
         }.toString()
         val key = "2c7dcea8766c27a1c43c9da169947caa"
 
-        val mpcApi = RequestApiMpc(loginPrefs)
+        val mpcApi = RequestApiMpc()
         val servers = mpcApi.getParticipants()!!
         val participants = servers.data.participants
 
@@ -255,5 +314,13 @@ class ExampleUnitTest {
             mpcApi.getKey(participants[index].get_key_url, GetSecretKeyParam.TYPE_MERGE_RESULT)
         assert(mergeResultResult?.isSuccess() == true)
         println("mergeResult=${mergeResultResult?.data}")
+    }
+
+    @Test
+    fun testMaskSensitiveData() {
+        val a = "1234567890asdfgh"
+        for (i in 0..a.length) {
+            println(a.substring(0, i).maskSensitiveData())
+        }
     }
 }

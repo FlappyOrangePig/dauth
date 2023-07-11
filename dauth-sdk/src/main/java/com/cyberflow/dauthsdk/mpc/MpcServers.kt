@@ -20,7 +20,7 @@ object MpcServers {
     }
 
     private suspend fun fetchServers(): GetParticipantsRes.Data? {
-        val r = RequestApiMpc(LoginPrefs()).getParticipants()
+        val r = RequestApiMpc().getParticipants()
         return if (r != null && r.isSuccess()) {
             r.data
         } else {

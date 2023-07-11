@@ -13,6 +13,7 @@ import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.util.ZipUtil
 import com.cyberflow.dauthsdk.wallet.impl.ConfigurationManager
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.ThreadUtil
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -65,11 +66,11 @@ internal class WebsocketManager private constructor() {
         val url = serverUrl
         DAuthLogger.d("create socket $url", TAG)
 
-        val sp = LoginPrefs()
+        val sp = Managers.loginPrefs
         val accessToken = sp.getAccessToken()
         val openId = sp.getAuthId()
 
-        val localKey = MpcKeyStore.getLocalKey()
+        val localKey = Managers.mpcKeyStore.getLocalKey()
         DAuthLogger.d("localKey len=${localKey.length}", TAG)
         if (localKey.isEmpty()) {
             return null

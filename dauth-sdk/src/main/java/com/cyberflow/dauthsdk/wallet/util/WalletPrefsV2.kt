@@ -13,7 +13,7 @@ private const val KEY_EOA_ADDRESS = "KEY_EOA_ADDRESS"
 private const val KEY_AA_ADDRESS = "KEY_AA_ADDRESS"
 private const val KEY_WALLET_STATE = "KEY_WALLET_STATE"
 
-object WalletPrefsV2 {
+class WalletPrefsV2 {
 
     private val context get() = app()
 
@@ -47,5 +47,10 @@ object WalletPrefsV2 {
         val et = getPrefs().edit()
         et.putInt(KEY_WALLET_STATE, state)
         return et.commit()
+    }
+
+    @SuppressLint("ApplySharedPref")
+    fun clear() {
+        getPrefs().edit().clear().commit()
     }
 }

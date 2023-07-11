@@ -9,7 +9,7 @@ private const val TAG = "MpcKeyStore"
 private const val FILE = "mpc_keystore"
 private const val KEY_MERGE_RESULT = "key_merge_result"
 
-object MpcKeyStore {
+class MpcKeyStore {
 
     private val context get() = app()
     private val file get() = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -58,6 +58,10 @@ object MpcKeyStore {
         val editor = file.edit()
         editor.putString(KEY_MERGE_RESULT, mr)
         editor.commit()
+    }
+
+    fun getMergeResult(): String {
+        return file.getString(KEY_MERGE_RESULT, null).orEmpty()
     }
 
     @SuppressLint("ApplySharedPref")

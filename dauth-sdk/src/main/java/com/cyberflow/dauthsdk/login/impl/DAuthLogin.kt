@@ -3,7 +3,6 @@ package com.cyberflow.dauthsdk.login.impl
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.ILoginApi
 import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
@@ -23,13 +22,14 @@ import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtChallengeCode
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
-import com.cyberflow.dauthsdk.wallet.ext.app
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private const val GOOGLE_REQUEST_CODE = 9004
 private const val TWITTER_REQUEST_CODE = 140
@@ -48,7 +48,10 @@ class DAuthLogin : ILoginApi {
         }
     }
 
-    private val prefs get() = LoginPrefs()
+    private val prefs get() = Managers.loginPrefs
+    private val walletManager get() = Managers.walletManager
+    @Volatile
+    private var logOutJob: Job? = null
 
     override fun initSDK(context: Context, config: SdkConfig) {
         DAuthLogger.i("DAuthLogin init sdk")
@@ -222,27 +225,38 @@ class DAuthLogin : ILoginApi {
             prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime)
             DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken")
 
-            val queryWalletRes = RequestApi().queryWallet(accessToken, authId)
-
-            if (queryWalletRes?.data?.address.isNullOrEmpty()) {
-                // 该邮箱没有钱包
-                return LoginResultData.Failure(ResponseCode.AA_WALLET_IS_NOT_CREATE, accessToken, authId)
-            } else {
-                // 该邮箱绑定过钱包
-                return LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
+            // 钱包未创建
+            if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
+                return LoginResultData.Failure(
+                    ResponseCode.AA_WALLET_IS_NOT_CREATE,
+                    accessToken,
+                    authId
+                )
             }
+
+            return LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
         } else {
             // 其他错误
             return LoginResultData.Failure(loginRes?.iRet)
         }
     }
 
-
-    override suspend fun logout() {
-        val openId = LoginPrefs().getAuthId()
+    override fun logout() {
+        val openId = prefs.getAuthId()
         val requestBody = LogoutParam(openId)
-        RequestApi().logout(requestBody)
+        logOutJob?.cancel()
+        @OptIn(DelicateCoroutinesApi::class)
+        logOutJob = GlobalScope.launch {
+            runCatchingWithLogSuspend {
+                RequestApi().logout(requestBody)
+            }
+        }
+        clearAccountInfo()
+    }
+
+    internal fun clearAccountInfo() {
         prefs.clearLoginStateInfo()
+        walletManager.clearData()
     }
 
     /**

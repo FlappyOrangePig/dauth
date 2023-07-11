@@ -10,11 +10,26 @@ import com.cyberflow.dauthsdk.login.model.GetSecretKeyRes
 import com.cyberflow.dauthsdk.login.model.SetSecretKeyParam
 import com.cyberflow.dauthsdk.login.model.SetSecretKeyRes
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 
-class RequestApiMpc(
-    private val loginPrefs: LoginPrefs
-) : ApiClient() {
+object MpcServiceConst {
+    const val NotAllowedError = 2000000
+    const val RequestParamsError = 2000001
+    const val DatabaseError = 2000002
+    const val RedisError = 2000003
+    const val RequestSignError = 2000004
+    const val SessionExpiredError = 2000005
+    const val ServiceInternalError = 2000006
 
+    const val MpcSecretNotFoundError = 2000007
+    const val MpcSecretInvalidError = 2000008
+    const val MpcSecretWalletNotFoundError = 2000009
+    const val MpcSecretSetError = 2000010
+    const val MpcSecretAlreadyBoundError = 2000011
+}
+
+class RequestApiMpc : ApiClient() {
+    private val loginPrefs get() = Managers.loginPrefs
     private val accessToken get() = loginPrefs.getAccessToken()
     private val authId get() = loginPrefs.getAuthId()
 

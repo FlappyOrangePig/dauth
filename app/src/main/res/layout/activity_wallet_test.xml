@@ -26,6 +26,12 @@
             android:text="@string/create_wallet" />
 
         <Button
+            android:id="@+id/btn_create_wallet_force"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="强制创建钱包" />
+
+        <Button
             android:id="@+id/btn_sign"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -72,6 +78,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="签名、密钥服务列表" />
+
+        <Button
+            android:id="@+id/btn_clear_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="清除钱包数据数据" />
+
+        <Button
+            android:id="@+id/btn_import_key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="导入测试账号的密钥" />
 
     </LinearLayout>
 
