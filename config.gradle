@@ -30,11 +30,10 @@ ext {
 
         // 3rd
         web3j_core                   : "4.10.1",
-        webview                      : "webkit:1.7.0",
+        webkit                       : "1.7.0",
 
         // google
-        google_service_auth          : "play-services-auth:20.5.0",
-        google_service_base          : "play-services-auth:18.2.0",
+        google_service_auth          : "20.5.0",
 
         // twitter
         twitter                      : "twitter:3.1.1",
@@ -42,8 +41,6 @@ ext {
 
         // jwt
         jwt                          : "jjwt:0.9.1",
-//        commons_lang                 : "commons-lang3:3.7",
-//        commons_beanutils            : "commons-beanutils:1.9.4",
 
         // moshi
         moshi                        : "moshi-kotlin:1.12.0",
@@ -90,11 +87,10 @@ ext {
         // 3rd
         web3j_core                    : "org.web3j:core:$versions.web3j_core",
         web3j_contract                : "org.web3j:contracts:$versions.web3j_core",
-        webview                       : "androidx.webkit:$versions.webview",
+        webkit                        : "androidx.webkit:webkit:$versions.webkit",
 
         // google
-        google_service_auth           : "com.google.android.gms:$versions.google_service_auth",
-        google_service_base           : "com.google.android.gms:$versions.google_service_base",
+        google_service_auth           : "com.google.android.gms:play-services-auth:$versions.google_service_auth",
 
         // twitter
         twitter                       : "com.twitter.sdk.android:$versions.twitter",

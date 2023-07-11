@@ -5,7 +5,6 @@ import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
 import com.cyberflow.dauthsdk.login.model.GetParticipantsRes
-import com.cyberflow.dauthsdk.login.model.GetParticipantsRes.Companion.getHookedSetKeyUrl
 import com.cyberflow.dauthsdk.login.network.MpcServiceConst.MpcSecretAlreadyBoundError
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.network.RequestApiMpc
@@ -123,11 +122,7 @@ class CreateWalletTask(
             val keyId = each.id
             DAuthLogger.d("set key $keyId", TAG)
             val participantDAuth = participants[keyId]
-            val setKeyUrl = if (keyId == MpcKeyIds.KEY_INDEX_APP_SERVER) {
-                participantDAuth.getHookedSetKeyUrl()
-            } else {
-                participantDAuth.set_key_url
-            }
+            val setKeyUrl = participantDAuth.set_key_url
             val key = keys[keyId]
             val finalMergeResult = mergeResult.takeIf { keyId == MpcKeyIds.KEY_INDEX_DAUTH_SERVER }
             val p = mpcApi.setKey(setKeyUrl, key, finalMergeResult)

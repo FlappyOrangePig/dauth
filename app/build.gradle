@@ -57,7 +57,7 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
-//    debugImplementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
+    //debugImplementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
     debugImplementation project(':dauth-sdk')
 
     // 协程Android支持库
@@ -73,15 +73,8 @@ dependencies {
 //    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
     implementation libraries.okhttp
 
-    //Google
-    implementation libraries.google_service_auth
-    implementation libraries.google_service_base
-
     //twitter
     implementation libraries.twitter
     implementation libraries.twitter_core
-
-
-
 }
 

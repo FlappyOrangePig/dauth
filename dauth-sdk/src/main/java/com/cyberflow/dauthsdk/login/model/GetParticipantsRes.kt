@@ -25,24 +25,6 @@ class GetParticipantsRes(
             return set_key_url.isNotEmpty() && get_key_url.isNotEmpty()
         }
     }
-
-    companion object {
-        fun Participant.getHookedGetKeyUrl(): String {
-            return if (DAuthSDK.impl.config.useBuiltInAppServerUrl) {
-                "https://api-test.x3live.info/x/secret/open/get"
-            } else {
-                this.get_key_url
-            }
-        }
-
-        fun Participant.getHookedSetKeyUrl(): String {
-            return if (DAuthSDK.impl.config.useBuiltInAppServerUrl) {
-                "https://api-test.x3live.info/x/secret/open/set"
-            } else {
-                this.set_key_url
-            }
-        }
-    }
 }
 
 

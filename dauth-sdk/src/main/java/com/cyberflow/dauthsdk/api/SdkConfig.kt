@@ -47,16 +47,6 @@ class SdkConfig {
     var useDevRelayerServer = false
 
     /**
-     * 【test】
-     */
-    var useBuiltInAppServerUrl = false
-
-    /**
-     * 【test】
-     */
-    var alwaysCreateKey = false
-
-    /**
      * Google ClientID
      */
     var googleClientId: String? = null

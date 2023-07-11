@@ -51,6 +51,6 @@ subprojects {
     }
 }
 
-/*configurations.all {
-    resolutionStrategy.force "com.cyberflow.dauthsdk:dauth-sdk:1.0.0-20230705.062838-10"
-}*/
+configurations.all {
+    resolutionStrategy.force "com.cyberflow.dauthsdk:dauth-sdk-1.0.0-20230711.082503-1"
+}

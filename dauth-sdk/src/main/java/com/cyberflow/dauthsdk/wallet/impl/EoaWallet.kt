@@ -11,6 +11,7 @@ import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
+import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
 import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
 import kotlinx.coroutines.Dispatchers
@@ -130,5 +131,15 @@ class EoaWallet internal constructor(): IWalletApi {
 
     override suspend fun mpcSign(msgHash: String): Sign.SignatureData? {
         return WebsocketManager.instance.mpcSign(msgHash)
+    }
+
+    override fun deleteWallet() {
+        Managers.walletManager.clearData()
+    }
+
+    override suspend fun restoreKeys(keys: List<String>): DAuthResult<CreateWalletData> {
+        Managers.mpcKeyStore.setAllKeys(keys = keys.toList())
+        Managers.walletPrefsV2.setWalletState(WalletManager.STATE_KEY_GENERATED)
+        return createWallet(false)
     }
 }

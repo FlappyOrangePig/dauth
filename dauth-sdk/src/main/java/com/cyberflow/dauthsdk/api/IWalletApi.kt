@@ -70,8 +70,9 @@ interface IWalletApi {
 
     fun getWeb3j(): Web3j
 
-    /**
-     * 分布式签名
-     */
+    fun deleteWallet()
+
     suspend fun mpcSign(msgHash: String): Sign.SignatureData?
+
+    suspend fun restoreKeys(keys: List<String>): DAuthResult<CreateWalletData>
 }

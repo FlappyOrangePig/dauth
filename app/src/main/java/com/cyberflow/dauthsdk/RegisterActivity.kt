@@ -28,8 +28,7 @@ class RegisterActivity : BaseActivity() {
         initView()
     }
 
-     fun initView() {
-
+     private fun initView() {
         binding.ivBack.setOnClickListener {
             finish()
         }

@@ -4,6 +4,8 @@ import android.content.Context
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.SdkConfig
 import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
+import com.cyberflow.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_KEY
+import com.cyberflow.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_MERGE_RESULT
 import com.cyberflow.dauthsdk.login.network.RequestApiMpc
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.login.utils.maskSensitiveData
@@ -306,12 +308,12 @@ class ExampleUnitTest {
             mergeResult
         )
 
-        val keyResult = mpcApi.getKey(participants[index].get_key_url, GetSecretKeyParam.TYPE_KEY)
+        val keyResult = mpcApi.getKey(participants[index].get_key_url, TYPE_KEY)
         assert(keyResult?.isSuccess() == true)
         println("key=${keyResult?.data}")
 
         val mergeResultResult =
-            mpcApi.getKey(participants[index].get_key_url, GetSecretKeyParam.TYPE_MERGE_RESULT)
+            mpcApi.getKey(participants[index].get_key_url, TYPE_MERGE_RESULT)
         assert(mergeResultResult?.isSuccess() == true)
         println("mergeResult=${mergeResultResult?.data}")
     }

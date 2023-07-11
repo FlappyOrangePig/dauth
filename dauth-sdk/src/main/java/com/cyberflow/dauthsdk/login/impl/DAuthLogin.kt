@@ -31,8 +31,6 @@ import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
 
-private const val GOOGLE_REQUEST_CODE = 9004
-private const val TWITTER_REQUEST_CODE = 140
 private const val FIX_TWITTER_JS_ISSUE = false
 private const val TYPE_OF_WALLET_AUTH = "20"
 private const val USER_TYPE_OF_EMAIL = 10
@@ -111,7 +109,7 @@ class DAuthLogin : ILoginApi {
         when (type) {
             GOOGLE -> {
                 ThirdPartyResultActivity.launch(
-                    GOOGLE_REQUEST_CODE,
+                    ThirdPartyResultActivity.LAUNCH_TYPE_GOOGLE,
                     activity,
                     object : ThirdPartyCallback {
                         override fun onResult(loginResultData: LoginResultData?) {
@@ -121,7 +119,7 @@ class DAuthLogin : ILoginApi {
             }
             TWITTER -> {
                 ThirdPartyResultActivity.launch(
-                    TWITTER_REQUEST_CODE,
+                    ThirdPartyResultActivity.LAUNCH_TYPE_TWITTER,
                     activity,
                     object : ThirdPartyCallback {
                         override fun onResult(loginResultData: LoginResultData?) {
