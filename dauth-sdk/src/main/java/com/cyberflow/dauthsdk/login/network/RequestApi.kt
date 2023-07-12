@@ -281,6 +281,7 @@ class RequestApi : ApiClient() {
      * @return Any
      */
     suspend fun resetByPassword(body: ResetByPasswordParam): BaseResponse? {
+        body.user_type = LoginPrefs().getUserType()
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/password/reset"))
         return request<BaseResponse>(localVariableConfig, body)
     }

@@ -26,7 +26,7 @@ import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-private const val TYPE_OF_TWITTER = "110"
+private const val TYPE_OF_TWITTER = 110
 
 class TwitterLoginManager private constructor() {
 

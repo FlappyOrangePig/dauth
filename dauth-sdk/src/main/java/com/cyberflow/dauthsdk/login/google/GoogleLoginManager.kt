@@ -18,7 +18,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 
 
-private const val AUTH_TYPE_OF_GOOGLE = "30"
+private const val AUTH_TYPE_OF_GOOGLE = 30
 
 class GoogleLoginManager {
     val context get() = app()

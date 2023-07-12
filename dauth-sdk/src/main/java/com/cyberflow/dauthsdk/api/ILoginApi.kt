@@ -81,7 +81,7 @@ interface ILoginApi {
      * 设置密码
      * @param passWord
      */
-    suspend fun setPassword(passWord: String) : Int?
+    suspend fun setPassword(setPasswordParam: SetPasswordParam) : Int?
 
     /**
      * 根据邮箱查询用户

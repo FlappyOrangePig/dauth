@@ -30,7 +30,8 @@ class ThirdPlatformLogin private constructor() {
             val refreshToken = authorizeToken2Res.data?.refreshToken.orEmpty()
             val authId = googleUserInfo.sub.orEmpty()
             val expireTime = authorizeToken2Res.data?.expireIn
-            Managers.loginPrefs.putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime)
+            val userType = body.user_type
+            Managers.loginPrefs.putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime, userType)
 
             // 钱包未创建
             if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
