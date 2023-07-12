@@ -18,15 +18,19 @@ import kotlinx.coroutines.launch
 
 
 private const val GOOGLE_REQUEST_CODE = 9004
+private const val GOOGLE_OPEN_SERVICE_REQUEST_CODE = 9005
 private const val TWITTER_REQUEST_CODE = 140
 
 class ThirdPartyResultActivity : AppCompatActivity() {
     companion object {
         private var callback: ThirdPartyCallback? = null
-        private const val EXTRA_REQUEST_CODE = "EXTRA_REQUEST_CODE"
-        fun launch(requestCode: Int, context: Context, callback: ThirdPartyCallback) {
+        private const val LAUNCH_TYPE = "LAUNCH_TYPE"
+
+        const val LAUNCH_TYPE_GOOGLE = 0
+        const val LAUNCH_TYPE_TWITTER = 1
+        fun launch(launchType: Int, context: Context, callback: ThirdPartyCallback) {
             val intent = Intent(context, ThirdPartyResultActivity::class.java)
-            intent.putExtra(EXTRA_REQUEST_CODE, requestCode)
+            intent.putExtra(LAUNCH_TYPE, launchType)
             this.callback = callback
             context.startActivity(intent)
         }
@@ -35,11 +39,16 @@ class ThirdPartyResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DAuthLogger.d("ThirdPartyResultActivity onCreate")
-        when (getIntentExtra()) {
-            GOOGLE_REQUEST_CODE -> {
-                GoogleLoginManager.instance.googleSignInAuth(this)
+        when (getLaunchType()) {
+            LAUNCH_TYPE_GOOGLE -> {
+                GoogleLoginManager.instance.googleSignInAuth(
+                    this,
+                    GOOGLE_REQUEST_CODE,
+                    GOOGLE_OPEN_SERVICE_REQUEST_CODE
+                )
             }
-            TWITTER_REQUEST_CODE -> {
+
+            LAUNCH_TYPE_TWITTER -> {
                 TwitterLoginManager.instance.twitterLoginAuth(
                     this,
                     object : Callback<TwitterSession>() {
@@ -53,39 +62,44 @@ class ThirdPartyResultActivity : AppCompatActivity() {
                         }
                     })
             }
+
+            else -> {
+                finish()
+            }
         }
     }
 
-    private fun getIntentExtra() : Int {
-       return intent.getIntExtra(EXTRA_REQUEST_CODE,0)
+    private fun getLaunchType(): Int {
+        return intent.getIntExtra(LAUNCH_TYPE, LAUNCH_TYPE_GOOGLE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        lifecycleScope.launch {
-            when (requestCode) {
-                GOOGLE_REQUEST_CODE -> {
-                    lifecycleScope.launch {
-                        val loginResultData = GoogleLoginManager.instance.googleAuthLogin(data)
-                        dispatchResult(loginResultData)
-                        finish()
-                    }
-                }
-
-                TWITTER_REQUEST_CODE -> {
-                    lifecycleScope.launch {
-                        val loginResultData = TwitterLoginManager.instance.twitterAuthLogin(
-                                requestCode,
-                                resultCode,
-                                data
-                            )
-                        dispatchResult(loginResultData)
-                        finish()
-                    }
+        DAuthLogger.d("ThirdPartyResultActivity onActivityResult $requestCode")
+        when (requestCode) {
+            GOOGLE_REQUEST_CODE -> {
+                lifecycleScope.launch {
+                    val loginResultData = GoogleLoginManager.instance.googleAuthLogin(data)
+                    dispatchResult(loginResultData)
+                    finish()
                 }
             }
 
-            DAuthLogger.d("ThirdPartyResultActivity onActivityResult")
+            TWITTER_REQUEST_CODE -> {
+                lifecycleScope.launch {
+                    val loginResultData = TwitterLoginManager.instance.twitterAuthLogin(
+                            requestCode,
+                            resultCode,
+                            data
+                        )
+                    dispatchResult(loginResultData)
+                    finish()
+                }
+            }
+
+            GOOGLE_OPEN_SERVICE_REQUEST_CODE -> {
+                finish()
+            }
         }
     }
     private fun dispatchResult(loginResultData: LoginResultData?) {

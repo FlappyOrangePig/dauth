@@ -23,8 +23,6 @@ class MyApplication : Application() {
             useLocalRelayer = false
             useDevWebSocketServer = false
             useDevRelayerServer = false
-            useBuiltInAppServerUrl = false
-            alwaysCreateKey = false
             googleClientId = GOOGLE_CLIENT_ID
         }
         DAuthSDK.instance.initSDK(this, config = config)

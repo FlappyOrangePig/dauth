@@ -39,8 +39,6 @@ class DAuthSDK private constructor(
         initializeCheck()
         loginApi.initSDK(context, config)
         DAuthLogger.i("init sdk ok")
-        val googleClientId = config.googleClientId
-        LoginPrefs().setGoogleClientId(googleClientId.orEmpty())
         if (DebugUtil.isAppDebuggable(context)) {
             val loginPrefs = Managers.loginPrefs
             val trace = StringBuilder()

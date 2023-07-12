@@ -50,7 +50,6 @@ dependencies {
 
     // Google sdk
     implementation libraries.google_service_auth
-    implementation libraries.google_service_base
 
     // twitter
     implementation libraries.twitter
@@ -69,7 +68,7 @@ dependencies {
     implementation libraries.lifecycle_livedata_ktx
 
     // webview
-    implementation libraries.webview
+    implementation libraries.webkit
     implementation libraries.activity_ktx
 
     // jwt
