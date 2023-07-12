@@ -11,8 +11,7 @@ android {
         versionName versions.version_name
 
         ndk {
-            //abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-            abiFilters 'arm64-v8a'
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             ldLibs 'c++_shared'
         }
     }
@@ -20,30 +19,25 @@ android {
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
-            version "3.26.4"
+            //version "3.26.4"
         }
     }
-
-    /*sourceSets.main {
-        jniLibs.srcDirs = ['src/main/libs', 'jniLibs']
-        jni.srcDirs = [] //disable automatic ndk-build call
-    }*/
 }
 
 dependencies {
     implementation libraries.core_ktx
     implementation libraries.appcompat
     implementation libraries.material
+    implementation libraries.activity_ktx
     testImplementation libraries.junit
-    testImplementation 'org.mockito:mockito-core:+'
+    testImplementation libraries.mockito_core
     androidTestImplementation libraries.ext_junit
     androidTestImplementation libraries.espresso_core
 
-    implementation libraries.constraintlayout
     //日志拦截器
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation libraries.okhttp_logging_interceptor
     implementation libraries.okhttp
-    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    //implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
 
     // implementation platform('com.google.firebase:firebase-bom:31.4.0')
     // implementation 'com.google.firebase:firebase-auth-ktx'
@@ -57,26 +51,16 @@ dependencies {
 
     implementation libraries.moshi
 
-    implementation libraries.kotlinx_coroutines_core
-    // 协程Android支持库
-    implementation libraries.coroutine
-    // 协程Java8支持库
-    implementation libraries.kotlinx_coroutines_jdk8
-    // lifecycle对于协程的扩展封装
-    implementation libraries.lifecycle_viewmodel_ktx
-    implementation libraries.lifecycle_runtime_ktx
-    implementation libraries.lifecycle_livedata_ktx
-
     // webview
     implementation libraries.webkit
-    implementation libraries.activity_ktx
 
     // jwt
-    implementation libraries.jwt
+    //implementation libraries.jwt
 
     // web3j
     api libraries.web3j_core
-    implementation libraries.web3j_contract
+    api libraries.web3j_contract
+    api "org.web3j:abi:4.10.1"
 
     // WalletConnect sign-sdk
     /*implementation(platform("com.walletconnect:android-bom:1.12.0"))
@@ -91,3 +75,16 @@ dependencies {
 }
 
 apply from: '../maven_publish.gradle'
+
+/*afterEvaluate{
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.infras'
+                artifactId = 'dauth'
+                version = '1.0'
+            }
+        }
+    }
+}*/

@@ -24,6 +24,8 @@
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
+-keep class org.web3j.** { *; }
+
 #walletconnect
 -keepclassmembers class com.walletconnect.** { ; }
 

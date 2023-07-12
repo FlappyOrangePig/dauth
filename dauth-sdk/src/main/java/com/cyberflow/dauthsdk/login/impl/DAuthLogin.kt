@@ -365,7 +365,6 @@ class DAuthLogin : ILoginApi {
     }
 
     /**
-     * @param authId
      * @return accountRes
      * 根据邮箱查询用户信息
      */

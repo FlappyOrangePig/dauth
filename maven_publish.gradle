@@ -18,10 +18,6 @@ task sourceJar(type: Jar) {
 }
 
 afterEvaluate {
-    //加载资源
-    Properties properties = new Properties()
-    InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream()
-    properties.load(inputStream)
     publishing {
         publications {
             release(MavenPublication) {
@@ -32,13 +28,13 @@ afterEvaluate {
                 //artifact sourceJar
             }
         }
-        repositories {
+        /*repositories {
             maven {
                 name "yxRelease"
                 url MAVEN_RELEASE_URL
                 credentials {
-                    username = properties.MAVEN_USER
-                    password = properties.MAVEN_PASSWORD
+                    username = "admin"
+                    password = "123456"
                 }
                 allowInsecureProtocol = true
             }
@@ -46,15 +42,11 @@ afterEvaluate {
                 name "yxSnapshot"
                 url MAVEN_SNAPSHOT_URL
                 credentials {
-                    username = properties.MAVEN_USER
-                    password = properties.MAVEN_PASSWORD
+                    username = "admin"
+                    password = "123456"
                 }
                 allowInsecureProtocol = true
             }
-            maven {
-                name "yxLocal"
-                url rootProject.file("./repo")
-            }
-        }
+        }*/
     }
 }

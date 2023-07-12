@@ -5,12 +5,9 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.DebugUtil
-import org.jetbrains.annotations.TestOnly
-import java.lang.StringBuilder
 
 class DAuthSDK private constructor(
     internal val loginApi: ILoginApi,
