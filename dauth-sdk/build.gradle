@@ -37,7 +37,7 @@ dependencies {
     //日志拦截器
     implementation libraries.okhttp_logging_interceptor
     implementation libraries.okhttp
-    //implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
 
     // implementation platform('com.google.firebase:firebase-bom:31.4.0')
     // implementation 'com.google.firebase:firebase-auth-ktx'
