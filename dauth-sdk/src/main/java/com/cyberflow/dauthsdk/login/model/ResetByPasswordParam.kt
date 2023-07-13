@@ -21,7 +21,7 @@ package com.cyberflow.dauthsdk.login.model
 
 data class ResetByPasswordParam (
     // 账号类型
-    val user_type: Int,
+    var user_type: Int? = null,
     // 手机号,根据手机号重置密码时必填
     val phone: String? = null,
     // 手机区号,根据手机号重置密码时必填

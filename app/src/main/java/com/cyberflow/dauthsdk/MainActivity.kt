@@ -17,6 +17,7 @@ import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.ext.mount
 import com.cyberflow.dauthsdk.ext.myAddress
 import com.cyberflow.dauthsdk.ext.tokenIds
+import com.cyberflow.dauthsdk.login.model.SetPasswordParam
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.fasterxml.jackson.databind.ser.Serializers.Base
 import kotlinx.coroutines.launch
@@ -132,7 +133,9 @@ class MainActivity : BaseActivity() {
             .setPositiveButton("OK") { _, _ ->
                 lifecycleScope.launch {
                     val password = inputEditText.text.toString()
-                    val responseCode = DAuthSDK.instance.setPassword(password)
+                    val param = SetPasswordParam()
+                    param.password = password
+                    val responseCode = DAuthSDK.instance.setPassword(param)
                     if (responseCode == 0) {
                         ToastUtil.show(this@MainActivity, "密码设置成功")
                     } else {

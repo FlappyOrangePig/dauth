@@ -64,10 +64,6 @@ class LoginPrefs {
         return getPrefs().getInt(USER_TYPE, DEFAULT_USER_TYPE)
     }
 
-    fun setGoogleClientId(clientId: String) {
-        getPrefs().edit().putString(GOOGLE_CLIENT_ID,clientId).apply()
-    }
-
     fun getGoogleClientId(): String {
         return getPrefs().getString(GOOGLE_CLIENT_ID,"").orEmpty()
     }

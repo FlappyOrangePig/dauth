@@ -32,7 +32,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
 
 private const val FIX_TWITTER_JS_ISSUE = false
-private const val TYPE_OF_WALLET_AUTH = "20"
+private const val TYPE_OF_WALLET_AUTH = 20
 private const val USER_TYPE_OF_EMAIL = 10
 private const val IS_REGISTER = 1       // 如果账号不存在则注册并登录
 private const val AREA_CODE = "86"      // 手机区号
@@ -202,7 +202,6 @@ class DAuthLogin : ILoginApi {
 
     private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam): LoginResultData {
         val loginRes = RequestApi().login(loginParam)
-
         if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = loginRes.data?.didToken.orEmpty()
             val userInfo = JwtDecoder().decoded(didToken)
@@ -219,8 +218,8 @@ class DAuthLogin : ILoginApi {
             val authId = JwtDecoder().decoded(authIdToken).sub.orEmpty()
             val userId = userInfo.sub.orEmpty()
             val expireTime = tokenAuthenticationRes?.data?.expire_in
-
-            prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime)
+            val userType = loginParam.user_type
+            prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType)
             DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken")
 
             // 钱包未创建
@@ -346,11 +345,9 @@ class DAuthLogin : ILoginApi {
      * @param passWord 密码
      * 设置密码
      */
-    override suspend fun setPassword(passWord: String): Int? {
+    override suspend fun setPassword(passwordParam: SetPasswordParam): Int? {
         val didToken = prefs.getDidToken()
-        val setPasswordParam = SetPasswordParam()
-        setPasswordParam.password = passWord
-        return RequestApi().setPassword(setPasswordParam, didToken)?.iRet
+        return RequestApi().setPassword(passwordParam, didToken)?.iRet
     }
 
     /**
