@@ -51,7 +51,8 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
-    //debugImplementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
+    //implementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
+    //implementation 'com.github.FlappyOrangePig:dauth:0.0.1'
     implementation project(':dauth-sdk')
 }
 

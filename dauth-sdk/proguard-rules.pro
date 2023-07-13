@@ -29,5 +29,3 @@
 -keepclasseswithmembers class * {
     native <methods>;
 }
-
--keep class org.web3j.** { *; }
