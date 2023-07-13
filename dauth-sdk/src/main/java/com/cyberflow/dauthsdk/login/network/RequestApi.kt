@@ -51,6 +51,8 @@ import com.cyberflow.dauthsdk.login.model.UnbindPhoneParam
 import com.cyberflow.dauthsdk.login.model.UpdateBaseInfoParam
 import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 
+private const val USER_TYPE_OF_EMAIL = 10
+private const val USER_TYPE_OF_PHONE = 60
 class RequestApi : ApiClient() {
 
     /**
@@ -281,7 +283,11 @@ class RequestApi : ApiClient() {
      * @return Any
      */
     suspend fun resetByPassword(body: ResetByPasswordParam): BaseResponse? {
-        body.user_type = LoginPrefs().getUserType()
+        if(body.phone.isNullOrEmpty()) {
+            body.user_type = USER_TYPE_OF_EMAIL
+        } else {
+            body.user_type = USER_TYPE_OF_PHONE
+        }
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/password/reset"))
         return request<BaseResponse>(localVariableConfig, body)
     }
