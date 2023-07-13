@@ -18,17 +18,6 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="150dp"/>
 
-    <com.twitter.sdk.android.core.identity.TwitterLoginButton
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/twitter_login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
-
     <ImageView
         android:id="@+id/iv_google"
         android:layout_width="40dp"
@@ -50,14 +39,6 @@
         app:layout_constraintBottom_toTopOf="@id/edt_account"
         app:layout_constraintTop_toBottomOf="@id/tv_dauth"
         android:layout_marginBottom="5dp"/>
-
-    <com.twitter.sdk.android.core.identity.TwitterLoginButton
-        android:visibility="gone"
-        android:id="@+id/btn_twitter"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
 
     <ImageView
         android:id="@+id/iv_facebook"

@@ -1,7 +1,7 @@
 ext {
 }.versions = [
         version_code                 : 1,
-        version_name                 : '1.0.0-SNAPSHOT',
+        version_name                 : '0.0.1',
         min_sdk                      : 23,
         target_sdk                   : 33,
         compile_sdk                  : 33,
@@ -14,10 +14,14 @@ ext {
         appcompat                    : "1.6.1",
         material                     : "1.8.0",
         junit                        : "4.13.2",
+        mockito_core                 : "5.4.0",
         ext_junit                    : "1.1.5",
         espresso_core                : "3.5.1",
         constraintlayout             : "2.1.4",
         lifecycle                    : "2.2.0",
+        lifecycle_viewmodel_ktx      : "2.5.1",
+        lifecycle_runtime_ktx        : "2.5.1",
+        lifecycle_viewmodel_savedstate:"2.5.1",
         coroutine                    : "1.6.1",
         kotlinx_coroutines_jdk8      : "1.6.4",
         kotlinx_coroutines_core      : "1.6.4",
@@ -26,6 +30,7 @@ ext {
         retrofit                     : "2.9.0",
         glide                        : "4.11.0",
         okhttp                       : "5.0.0-alpha.2",
+        okhttp_logging_interceptor   : "4.11.0",
         serialization                : "1.5.0",
 
         // 3rd
@@ -36,14 +41,14 @@ ext {
         google_service_auth          : "20.5.0",
 
         // twitter
-        twitter                      : "twitter:3.1.1",
-        twitter_core                 : "twitter-core:3.1.1@aar",
+        twitter                      : "3.1.1",
+        twitter_core                 : "3.1.1",
 
         // jwt
-        jwt                          : "jjwt:0.9.1",
+        jwt                          : "0.9.1",
 
         // moshi
-        moshi                        : "moshi-kotlin:1.12.0",
+        moshi                        : "1.12.0",
 ]
 
 ext {
@@ -51,6 +56,7 @@ ext {
         appcompat                     : "androidx.appcompat:appcompat:$versions.appcompat",
         material                      : "com.google.android.material:material:$versions.material",
         junit                         : "junit:junit:$versions.junit",
+        mockito_core                  : "org.mockito:mockito-core:$versions.mockito_core",
         ext_junit                     : "androidx.test.ext:junit:$versions.ext_junit",
         espresso_core                 : "androidx.test.espresso:espresso-core:$versions.espresso_core",
         constraintlayout              : "androidx.constraintlayout:constraintlayout:$versions.constraintlayout",
@@ -60,10 +66,10 @@ ext {
         activity_ktx                  : "androidx.activity:activity-ktx:$versions.activity_ktx",
         fragment_ktx                  : "androidx.fragment:fragment-ktx:$versions.fragment_ktx",
         collection_ktx                : "androidx.collection:collection-ktx:$versions.collection_ktx",
-        lifecycle_viewmodel_ktx       : "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.lifecycle",
         lifecycle_livedata_ktx        : "androidx.lifecycle:lifecycle-livedata-ktx:$versions.lifecycle",
-        lifecycle_runtime_ktx         : "androidx.lifecycle:lifecycle-runtime-ktx:$versions.lifecycle",
-        lifecycle_viewmodel_savedstate: "androidx.lifecycle:lifecycle-viewmodel-savedstate:$versions.lifecycle",
+        lifecycle_viewmodel_ktx       : "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.lifecycle_viewmodel_ktx",
+        lifecycle_runtime_ktx         : "androidx.lifecycle:lifecycle-runtime-ktx:$versions.lifecycle_runtime_ktx",
+        lifecycle_viewmodel_savedstate: "androidx.lifecycle:lifecycle-viewmodel-savedstate:$versions.lifecycle_viewmodel_savedstate",
 
         kotlin_stdlib                 : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin_stdlib",
         coroutine                     : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutine",
@@ -82,6 +88,7 @@ ext {
         glide                         : "com.github.bumptech.glide:glide:$versions.glide",
         glide_compiler                : "com.github.bumptech.glide:compiler:$versions.glide",
         okhttp                        : "com.squareup.okhttp3:okhttp:$versions.okhttp",
+        okhttp_logging_interceptor    :"com.squareup.okhttp3:logging-interceptor:$versions.okhttp_logging_interceptor",
         serialization_json            : "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions.serialization",
 
         // 3rd
@@ -93,12 +100,12 @@ ext {
         google_service_auth           : "com.google.android.gms:play-services-auth:$versions.google_service_auth",
 
         // twitter
-        twitter                       : "com.twitter.sdk.android:$versions.twitter",
-        twitter_core                  : "com.twitter.sdk.android:$versions.twitter_core",
+        twitter                       : "com.twitter.sdk.android:twitter:$versions.twitter",
+        twitter_core                  : "com.twitter.sdk.android:twitter-core:$versions.twitter_core",
 
         // jwt
-        jwt                           : "io.jsonwebtoken:$versions.jwt",
+        jwt                           : "io.jsonwebtoken:jjwt:$versions.jwt",
 
         //moshi
-        moshi                         : "com.squareup.moshi:$versions.moshi",
+        moshi                         : "com.squareup.moshi:moshi-kotlin:$versions.moshi",
 ]

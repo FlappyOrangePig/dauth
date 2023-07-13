@@ -1,9 +1,8 @@
 package com.cyberflow.dauthsdk.login.utils
 
-import android.app.Application
 import android.util.Log
-import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.wallet.ext.safeApp
 
 object DAuthLogger {
 
@@ -21,7 +20,7 @@ object DAuthLogger {
         crossinline block: (tag: String, log: String) -> Unit
     ) {
         // 单元测试
-        if (DAuthSDK.impl.context !is Application) {
+        if (safeApp() == null) {
             println(log)
             return
         }
