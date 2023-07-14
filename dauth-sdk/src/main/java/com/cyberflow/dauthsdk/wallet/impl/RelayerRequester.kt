@@ -28,7 +28,7 @@ object RelayerRequester {
         ConfigurationManager.urls().relayerUrl
     }
 
-    suspend fun sendRequest(userOperation: UserOperation): Boolean {
+    suspend fun sendRequest(userOperation: UserOperation): CommitTransRes? {
         val sp = Managers.loginPrefs
         val accessToken = sp.getAccessToken()
         val openId = sp.getAuthId()
@@ -89,7 +89,7 @@ object RelayerRequester {
                 }
             })
         }
-        return responseBody != null
+        return responseBody
     }
 }
 

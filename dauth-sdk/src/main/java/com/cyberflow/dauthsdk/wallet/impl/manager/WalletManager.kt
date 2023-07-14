@@ -34,7 +34,7 @@ sealed class KeysToRestoreResult {
  * 6.拉取MPC服务节点 & 分发密钥
  * 7.移除本地的远端密钥（成功）
  */
-class WalletManager {
+class WalletManager internal constructor() {
     companion object {
         private const val TAG = "WalletManager"
 

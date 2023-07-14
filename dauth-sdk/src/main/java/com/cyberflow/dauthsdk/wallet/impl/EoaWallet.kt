@@ -4,6 +4,7 @@ import com.cyberflow.dauthsdk.api.IWalletApi
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
+import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
@@ -13,6 +14,7 @@ import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
+import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
 import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -60,17 +62,22 @@ class EoaWallet internal constructor(): IWalletApi {
         }
     }
 
-    override suspend fun queryWalletBalance(walletAddress: String, tokenType: TokenType): DAuthResult<WalletBalanceData> {
+    override suspend fun queryWalletBalance(
+        walletAddress: String,
+        tokenType: TokenType
+    ): DAuthResult<WalletBalanceData> {
         val r = when (tokenType) {
             is TokenType.Eth -> {
                 Web3Manager.getBalance(walletAddress)
             }
+
             is TokenType.ERC20 -> {
                 Web3Manager.getERC20Balance(
                     contractAddress = tokenType.contractAddress,
                     accountAddress = walletAddress
                 )
             }
+
             is TokenType.ERC721 -> {
                 Web3Manager.getERC721NftTokenIds(
                     contractAddress = tokenType.contractAddress,
@@ -82,7 +89,10 @@ class EoaWallet internal constructor(): IWalletApi {
         return r
     }
 
-    override suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData> {
+    override suspend fun estimateGas(
+        toUserId: String,
+        amount: BigInteger
+    ): DAuthResult<EstimateGasData> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
             return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
@@ -93,18 +103,22 @@ class EoaWallet internal constructor(): IWalletApi {
         }
     }
 
-    override suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData> {
+    override suspend fun sendTransaction(
+        toAddress: String,
+        amount: BigInteger
+    ): DAuthResult<SendTransactionData> {
         DAuthLogger.d("sendTransaction $toAddress $amount", TAG)
         return Web3Manager.sendTransaction(toAddress, amount).also {
             DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it", TAG)
         }
     }
 
-    override suspend fun execute(
+    private suspend fun <T> dealWithUserOperationCall(
         contractAddress: String,
         balance: BigInteger,
-        func: ByteArray
-    ): DAuthResult<String> {
+        func: ByteArray,
+        block: suspend (String, ByteArray) -> DAuthResult<T>
+    ): DAuthResult<T> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
             return DAuthResult.SdkError()
@@ -120,8 +134,39 @@ class EoaWallet internal constructor(): IWalletApi {
         )
         val encodedFunction = FunctionEncoder.encode(function)
         val callData = Numeric.hexStringToByteArray(encodedFunction)
-        val execResult = Web3Manager.executeUserOperation(signerAddress, callData)
-        DAuthLogger.d("execute $contractAddress $balance ${func.size} result=$execResult", TAG)
+        return block.invoke(signerAddress, callData)
+    }
+
+    override suspend fun execute(
+        userOperation: UserOperation
+    ): DAuthResult<String> = Web3Manager.executeUserOperation(userOperation)
+
+    override suspend fun createUserOpAndEstimateGas(
+        contractAddress: String,
+        balance: BigInteger,
+        func: ByteArray
+    ): DAuthResult<CreateUserOpAndEstimateGasData> {
+        val addressResult = queryWalletAddress()
+        if (addressResult !is DAuthResult.Success) {
+            return DAuthResult.SdkError()
+        }
+        val signerAddress = addressResult.data.signerAddress
+        val function = Function(
+            DAuthAccount.FUNC_EXECUTE,
+            listOf<Type<*>>(
+                Address(contractAddress.prependHexPrefix()),
+                Uint256(balance),
+                DynamicBytes(func)
+            ), emptyList<TypeReference<*>>()
+        )
+        val encodedFunction = FunctionEncoder.encode(function)
+        val callData = Numeric.hexStringToByteArray(encodedFunction)
+
+        val execResult = Web3Manager.createUserOpAndEstimateGas(signerAddress, callData)
+        DAuthLogger.d(
+            "createUserOpAndEstimateGas $contractAddress $balance ${func.size} result=$execResult",
+            TAG
+        )
         return execResult
     }
 

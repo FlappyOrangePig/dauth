@@ -5,6 +5,7 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
+import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -23,8 +24,12 @@ import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.hexStringToByteArray
 import com.cyberflow.dauthsdk.wallet.util.sha3
 import com.cyberflow.dauthsdk.wallet.util.toHexString
+import io.reactivex.FlowableSubscriber
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import org.reactivestreams.Subscription
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.TypeEncoder
 import org.web3j.abi.datatypes.Address
@@ -39,7 +44,9 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.core.DefaultBlockParameterNumber
 import org.web3j.protocol.core.RemoteCall
 import org.web3j.protocol.core.Request
 import org.web3j.protocol.core.Response
@@ -51,6 +58,7 @@ import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.tx.gas.StaticGasProvider
 import org.web3j.utils.Numeric
 import java.math.BigInteger
+import kotlin.coroutines.resume
 
 
 private const val TAG = "Web3Manager"
@@ -364,12 +372,9 @@ object Web3Manager {
         return aaAddress
     }
 
-    suspend fun executeUserOperation(
-        eoaAddress: String,
-        callData: ByteArray
-    ): DAuthResult<String> {
-        DAuthLogger.d("executeUserOperation eoaAddress=$eoaAddress", TAG)
-
+    suspend fun createUserOpAndEstimateGas(eoaAddress: String,
+                                           callData: ByteArray
+    ): DAuthResult<CreateUserOpAndEstimateGasData> {
         val addresses = ConfigurationManager.addresses()
         val faAddress = addresses.factoryAddress
         val entryPointAddress = addresses.entryPointAddress
@@ -488,14 +493,30 @@ object Web3Manager {
         }
         val estimateData = estimateInfo.cleanHexPrefix()
         val verificationGasLimit = Numeric.toBigInt(estimateData.substring(8, 8 + 64))
-        val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64)).multiply(BigInteger("10"))
-        //val callGasLimit = BigInteger("11173926")
+        val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64))
         DAuthLogger.d("estimateData=$estimateData", TAG)
         DAuthLogger.d("verificationGasLimit=$verificationGasLimit", TAG)
         DAuthLogger.d("callGasLimit=$callGasLimit", TAG)
 
         userOperation.verificationGasLimit = verificationGasLimit
-        userOperation.callGasLimit = callGasLimit
+        userOperation.callGasLimit = callGasLimit.multiply(BigInteger("10"))
+
+        return DAuthResult.Success(
+            CreateUserOpAndEstimateGasData(
+                verificationGasLimit.multiply(gasPrice),
+                callGasLimit.multiply(gasPrice),
+                userOp = userOperation
+            )
+        )
+    }
+
+    suspend fun executeUserOperation(
+        userOperation: UserOperation
+    ): DAuthResult<String> {
+        DAuthLogger.d("executeUserOperation useOp=$userOperation", TAG)
+
+        val addresses = ConfigurationManager.addresses()
+        val entryPointAddress = addresses.entryPointAddress
 
         val code = userOperation.encodeUserOp()
         DAuthLogger.d("code=$code", TAG)
@@ -561,6 +582,10 @@ object Web3Manager {
 
         val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
         if (useLocalRelayer) {
+            val gasPrice =
+                web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
+            DAuthLogger.d("gasPrice=$gasPrice", TAG)
+
             // 部署aa账号的eoa账号地址，最终部署在服务端，entryPoint的TransactionManager需要
             val relayerEoaAddress = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
             val entryPointDeploy = EntryPoint.load(
@@ -579,10 +604,10 @@ object Web3Manager {
         } else {
             val sendResult = RelayerRequester.sendRequest(userOpCopy)
             DAuthLogger.d("sendResult=$sendResult", TAG)
-            if (!sendResult) {
+            if (sendResult == null || !sendResult.isSuccess()) {
                 return DAuthResult.SdkError()
             }
-            return DAuthResult.Success("")
+            return DAuthResult.Success(sendResult.info)
         }
     }
 
@@ -594,5 +619,53 @@ object Web3Manager {
         val result = code != "0x"
         DAuthLogger.d("getCodeByAddress $aaAddress -> $code result=$result", TAG)
         return result
+    }
+
+    suspend fun userOpFlow(eoaAddress: String): DAuthResult<Boolean> {
+        val gasPrice =
+            web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
+        DAuthLogger.d("gasPrice=$gasPrice", TAG)
+
+        val entryPointAddress = ConfigurationManager.addresses().entryPointAddress
+        val entryPoint = EntryPoint.load(
+            entryPointAddress,
+            web3j,
+            transactionManager(eoaAddress),
+            StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
+        )
+
+        val blockNumber = web3j.ethBlockNumber().await { it.blockNumber }
+        if (blockNumber !is DAuthResult.Success) {
+            return DAuthResult.SdkError()
+        }
+        val r: Boolean = suspendCancellableCoroutine { continuation ->
+            val startBlock: DefaultBlockParameter = DefaultBlockParameterNumber(
+                BigInteger.ZERO
+            )
+            val endBlock: DefaultBlockParameter = DefaultBlockParameterNumber(blockNumber.data)
+            val flowable = entryPoint.userOperationEventEventFlowable(startBlock, endBlock)
+            flowable.subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.single())
+                .subscribe(object : FlowableSubscriber<EntryPoint.UserOperationEventEventResponse> {
+                    override fun onSubscribe(s: Subscription) {
+                        DAuthLogger.d("onSubscribe $s", TAG)
+                    }
+
+                    override fun onError(t: Throwable?) {
+                        DAuthLogger.d("onError ${t?.stackTraceToString()}", TAG)
+                        continuation.resume(false)
+                    }
+
+                    override fun onComplete() {
+                        DAuthLogger.d("onComplete", TAG)
+                        continuation.resume(true)
+                    }
+
+                    override fun onNext(t: EntryPoint.UserOperationEventEventResponse?) {
+                        DAuthLogger.d("onNext ${MoshiUtil.toJson(t)}", TAG)
+                    }
+                })
+        }
+        return DAuthResult.Success(r)
     }
 }

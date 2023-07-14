@@ -3,11 +3,13 @@ package com.cyberflow.dauthsdk.api
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
+import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
+import com.cyberflow.dauthsdk.wallet.sol.EntryPoint.UserOperation
 import org.web3j.abi.FunctionEncoder
 import org.web3j.crypto.Sign
 import org.web3j.protocol.Web3j
@@ -56,7 +58,7 @@ interface IWalletApi {
     suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData>
 
     /**
-     * 调用合约
+     * 创建[UserOperation]并计算燃料费
      * 调用方法参见[DAuthAccount.execute]
      * 用法1：转账。填目标账户contractAddress和金额balance
      * 用法2：调用合约。填目标合约地址contractAddress和编码的函数func
@@ -66,7 +68,19 @@ interface IWalletApi {
      * @param func 执行函数。使用[FunctionEncoder.encode]和[Numeric.toHexString]得到func
      * @return 执行结果
      */
-    suspend fun execute(contractAddress: String, balance: BigInteger, func: ByteArray): DAuthResult<String>
+    suspend fun createUserOpAndEstimateGas(
+        contractAddress: String,
+        balance: BigInteger,
+        func: ByteArray
+    ): DAuthResult<CreateUserOpAndEstimateGasData>
+
+    /**
+     * 执行[UserOperation]
+     *
+     * @param userOperation 用户操作，由[createUserOpAndEstimateGas]方法创建
+     * @return 成功则返回txHash
+     */
+    suspend fun execute(userOperation: UserOperation): DAuthResult<String>
 
     fun getWeb3j(): Web3j
 
