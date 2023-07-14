@@ -1,7 +1,7 @@
 ext {
 }.versions = [
         version_code                 : 1,
-        version_name                 : '0.0.2',
+        version_name                 : '0.0.3',
         min_sdk                      : 23,
         target_sdk                   : 33,
         compile_sdk                  : 33,
@@ -41,8 +41,7 @@ ext {
         google_service_auth          : "20.5.0",
 
         // twitter
-        twitter                      : "3.1.1",
-        twitter_core                 : "3.1.1",
+        twitter                      : "3.3.0",
 
         // jwt
         jwt                          : "0.9.1",
@@ -101,7 +100,7 @@ ext {
 
         // twitter
         twitter                       : "com.twitter.sdk.android:twitter:$versions.twitter",
-        twitter_core                  : "com.twitter.sdk.android:twitter-core:$versions.twitter_core",
+        twitter_core                  : "com.twitter.sdk.android:twitter-core:$versions.twitter",
 
         // jwt
         jwt                           : "io.jsonwebtoken:jjwt:$versions.jwt",

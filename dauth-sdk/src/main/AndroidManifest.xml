@@ -6,6 +6,10 @@
     <uses-sdk android:minSdkVersion="23"
         tools:ignore="GradleOverrides" />
 
+    <queries>
+        <package android:name="com.twitter.android" />
+    </queries>
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application>

@@ -49,7 +49,7 @@ sealed class DAuthResult<T> {
         const val SDK_ERROR_CANNOT_GET_NONCE = 1
         const val SDK_ERROR_CANNOT_GET_ADDRESS = 2
         const val SDK_ERROR_BIND_WALLET = 3
-        const val SDK_ERROR_CANNOT_GENERATE_EOA_ADDRESS = 4
+        const val SDK_ERROR_LOGGED_OUT = 4
         const val SDK_ERROR_MERGE_RESULT = 5
         const val SDK_ERROR_RESTORE_KEY_BY_MERGE_RESULT = 6
         const val SDK_ERROR_CANNOT_GENERATE_ADDRESS = 7

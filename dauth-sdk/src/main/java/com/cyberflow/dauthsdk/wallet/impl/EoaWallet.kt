@@ -139,7 +139,14 @@ class EoaWallet internal constructor(): IWalletApi {
 
     override suspend fun execute(
         userOperation: UserOperation
-    ): DAuthResult<String> = Web3Manager.executeUserOperation(userOperation)
+    ): DAuthResult<String> {
+        val addressResult = queryWalletAddress()
+        if (addressResult !is DAuthResult.Success) {
+            return DAuthResult.SdkError()
+        }
+        val aaAddress = addressResult.data.aaAddress
+        return Web3Manager.executeUserOperation(userOperation, aaAddress)
+    }
 
     override suspend fun createUserOpAndEstimateGas(
         contractAddress: String,
@@ -151,6 +158,7 @@ class EoaWallet internal constructor(): IWalletApi {
             return DAuthResult.SdkError()
         }
         val signerAddress = addressResult.data.signerAddress
+        val aaAddress = addressResult.data.aaAddress
         val function = Function(
             DAuthAccount.FUNC_EXECUTE,
             listOf<Type<*>>(
@@ -162,7 +170,7 @@ class EoaWallet internal constructor(): IWalletApi {
         val encodedFunction = FunctionEncoder.encode(function)
         val callData = Numeric.hexStringToByteArray(encodedFunction)
 
-        val execResult = Web3Manager.createUserOpAndEstimateGas(signerAddress, callData)
+        val execResult = Web3Manager.createUserOpAndEstimateGas(signerAddress, aaAddress, callData)
         DAuthLogger.d(
             "createUserOpAndEstimateGas $contractAddress $balance ${func.size} result=$execResult",
             TAG

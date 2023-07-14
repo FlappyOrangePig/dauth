@@ -6,6 +6,7 @@ import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
@@ -63,17 +64,7 @@ import kotlin.coroutines.resume
 
 private const val TAG = "Web3Manager"
 
-/**
- * 不是DAuthAccount的合约地址，是它的中转合约的地址，据说为了打包gas费
- * 转发者和DAuthAccount接口相同
- */
-private const val DAUTH_FORWARDER_ADDRESS = ""
-
-private fun BigInteger.isNewAccount(): Boolean {
-    return compareTo(BigInteger.ZERO) == 0
-}
-
-private fun emptyCallData() = "0x".hexStringToByteArray()
+private fun BigInteger.noTransactions() = compareTo(BigInteger.ZERO) == 0
 
 /**
  * 把各字段打包到一起
@@ -373,6 +364,7 @@ object Web3Manager {
     }
 
     suspend fun createUserOpAndEstimateGas(eoaAddress: String,
+                                           aaAddress: String,
                                            callData: ByteArray
     ): DAuthResult<CreateUserOpAndEstimateGasData> {
         val addresses = ConfigurationManager.addresses()
@@ -382,35 +374,6 @@ object Web3Manager {
         val gasPrice =
             web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
         DAuthLogger.d("gasPrice=$gasPrice", TAG)
-
-        val accountFactory = DAuthAccountFactory.load(
-            faAddress,
-            web3j,
-            transactionManager(eoaAddress),
-            DefaultGasProvider()
-        )
-        val aaAddress = accountFactory.getAddress(eoaAddress, BigInteger.ZERO).awaitLite()
-        DAuthLogger.d("get aa address $aaAddress", TAG)
-        if (aaAddress == null) {
-            DAuthLogger.e("aaAddress error")
-            return DAuthResult.SdkError()
-        }
-
-        val balanceResult = getBalance(aaAddress)
-        if (balanceResult !is DAuthResult.Success) {
-            DAuthLogger.e("balance error")
-            return DAuthResult.SdkError()
-        }
-        val balanceData = balanceResult.data
-        DAuthLogger.d("balance=$balanceData", TAG)
-        if (balanceData !is WalletBalanceData.Eth) {
-            DAuthLogger.e("balance type error")
-            return DAuthResult.SdkError()
-        }
-        if (balanceData.amount <= BigInteger.ZERO) {
-            DAuthLogger.e("no balance")
-            return DAuthResult.SdkError()
-        }
 
         val entryPoint = EntryPoint.load(
             entryPointAddress,
@@ -426,16 +389,17 @@ object Web3Manager {
             return DAuthResult.SdkError()
         }
 
-        val isNew = nonce.isNewAccount()
-        DAuthLogger.d("isNew=$isNew")
-        val isDeployed = isCodeExists(aaAddress)
+        val noTransactions = nonce.noTransactions()
+        DAuthLogger.d("noTransactions=$noTransactions")
+
+        val isDeployed = isCodeDeployed(aaAddress)
         if (isDeployed == null) {
             DAuthLogger.e("not deployed")
             return DAuthResult.SdkError()
         }
 
-        DAuthLogger.d("isDeployed=$isNew")
-        val initCode = if (isNew && !isDeployed) {
+        DAuthLogger.d("isDeployed=$isDeployed")
+        val initCode = if (noTransactions && !isDeployed) {
             // 创建新aa账号
             DAuthLogger.d("deploy aa account", TAG)
 
@@ -448,7 +412,7 @@ object Web3Manager {
         } else {
             // 创建新aa账号
             DAuthLogger.d("aa account exists", TAG)
-            emptyCallData()
+            byteArrayOf()
         }
 
         // 构造创建AA账号的userOperation
@@ -462,8 +426,8 @@ object Web3Manager {
             BigInteger.ZERO,
             gasPrice,
             gasPrice,
-            emptyCallData(),
-            emptyCallData()
+            byteArrayOf(),
+            byteArrayOf()
         )
         DAuthLogger.d("initCode=${userOperation.initCode.sha3().toHexString()}", TAG)
         DAuthLogger.d("callData=${userOperation.callData.sha3().toHexString()}", TAG)
@@ -482,11 +446,7 @@ object Web3Manager {
             DAuthLogger.e("estimate gas error", TAG)
             return DAuthResult.SdkError()
         }
-        val estimateInfo = kotlin.runCatching {
-            MoshiUtil.fromJson<Web3jResponseError>(gasException)?.data
-        }.getOrNull() ?: kotlin.runCatching {
-            MoshiUtil.fromJson<String>(gasException)
-        }.getOrNull()
+        val estimateInfo = getEstimateInfo(gasException)
         if (estimateInfo == null) {
             DAuthLogger.e("estimateInfo error", TAG)
             return DAuthResult.SdkError()
@@ -511,9 +471,26 @@ object Web3Manager {
     }
 
     suspend fun executeUserOperation(
-        userOperation: UserOperation
+        userOperation: UserOperation,
+        aaAddress: String,
     ): DAuthResult<String> {
         DAuthLogger.d("executeUserOperation useOp=$userOperation", TAG)
+
+        val balanceResult = getBalance(aaAddress)
+        if (balanceResult !is DAuthResult.Success) {
+            DAuthLogger.e("balance error")
+            return DAuthResult.SdkError()
+        }
+        val balanceData = balanceResult.data
+        DAuthLogger.d("balance=$balanceData", TAG)
+        if (balanceData !is WalletBalanceData.Eth) {
+            DAuthLogger.e("balance type error")
+            return DAuthResult.SdkError()
+        }
+        if (balanceData.amount <= BigInteger.ZERO) {
+            DAuthLogger.e("no balance")
+            return DAuthResult.SdkError()
+        }
 
         val addresses = ConfigurationManager.addresses()
         val entryPointAddress = addresses.entryPointAddress
@@ -604,15 +581,27 @@ object Web3Manager {
         } else {
             val sendResult = RelayerRequester.sendRequest(userOpCopy)
             DAuthLogger.d("sendResult=$sendResult", TAG)
-            if (sendResult == null || !sendResult.isSuccess()) {
+            if (sendResult == null) {
                 return DAuthResult.SdkError()
+            }
+            if (!sendResult.isSuccess()) {
+                return if (ResponseCode.isLoggedOut(sendResult.ret)) {
+                    DAuthResult.SdkError(DAuthResult.SDK_ERROR_LOGGED_OUT)
+                } else {
+                    DAuthResult.SdkError()
+                }
             }
             return DAuthResult.Success(sendResult.info)
         }
     }
 
-    @Deprecated("使用entryPoint.getNonce")
-    suspend fun isCodeExists(aaAddress: String): Boolean? {
+    /**
+     * [aaAddress]位置是否部署代码
+     *
+     * @param aaAddress aa账户地址
+     * @return 是否部署。空为请求失败
+     */
+    private suspend fun isCodeDeployed(aaAddress: String): Boolean? {
         val code = web3j.ethGetCode(aaAddress, DefaultBlockParameterName.LATEST).awaitLite {
             it.code
         } ?: return null
@@ -667,5 +656,13 @@ object Web3Manager {
                 })
         }
         return DAuthResult.Success(r)
+    }
+
+    private fun getEstimateInfo(gasException: String): String? {
+        return kotlin.runCatching {
+            MoshiUtil.fromJson<Web3jResponseError>(gasException, false)?.data
+        }.getOrNull() ?: kotlin.runCatching {
+            MoshiUtil.fromJson<String>(gasException, false)
+        }.getOrNull()
     }
 }

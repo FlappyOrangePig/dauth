@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.wallet.impl.manager.task
 
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GENERATE_ADDRESS
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
 import com.cyberflow.dauthsdk.login.model.GetParticipantsRes
@@ -79,7 +80,7 @@ class CreateWalletTask(
         keystore.setMergeResult(mergeResult)
 
         // 生成账号
-        val addressResult = WalletTaskUtil.generateAddress(keys) ?: return DAuthResult.SdkError()
+        val addressResult = WalletTaskUtil.generateAddress(keys) ?: return DAuthResult.SdkError(SDK_ERROR_CANNOT_GENERATE_ADDRESS)
 
         return submitWalletAddressAndKeys(
             keys,
