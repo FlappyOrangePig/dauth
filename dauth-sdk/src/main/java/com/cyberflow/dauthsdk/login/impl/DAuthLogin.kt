@@ -205,7 +205,6 @@ class DAuthLogin : ILoginApi {
         if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = loginRes.data?.didToken.orEmpty()
             val userInfo = JwtDecoder().decoded(didToken)
-            prefs.setDidToken(didToken)
             val codeVerifier = JwtChallengeCode().generateCodeVerifier()
             val codeChallenge = JwtChallengeCode().generateCodeChallenge(codeVerifier)
             DAuthLogger.d("codeVerify == $codeVerifier")
@@ -219,7 +218,7 @@ class DAuthLogin : ILoginApi {
             val userId = userInfo.sub.orEmpty()
             val expireTime = tokenAuthenticationRes?.data?.expire_in
             val userType = loginParam.user_type
-            prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType)
+            prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType, didToken)
             DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken")
 
             // 钱包未创建

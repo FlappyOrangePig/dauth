@@ -40,9 +40,6 @@ class LoginPrefs {
         return getPrefs().getString(AUTH_ID, null).orEmpty()
     }
 
-    fun setDidToken(didToken: String) {
-        getPrefs().edit().putString(DID_TOKEN, didToken).apply()
-    }
 
     fun getDidToken(): String {
         return getPrefs().getString(DID_TOKEN, null).orEmpty()
@@ -75,6 +72,7 @@ class LoginPrefs {
         refreshToken: String? = null,
         expireTime: Long?  = null,
         user_type: Int? = null,
+        didToken: String? = null,
         async: Boolean = false
     ) {
         val values = ArrayList<Pair<String, Any>>()
