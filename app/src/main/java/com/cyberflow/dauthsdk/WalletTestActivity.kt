@@ -15,7 +15,6 @@ import com.cyberflow.dauthsdk.ext.mount
 import com.cyberflow.dauthsdk.util.GasUtil
 import com.cyberflow.dauthsdk.util.LogUtil
 import com.cyberflow.dauthsdk.util.Web3jHelper
-import com.cyberflow.dauthsdk.wallet.impl.Web3Manager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccountFactory
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
@@ -30,7 +29,6 @@ import org.web3j.crypto.TransactionEncoder
 import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.util.Arrays
 
 private const val TAG = "WalletTestActivity"
 
@@ -270,7 +268,7 @@ class WalletTestActivity : BaseActivity() {
                 if (a !is DAuthResult.Success) {
                     return@launch
                 }
-                Web3Manager.userOpFlow(a.data.signerAddress)
+                //Web3Manager.userOpFlow(a.data.signerAddress)
             }
         }
     }
