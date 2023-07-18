@@ -13,6 +13,8 @@ import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 
 class ThirdPlatformLogin private constructor() {
 
+    private val prefs get() = Managers.loginPrefs
+
     companion object {
         val instance by lazy {
             ThirdPlatformLogin()
@@ -31,7 +33,15 @@ class ThirdPlatformLogin private constructor() {
             val authId = googleUserInfo.sub.orEmpty()
             val expireTime = authorizeToken2Res.data?.expireIn
             val userType = body.user_type
-            Managers.loginPrefs.putLoginInfo(accessToken, authId, userId = null, refreshToken, expireTime, userType)
+            Managers.loginPrefs.putLoginInfo(
+                accessToken,
+                authId,
+                userId = null,
+                refreshToken,
+                expireTime,
+                userType,
+                didToken
+            )
 
             // 钱包未创建
             if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
