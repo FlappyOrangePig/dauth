@@ -219,7 +219,7 @@ class DAuthLogin : ILoginApi {
             val expireTime = tokenAuthenticationRes?.data?.expire_in
             val userType = loginParam.user_type
             prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType, didToken)
-            DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken")
+            DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken,refreshToken:$refreshToken")
 
             // 钱包未创建
             if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
