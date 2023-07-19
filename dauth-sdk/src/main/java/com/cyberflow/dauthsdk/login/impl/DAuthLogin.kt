@@ -238,8 +238,9 @@ class DAuthLogin : ILoginApi {
     }
 
     override fun logout() {
-        val openId = prefs.getAuthId()
-        val requestBody = LogoutParam(openId)
+        val authid = prefs.getAuthId()
+        val accessToken = prefs.getAccessToken()
+        val requestBody = LogoutParam(authid, accessToken)
         logOutJob?.cancel()
         @OptIn(DelicateCoroutinesApi::class)
         logOutJob = GlobalScope.launch {
