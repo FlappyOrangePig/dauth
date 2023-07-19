@@ -36,6 +36,10 @@ class LoginPrefs {
         getPrefs().edit().putString(ACCESS_TOKEN, accessToken).apply()
     }
 
+    fun setRefreshToken(refreshToken: String?) {
+        getPrefs().edit().putString(REFRESH_TOKEN, refreshToken).apply()
+    }
+
     fun getAuthId(): String {
         return getPrefs().getString(AUTH_ID, null).orEmpty()
     }
@@ -93,6 +97,9 @@ class LoginPrefs {
         }
         user_type?.let {
             values.add(USER_TYPE to it)
+        }
+        didToken?.let {
+            values.add(DID_TOKEN to it)
         }
 
         val lastAuthId = getAuthId()
