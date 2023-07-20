@@ -360,7 +360,7 @@ class RequestApi : ApiClient() {
         val headers = RequestConfig(
             ReqUrl.PathUrl("/account/v1/password/set")
         )
-        return request<BaseResponse>(headers, body)
+        return request<BaseResponse>(headers, body, true)
     }
 
     suspend fun checkEmail(body: CheckEmailParam): BaseResponse? {
