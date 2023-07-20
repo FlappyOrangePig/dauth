@@ -33,6 +33,7 @@ object HttpClient {
     private fun getOkhttpClient() = OkHttpClient().newBuilder().apply {
         connectTimeout(10, TimeUnit.SECONDS)
         readTimeout(10, TimeUnit.SECONDS)
+        writeTimeout(10, TimeUnit.SECONDS)
         addInterceptor(HttpLoggingInterceptor { message ->
             DAuthLogger.d(message, TAG)
         }.apply {

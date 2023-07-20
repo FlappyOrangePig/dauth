@@ -222,16 +222,12 @@ class DAuthLogin : ILoginApi {
             prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType, authIdToken)
             DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken,refreshToken:$refreshToken")
 
-            // 钱包未创建
-            if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
-                return LoginResultData.Failure(
-                    ResponseCode.AA_WALLET_IS_NOT_CREATE,
-                    accessToken,
-                    authId
-                )
-            }
-
-            return LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
+            val needCreateWallet = Managers.walletManager.getState() != WalletManager.STATE_OK
+            return LoginResultData.Success(
+                accessToken = accessToken,
+                openId = authId,
+                needCreateWallet = needCreateWallet
+            )
         } else {
             // 其他错误
             return LoginResultData.Failure(loginRes?.iRet)

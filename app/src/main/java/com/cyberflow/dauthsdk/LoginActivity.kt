@@ -44,18 +44,19 @@ class LoginActivity : BaseActivity() {
                 )
                 when (loginResultData) {
                     is LoginResultData.Success -> {
-                        val idToken = loginResultData.accessToken
-                        // 处理登录成功逻辑
-                        MainActivity.launch(this@LoginActivity)
-                        DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                        if (loginResultData.needCreateWallet) {
+                            handleCreateWallet()
+                        } else {
+                            val idToken = loginResultData.accessToken
+                            // 处理登录成功逻辑
+                            MainActivity.launch(this@LoginActivity)
+                            DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                        }
                     }
                     is LoginResultData.Failure -> {
                         val failureCode = loginResultData.code
                         // 处理登录失败逻辑
                         DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
-                        if(failureCode == ResponseCode.AA_WALLET_IS_NOT_CREATE) {
-                            handleCreateWallet()
-                        }
                     }
                     else -> {}
                 }
@@ -119,18 +120,19 @@ class LoginActivity : BaseActivity() {
     private fun handleLoginResult(loginResultData: LoginResultData?) {
         when (loginResultData) {
             is LoginResultData.Success -> {
-                val idToken = loginResultData.accessToken
-                // 处理登录成功逻辑
-                MainActivity.launch(this@LoginActivity)
-                DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                if (loginResultData.needCreateWallet) {
+                    handleCreateWallet()
+                } else {
+                    val idToken = loginResultData.accessToken
+                    // 处理登录成功逻辑
+                    MainActivity.launch(this@LoginActivity)
+                    DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                }
             }
             is LoginResultData.Failure -> {
                 val failureCode = loginResultData.code
                 // 处理登录失败逻辑
                 DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
-                if(failureCode == ResponseCode.AA_WALLET_IS_NOT_CREATE) {
-                    handleCreateWallet()
-                }
             }
             else -> {
                 DAuthLogger.e("用户取消授权")
