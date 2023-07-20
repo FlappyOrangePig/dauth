@@ -218,7 +218,8 @@ class DAuthLogin : ILoginApi {
             val userId = userInfo.sub.orEmpty()
             val expireTime = tokenAuthenticationRes?.data?.expire_in
             val userType = loginParam.user_type
-            prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType, didToken)
+            // 邮箱登录后台需要的did_token为authIdToken
+            prefs.putLoginInfo(accessToken, authId, userId, refreshToken, expireTime, userType, authIdToken)
             DAuthLogger.d("手机号/邮箱验证码登录accessToken：$accessToken,refreshToken:$refreshToken")
 
             // 钱包未创建
@@ -347,6 +348,7 @@ class DAuthLogin : ILoginApi {
      */
     override suspend fun setPassword(passwordParam: SetPasswordParam): Int? {
         val didToken = prefs.getDidToken()
+        DAuthLogger.e("设置密码时传的didToken:"+didToken)
         return RequestApi().setPassword(passwordParam, didToken)?.iRet
     }
 
