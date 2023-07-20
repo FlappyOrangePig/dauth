@@ -5,8 +5,8 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 open class BaseResponse {
-    var iRet: Int = 0
-    var sMsg: String? = null
+    var ret: Int = 0
+    var info: String? = null
 
-    fun isSuccess() = iRet == ResponseCode.RESPONSE_CORRECT_CODE
+    fun isSuccess() = ret == ResponseCode.RESPONSE_CORRECT_CODE
 }

@@ -24,5 +24,7 @@
             </intent-filter>
         </activity>
 
+        <meta-data android:name="DAUTH_VERSION"  android:value="${sdkVersion}" />
+
     </application>
 </manifest>

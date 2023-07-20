@@ -33,9 +33,9 @@ internal class TokenManager private constructor() {
         DAuthLogger.e("TokenManager accessToken is valid: ${accessToken.maskSensitiveData()}")
         val response = request(accessToken)
         val baseResponse = response as? BaseResponse ?: return null
-        if (baseResponse.iRet == ResponseCode.TOKEN_IS_INVALIDATE) {
+        if (baseResponse.ret == ResponseCode.TOKEN_IS_INVALIDATE) {
             val refreshResponse = refreshToken()
-            if (refreshResponse?.iRet == 0) {
+            if (refreshResponse?.ret == 0) {
                 val newAccessToken = refreshResponse.data?.accessToken
                 val newRefreshToken = refreshResponse.data?.refreshToken
                 val expireTime = refreshResponse.data?.expireIn

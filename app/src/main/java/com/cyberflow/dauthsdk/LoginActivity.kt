@@ -6,9 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
-import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
-import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
@@ -31,7 +29,7 @@ class LoginActivity : BaseActivity() {
         initView()
     }
 
-    fun initView() {
+    private fun initView() {
         // 邮箱登录
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
@@ -98,7 +96,7 @@ class LoginActivity : BaseActivity() {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
                 val response = DAuthSDK.instance.sendEmailVerifyCode(account)
-                if (response?.iRet == 0) {
+                if (response?.ret == 0) {
                     ToastUtil.show(applicationContext, "验证码发送成功")
                     DAuthLogger.d("验证码发送成功")
                 } else {

@@ -5,6 +5,10 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.wallet.ext.getMetaData
+import com.cyberflow.dauthsdk.wallet.ext.getPackageInfo
+import com.cyberflow.dauthsdk.wallet.ext.getVersionCode
+import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
 import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.DebugUtil
@@ -31,9 +35,17 @@ class DAuthSDK private constructor(
         val appContext = context.applicationContext as Application
         this._context = appContext
         this._config = config
-        Managers.inject()
-        DAuthLogger.i("init sdk")
         initializeCheck()
+        runCatchingWithLog {
+            val ai = context.getPackageInfo()
+            DAuthLogger.i(
+                "**** dauth ${context.getMetaData("DAUTH_VERSION")} ****\n" +
+                        "androidVersion=${android.os.Build.VERSION.SDK_INT}\n" +
+                        "versionName=${ai?.versionName}\n" +
+                        "getVersionCode=${ai?.getVersionCode()}\n"
+            )
+        }
+        Managers.inject()
         loginApi.initSDK(context, config)
         DAuthLogger.i("init sdk ok")
         if (DebugUtil.isAppDebuggable(context)) {

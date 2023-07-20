@@ -24,7 +24,6 @@ import com.cyberflow.dauthsdk.login.utils.JwtChallengeCode
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
 import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
-import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
 import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
@@ -155,7 +154,7 @@ class DAuthLogin : ILoginApi {
         )
 
         val createAccountRes = RequestApi().createAccount(createAccountParam)
-        code = createAccountRes?.iRet
+        code = createAccountRes?.ret
         return code
     }
 
@@ -202,7 +201,7 @@ class DAuthLogin : ILoginApi {
 
     private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam): LoginResultData {
         val loginRes = RequestApi().login(loginParam)
-        if (loginRes?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
+        if (loginRes?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = loginRes.data?.didToken.orEmpty()
             val userInfo = JwtDecoder().decoded(didToken)
             val codeVerifier = JwtChallengeCode().generateCodeVerifier()
@@ -230,7 +229,7 @@ class DAuthLogin : ILoginApi {
             )
         } else {
             // 其他错误
-            return LoginResultData.Failure(loginRes?.iRet)
+            return LoginResultData.Failure(loginRes?.ret)
         }
     }
 
@@ -261,10 +260,10 @@ class DAuthLogin : ILoginApi {
 
     override suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): SetPasswordData {
         val response = RequestApi().resetByPassword(resetPwdParams)
-        if(response?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
-           return SetPasswordData(ResponseCode.RESPONSE_CORRECT_CODE,response.sMsg)
+        if(response?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
+           return SetPasswordData(ResponseCode.RESPONSE_CORRECT_CODE,response.info)
         }
-        return SetPasswordData(response?.iRet, response?.sMsg)
+        return SetPasswordData(response?.ret, response?.info)
     }
 
     /**
@@ -274,11 +273,11 @@ class DAuthLogin : ILoginApi {
     override suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean {
         val body = SendPhoneVerifyCodeParam(openudid = null, phone, areaCode)
         val response = RequestApi().sendPhoneVerifyCode(body)
-        if (response?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
+        if (response?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             DAuthLogger.d("发送手机验证码成功")
             return true
         } else {
-            DAuthLogger.e("发送手机验证码失败：${response?.sMsg}")
+            DAuthLogger.e("发送手机验证码失败：${response?.info}")
         }
         return false
     }
@@ -311,10 +310,10 @@ class DAuthLogin : ILoginApi {
         val accessToken = prefs.getAccessToken()
         val body = BindEmailParam(authId, email, verifyCode, accessToken)
         val response = RequestApi().bindEmail(body)
-        if(response?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
+        if(response?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             return true
         }
-        DAuthLogger.e("绑定邮箱失败 errorCode == ${response?.iRet}")
+        DAuthLogger.e("绑定邮箱失败 errorCode == ${response?.ret}")
         return false
     }
 
@@ -345,7 +344,7 @@ class DAuthLogin : ILoginApi {
     override suspend fun setPassword(passwordParam: SetPasswordParam): Int? {
         val didToken = prefs.getDidToken()
         DAuthLogger.e("设置密码时传的didToken:"+didToken)
-        return RequestApi().setPassword(passwordParam, didToken)?.iRet
+        return RequestApi().setPassword(passwordParam, didToken)?.ret
     }
 
     /**

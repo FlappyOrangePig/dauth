@@ -6,7 +6,6 @@ import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 
@@ -24,7 +23,7 @@ class ThirdPlatformLogin private constructor() {
     suspend fun thirdPlatFormLogin(body: AuthorizeToken2Param) : LoginResultData {
         var loginResultData: LoginResultData? = null
         val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
-        if (authorizeToken2Res?.iRet == ResponseCode.RESPONSE_CORRECT_CODE) {
+        if (authorizeToken2Res?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = authorizeToken2Res.data?.didToken.orEmpty()
             val googleUserInfo = JwtDecoder().decoded(didToken)
             val accessToken = authorizeToken2Res.data?.accessToken.orEmpty()
@@ -53,7 +52,7 @@ class ThirdPlatformLogin private constructor() {
             )
             DAuthLogger.d("第三方账号已绑定钱包，直接进入主页")
         } else {
-            val loginResCode = authorizeToken2Res?.iRet
+            val loginResCode = authorizeToken2Res?.ret
             loginResultData = LoginResultData.Failure(loginResCode)
             DAuthLogger.e("第三方认证登录失败 errCode == $loginResCode")
         }

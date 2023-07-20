@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
@@ -65,7 +64,7 @@ class ResetPasswordActivity : BaseActivity() {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
                 val response = DAuthSDK.instance.sendEmailVerifyCode(account)
-                if(response?.iRet == 0) {
+                if(response?.ret == 0) {
                     ToastUtil.show(this@ResetPasswordActivity, "验证码发送成功")
                 }
             }

@@ -111,7 +111,7 @@ class CreateWalletTask(
             return DAuthResult.SdkError(DAuthResult.SDK_ERROR_BIND_WALLET)
         }
         if (!bindResponse.isSuccess()) {
-            DAuthLogger.e("bind error:${bindResponse.sMsg}", TAG)
+            DAuthLogger.e("bind error:${bindResponse.info}", TAG)
             return DAuthResult.SdkError(DAuthResult.SDK_ERROR_BIND_WALLET)
         }
 
@@ -142,7 +142,7 @@ class CreateWalletTask(
                 }
 
                 else -> {
-                    DAuthLogger.e("set key $keyId error:${p.sMsg}", TAG)
+                    DAuthLogger.e("set key $keyId error:${p.info}", TAG)
                     return DAuthResult.SdkError(DAuthResult.SDK_ERROR_SET_KEY)
                 }
             }
