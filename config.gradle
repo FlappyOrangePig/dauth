@@ -1,7 +1,7 @@
 ext {
 }.versions = [
         version_code                 : 1,
-        version_name                 : '0.0.5',
+        version_name                 : '0.0.6',
         min_sdk                      : 23,
         target_sdk                   : 33,
         compile_sdk                  : 33,

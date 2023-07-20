@@ -43,17 +43,14 @@ class ThirdPlatformLogin private constructor() {
                 didToken
             )
 
-            // 钱包未创建
-            if (Managers.walletManager.getState() != WalletManager.STATE_OK) {
-                return LoginResultData.Failure(
-                    ResponseCode.AA_WALLET_IS_NOT_CREATE,
-                    accessToken,
-                    authId
-                )
-            }
+            val needCreateWallet = Managers.walletManager.getState() != WalletManager.STATE_OK
 
             // 该邮箱绑定过钱包
-            loginResultData = LoginResultData.Success(ResponseCode.RESPONSE_CORRECT_CODE, accessToken, authId)
+            loginResultData = LoginResultData.Success(
+                accessToken = accessToken,
+                openId = authId,
+                needCreateWallet = needCreateWallet
+            )
             DAuthLogger.d("第三方账号已绑定钱包，直接进入主页")
         } else {
             val loginResCode = authorizeToken2Res?.iRet
