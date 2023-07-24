@@ -2,10 +2,13 @@ package com.cyberflow.dauthsdk.login.infrastructure
 
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.impl.TokenManager
+import com.cyberflow.dauthsdk.login.model.IAccessTokenRequest
+import com.cyberflow.dauthsdk.login.model.IAuthorizationRequest
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
+import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -28,6 +31,9 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
 
         private val clientId get() = DAuthSDK.impl.config.clientId.orEmpty()
         private val clientSecret get() = DAuthSDK.impl.config.clientSecret.orEmpty()
+        protected val didToken get() = Managers.loginPrefs.getDidToken()
+        protected val authId get() = Managers.loginPrefs.getAuthId()
+        protected val accessToken get() = Managers.loginPrefs.getAccessToken()
 
         @JvmStatic
         var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
@@ -54,6 +60,11 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
             // content's type *must* be Map<String, Any>
             @Suppress("UNCHECKED_CAST")
             val map = SignUtils.objToMap(content)
+
+            if (content is IAccessTokenRequest) {
+                map["authid"] = authId
+                map["access_token"] = accessToken
+            }
 
             map["sign"] = SignUtils.sign(map)
             map.forEach { (key, value) ->
@@ -144,7 +155,14 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
         var response: Response? = null
         var result: T? = null
         val url = requestConfig.reqUrl.getUrl(requestConfig, baseUrl)
-        val headers = defaultHeaders + requestConfig.headers
+
+        val publicHeaders = mutableMapOf<String, String>() + defaultHeaders + requestConfig.headers
+        val headers = if (body is IAuthorizationRequest) {
+            publicHeaders + mapOf("Authorization" to didToken)
+        } else {
+            publicHeaders
+        }
+
         if ((headers[ContentType] ?: "") == "") {
             throw IllegalStateException("Missing Content-Type header. This is required.")
         }

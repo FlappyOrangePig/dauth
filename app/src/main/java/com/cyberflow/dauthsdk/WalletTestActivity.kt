@@ -1,8 +1,6 @@
 package com.cyberflow.dauthsdk
 
-import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,6 +10,7 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.ext.mount
+import com.cyberflow.dauthsdk.util.DialogHelper
 import com.cyberflow.dauthsdk.util.GasUtil
 import com.cyberflow.dauthsdk.util.LogUtil
 import com.cyberflow.dauthsdk.util.Web3jHelper
@@ -141,7 +140,7 @@ class WalletTestActivity : BaseActivity() {
                         val data = result.data
                         val message = "计算成功\n认证费：${GasUtil.getReadableGas(data.verificationCost)}\n" +
                                 "执行费：${GasUtil.getReadableGas(data.callCost)}\n是否执行？"
-                        show2ButtonsDialogMayHaveLeak(message) {
+                        DialogHelper.show2ButtonsDialogMayHaveLeak(this@WalletTestActivity, message) {
                             lifecycleScope.launch {
                                 loadingDialog.show(
                                     supportFragmentManager,
@@ -200,7 +199,7 @@ class WalletTestActivity : BaseActivity() {
                     return@launch
                 }
                 val result = GasUtil.getReadableGas(balanceResult.data.mount() ?: BigInteger.ZERO)
-                show1ButtonDialogMayHaveLeak(result)
+                DialogHelper.show1ButtonDialogMayHaveLeak(this@WalletTestActivity, result)
             }
         }
         btnGetDestBalance.setOnClickListener {
@@ -214,7 +213,7 @@ class WalletTestActivity : BaseActivity() {
                     return@launch
                 }
                 val result = GasUtil.getReadableGas(balanceResult.data.mount() ?: BigInteger.ZERO)
-                show1ButtonDialogMayHaveLeak(result)
+                DialogHelper.show1ButtonDialogMayHaveLeak(this@WalletTestActivity, result)
             }
         }
         btnAaExists.setOnClickListener {
@@ -290,32 +289,6 @@ class WalletTestActivity : BaseActivity() {
                 else -> return@launch
             }
         }
-    }
-
-    private fun show1ButtonDialogMayHaveLeak(message: String){
-        AlertDialog.Builder(this@WalletTestActivity)
-            .setTitle("提示")
-            .setMessage(message)
-            .setPositiveButton("是") { dialog: DialogInterface, _: Int ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .create().show()
-    }
-
-    private fun show2ButtonsDialogMayHaveLeak(message: String, yesBlock: () -> Unit) {
-        AlertDialog.Builder(this@WalletTestActivity)
-            .setTitle("提示")
-            .setMessage(message)
-            .setPositiveButton("是") { dialog: DialogInterface, _: Int ->
-                dialog.dismiss()
-                yesBlock.invoke()
-            }
-            .setNegativeButton("否") { dialog: DialogInterface, _: Int ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .create().show()
     }
 }
 

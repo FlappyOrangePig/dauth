@@ -49,7 +49,7 @@ interface ILoginApi {
      * @param phone 手机号
      * @param areaCode  区号
      */
-    suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean
+    suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): BaseResponse?
 
     /**
      * @param email 邮箱
@@ -69,7 +69,7 @@ interface ILoginApi {
      * @param email 邮箱
      * @param verifyCode 邮箱验证码
      */
-    suspend fun bindEmail(email: String, verifyCode: String) : Boolean
+    suspend fun bindEmail(email: String, verifyCode: String) : BaseResponse?
 
 
     /**
@@ -81,7 +81,7 @@ interface ILoginApi {
      * 设置密码
      * @param passWord
      */
-    suspend fun setPassword(setPasswordParam: SetPasswordParam) : Int?
+    suspend fun setPassword(setPasswordParam: SetPasswordParam) : BaseResponse?
 
     /**
      * 根据邮箱查询用户
@@ -94,4 +94,13 @@ interface ILoginApi {
      * @param openId 用户id
      */
     suspend fun queryAccountByAuthid() : AccountRes?
+
+    /**
+     * 检验邮箱
+     *
+     * @param email 邮箱
+     * @param verifyCode 验证码
+     * @return
+     */
+    suspend fun checkEmail(email: String, verifyCode: String): BaseResponse?
 }

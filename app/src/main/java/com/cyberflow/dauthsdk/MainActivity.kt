@@ -1,33 +1,29 @@
 package com.cyberflow.dauthsdk
 
-
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.TokenType
-import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
+import com.cyberflow.dauthsdk.ext.handleByToast
 import com.cyberflow.dauthsdk.ext.mount
 import com.cyberflow.dauthsdk.ext.myAddress
 import com.cyberflow.dauthsdk.ext.tokenIds
+import com.cyberflow.dauthsdk.login.model.AccountRes
 import com.cyberflow.dauthsdk.login.model.SetPasswordParam
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.fasterxml.jackson.databind.ser.Serializers.Base
+import com.cyberflow.dauthsdk.manager.AccountManager
+import com.cyberflow.dauthsdk.util.DemoPrefs
+import com.cyberflow.dauthsdk.util.DialogHelper
+import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
-import java.math.BigInteger
-
 
 class MainActivity : BaseActivity() {
-    private val testAddress = "0xA0590b28C219E6C26a93116D04C395A56E9135f5"
-    private val testEmail = "453376077@qq.com"
-    private val testAuthId = "6b5a96eb3fedc2e7bbf183eab6820b95"
+
     companion object {
         fun launch(context: Context) {
             val intent = Intent(context, MainActivity::class.java)
@@ -37,84 +33,144 @@ class MainActivity : BaseActivity() {
 
     private var mainBinding: ActivityMainLayoutBinding? = null
     private val binding: ActivityMainLayoutBinding get() = mainBinding!!
+    private val loadingDialog = LoadingDialogFragment.newInstance()
+    private val api get() = DAuthSDK.instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         initView()
+        initData()
     }
 
-    fun initView() {
+    private fun initView() {
+        val a = this@MainActivity
         binding.btnQueryBalance.setOnClickListener {
             lifecycleScope.launch {
                 val sb = StringBuilder()
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                 showEth(sb)
                 showUsdt(sb)
                 showNfts(sb)
-                ToastUtil.show(this@MainActivity, sb.toString())
-            }
-        }
-        binding.btnGas.setOnClickListener {
-            lifecycleScope.launch {
-                val result = when (val response = DAuthSDK.instance.estimateGas(testAddress, BigInteger("1000"))) {
-                    is DAuthResult.Success -> {
-                        "预估gas费：${response.data.amountUsed}"
-                    }
-                    else -> {
-                        response.getError()
-                    }
-                }
-                ToastUtil.show(this@MainActivity, result.orEmpty())
-            }
-        }
-        binding.btnSendTransaction.setOnClickListener {
-            lifecycleScope.launch {
-                val transactionResult =
-                    DAuthSDK.instance.sendTransaction(testAddress, BigInteger("1000"))
-                var result: String? = null
-
-                when (transactionResult) {
-                    is DAuthResult.Success -> {
-                        result = "hash:${transactionResult.data.txHash}"
-                    }
-                    else -> {}
-                }
-                ToastUtil.show(this@MainActivity, "转账结果：$result")
-            }
-        }
-
-        binding.btnSetPwd.setOnClickListener {
-            showInputDialog(this)
-        }
-
-        binding.btnQueryAccount.setOnClickListener {
-            lifecycleScope.launch {
-                val accountRes = DAuthSDK.instance.queryAccountByEmail(testEmail)
-                DAuthLogger.d("用户信息：${accountRes?.data?.account}")
-            }
-        }
-
-        binding.btnBindEmail.setOnClickListener {
-            lifecycleScope.launch {
-                DAuthSDK.instance.bindEmail(testEmail,"6877")
+                loadingDialog.dismiss()
+                DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, sb.toString())
             }
         }
 
         binding.btnQueryAccountByOpenid.setOnClickListener {
-            lifecycleScope.launch {
-                val accountRes = DAuthSDK.instance.queryAccountByAuthid()
-                val hasPassword = accountRes?.data?.has_password
-                if(accountRes!= null && hasPassword == 1) {
-                    ToastUtil.show(this@MainActivity,"该账号已设置密码")
-                } else {
-                    ToastUtil.show(this@MainActivity,"该账号未设置密码")
+            queryAccountInfo(true)
+        }
+
+        binding.btnQueryAccountByMail.setOnClickListener {
+            DialogHelper.showInputDialogMayHaveLeak(
+                activity = a,
+                title = "enter email",
+                defaultValue = DemoPrefs.getLastEmail()
+            ) { mail ->
+                if (mail.isNotEmpty()) {
+                    DemoPrefs.setLastEmail(mail)
+                    lifecycleScope.launch {
+                        loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                        val accountRes = api.queryAccountByEmail(mail)
+                        loadingDialog.dismiss()
+                        val data = accountRes?.data
+                        if (data == null) {
+                            ToastUtil.show(a, "获取失败")
+                            return@launch
+                        }
+                        showAccountInfoDialog(data)
+                    }
                 }
             }
         }
 
+        binding.btnSetPwd.setOnClickListener {
+            showInputDialog()
+        }
+
+        binding.btnBindEmail.setOnClickListener {
+            DialogHelper.showInputDialogMayHaveLeak(
+                activity = a,
+                title = "input email",
+                defaultValue = DemoPrefs.getLastEmail()
+            ) { mail ->
+                if (mail.isNotEmpty()) {
+                    DemoPrefs.setLastEmail(mail)
+                    lifecycleScope.launch {
+                        loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                        val response = api.sendEmailVerifyCode(mail)
+                        loadingDialog.dismiss()
+                        if (response?.ret != 0) {
+                            return@launch
+                        }
+
+                        ToastUtil.show(a, "验证码发送成功")
+                        DialogHelper.showInputDialogMayHaveLeak(
+                            activity = a,
+                            title = "input verify code"
+                        ) { code ->
+                            if (code.isNotEmpty()) {
+                                lifecycleScope.launch {
+                                    loadingDialog.show(
+                                        supportFragmentManager,
+                                        LoadingDialogFragment.TAG
+                                    )
+                                    val result = api.bindEmail(mail, code)
+                                    loadingDialog.dismiss()
+                                    result.handleByToast()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        binding.btnCheckMail.setOnClickListener {
+            DialogHelper.showInputDialogMayHaveLeak(
+                activity = a,
+                title = "input email",
+                defaultValue = DemoPrefs.getLastEmail()
+            ) { mail ->
+                if (mail.isNotEmpty()) {
+                    DemoPrefs.setLastEmail(mail)
+                    lifecycleScope.launch {
+                        loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                        val response = api.sendEmailVerifyCode(mail)
+                        loadingDialog.dismiss()
+                        if (response?.ret != 0) {
+                            return@launch
+                        }
+
+                        ToastUtil.show(a, "验证码发送成功")
+                        DialogHelper.showInputDialogMayHaveLeak(
+                            activity = a,
+                            title = "input verify code"
+                        ) { code ->
+                            if (code.isNotEmpty()) {
+                                lifecycleScope.launch {
+                                    loadingDialog.show(
+                                        supportFragmentManager,
+                                        LoadingDialogFragment.TAG
+                                    )
+                                    val result = api.checkEmail(mail, code)
+                                    loadingDialog.dismiss()
+                                    result.handleByToast()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        binding.btnBtnWalletPage.setOnClickListener {
+            WalletTestActivity.launch(it.context)
+        }
+
         binding.btnQuit.setOnClickListener {
-            DAuthSDK.instance.logout()
+            api.logout()
             finish()
         }
 
@@ -125,40 +181,27 @@ class MainActivity : BaseActivity() {
         DAuthLogger.d("MainActivity onDestroy")
     }
 
-    private fun showInputDialog(context: Context) {
-        val inputEditText = EditText(context)
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Enter Password")
-            .setView(inputEditText)
-            .setPositiveButton("OK") { _, _ ->
-                lifecycleScope.launch {
-                    val password = inputEditText.text.toString()
-                    val param = SetPasswordParam()
-                    param.password = password
-                    val responseCode = DAuthSDK.instance.setPassword(param)
-                    if (responseCode == 0) {
-                        ToastUtil.show(this@MainActivity, "密码设置成功")
-                    } else {
-                        ToastUtil.show(
-                            this@MainActivity,
-                            "密码设置失败 errorCode == $responseCode")
-                    }
-                }
+    private fun showInputDialog() {
+        DialogHelper.showInputDialogMayHaveLeak(this, "Enter Password") { password ->
+            lifecycleScope.launch {
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                val result = api.setPassword(SetPasswordParam().apply { this.password = password })
+                loadingDialog.dismiss()
+                result.handleByToast()
             }
-            .setNegativeButton("Cancel", null)
-            .create()
-        dialog.show()
+        }
     }
 
-    private suspend fun showEth(sb: StringBuilder){
+    private suspend fun showEth(sb: StringBuilder) {
         val address = myAddress() ?: return
-        val balanceResult = DAuthSDK.instance.queryWalletBalance(address, TokenType.Eth)
+        val balanceResult = api.queryWalletBalance(address, TokenType.Eth)
         var result: String? = null
 
         when (balanceResult) {
             is DAuthResult.Success -> {
                 result = balanceResult.data.mount().toString()
             }
+
             else -> {}
         }
         sb.appendLine("eth余额：$result")
@@ -166,13 +209,15 @@ class MainActivity : BaseActivity() {
 
     private suspend fun showUsdt(sb: StringBuilder) {
         val address = myAddress() ?: return
-        val balanceResult = DAuthSDK.instance.queryWalletBalance(address, TokenType.ERC20(Web3Const.ERC20))
+        val balanceResult =
+            api.queryWalletBalance(address, TokenType.ERC20(Web3Const.ERC20))
         var result: String? = null
 
         when (balanceResult) {
             is DAuthResult.Success -> {
                 result = balanceResult.data.mount().toString()
             }
+
             else -> {}
         }
         sb.appendLine("usdt余额：$result")
@@ -180,7 +225,8 @@ class MainActivity : BaseActivity() {
 
     private suspend fun showNfts(sb: StringBuilder) {
         val address = myAddress() ?: return
-        val balance = DAuthSDK.instance.queryWalletBalance(address, TokenType.ERC721(Web3Const.ERC721))
+        val balance =
+            api.queryWalletBalance(address, TokenType.ERC721(Web3Const.ERC721))
         var result: String? = null
 
         when (balance) {
@@ -191,5 +237,59 @@ class MainActivity : BaseActivity() {
             else -> {}
         }
         sb.append("NFT余额：$result")
+    }
+
+    private fun initData() {
+        queryAccountInfo(false)
+    }
+
+    private fun queryAccountInfo(showDetail: Boolean) {
+        lifecycleScope.launch {
+            binding.tvWalletAddress.text = "AA钱包地址：${AccountManager.getAccountAddress()}"
+
+            val accountRes = api.queryAccountByAuthid()
+            val data = accountRes?.data
+            if (data == null) {
+                ToastUtil.show(this@MainActivity, "查询用户信息失败")
+                return@launch
+            }
+
+            binding.tvUserInfo.text = StringBuilder()
+                .appendLine("昵称：${data.nickname}")
+                .appendLine("邮箱：${data.email}")
+                .appendLine("电话：${data.phone}")
+
+
+
+            if (showDetail) {
+                showAccountInfoDialog(data)
+            }
+        }
+    }
+
+    private fun showAccountInfoDialog(data: AccountRes.Data) {
+        val accountInfo = StringBuilder()
+            .appendLine("account=${data.account}")
+            .appendLine("nickname=${data.nickname}")
+            .appendLine("birthday=${data.birthday}")
+            .appendLine("sex=${data.sex}")
+            .appendLine("email=${data.email}")
+            .appendLine("phone=${data.phone}")
+            .appendLine("phone_area_code=${data.phone_area_code}")
+            .appendLine("real_name=${data.real_name}")
+            .appendLine("identity=${data.identity}")
+            .appendLine("identity_Status=${data.identity_Status}")
+            .appendLine("head_img_url=${data.head_img_url}")
+            .appendLine("country=${data.country}")
+            .appendLine("province=${data.province}")
+            .appendLine("city=${data.city}")
+            .appendLine("district=${data.district}")
+            .appendLine("address=${data.address}")
+            .appendLine("user_type=${data.user_type}")
+            .appendLine("user_state=${data.user_state}")
+            .appendLine("create_time=${data.create_time}")
+            .appendLine("has_password=${data.has_password}")
+
+        DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, accountInfo.toString())
     }
 }

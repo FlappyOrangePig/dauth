@@ -7,7 +7,9 @@ import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.manager.AccountManager
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 
@@ -27,6 +29,7 @@ class LoginActivity : BaseActivity() {
         loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         initView()
+        initData()
     }
 
     private fun initView() {
@@ -51,11 +54,13 @@ class LoginActivity : BaseActivity() {
                             DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
                         }
                     }
+
                     is LoginResultData.Failure -> {
                         val failureCode = loginResultData.code
                         // 处理登录失败逻辑
                         DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
                     }
+
                     else -> {}
                 }
             }
@@ -127,11 +132,13 @@ class LoginActivity : BaseActivity() {
                     DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
                 }
             }
+
             is LoginResultData.Failure -> {
                 val failureCode = loginResultData.code
                 // 处理登录失败逻辑
                 DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
             }
+
             else -> {
                 DAuthLogger.e("用户取消授权")
             }
@@ -174,6 +181,44 @@ class LoginActivity : BaseActivity() {
                 TokenType.ERC20(Web3Const.BULL_TOKEN_CONTRACT_ADDRESS)
             )
             ToastUtil.show(this@LoginActivity, balance.toString())*/
+        }
+    }
+
+    private fun initData() {
+        performAutoLogin()
+    }
+
+    private fun performAutoLogin() {
+        lifecycleScope.launch {
+            val walletExists = AccountManager.isWalletExists()
+            if (!walletExists) {
+                return@launch
+            }
+
+            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+            val accountResult = DAuthSDK.instance.queryAccountByAuthid()
+            loadingDialog.dismiss()
+            if (accountResult == null) {
+                ToastUtil.show(this@LoginActivity, "网络错误")
+                return@launch
+            }
+
+            val ret = accountResult.ret
+            when {
+                ret == ResponseCode.RESPONSE_CORRECT_CODE -> {
+                    finish()
+                    MainActivity.launch(this@LoginActivity)
+                }
+
+                ResponseCode.isLoggedOut(ret) -> {
+                    ToastUtil.show(this@LoginActivity, "登录状态已失效 $ret")
+                    DAuthSDK.instance.logout()
+                }
+
+                else -> {
+                    ToastUtil.show(this@LoginActivity, "登录失败 $ret")
+                }
+            }
         }
     }
 }
