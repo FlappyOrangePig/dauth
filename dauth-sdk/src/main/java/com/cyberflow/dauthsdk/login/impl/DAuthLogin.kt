@@ -270,16 +270,9 @@ class DAuthLogin : ILoginApi {
      * @param phone 手机号
      * @param areaCode  区号
      */
-    override suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean {
+    override suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): BaseResponse? {
         val body = SendPhoneVerifyCodeParam(openudid = null, phone, areaCode)
-        val response = RequestApi().sendPhoneVerifyCode(body)
-        if (response?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
-            DAuthLogger.d("发送手机验证码成功")
-            return true
-        } else {
-            DAuthLogger.e("发送手机验证码失败：${response?.info}")
-        }
-        return false
+        return RequestApi().sendPhoneVerifyCode(body)
     }
 
     /**
@@ -305,16 +298,11 @@ class DAuthLogin : ILoginApi {
      * @param email 邮箱
      * @param verifyCode 邮箱验证码
      */
-    override suspend fun bindEmail(email: String, verifyCode: String) : Boolean {
+    override suspend fun bindEmail(email: String, verifyCode: String): BaseResponse? {
         val authId = prefs.getAuthId()
         val accessToken = prefs.getAccessToken()
         val body = BindEmailParam(authId, email, verifyCode, accessToken)
-        val response = RequestApi().bindEmail(body)
-        if(response?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
-            return true
-        }
-        DAuthLogger.e("绑定邮箱失败 errorCode == ${response?.ret}")
-        return false
+        return RequestApi().bindEmail(body)
     }
 
     /**
@@ -341,10 +329,8 @@ class DAuthLogin : ILoginApi {
      * @param passWord 密码
      * 设置密码
      */
-    override suspend fun setPassword(passwordParam: SetPasswordParam): Int? {
-        val didToken = prefs.getDidToken()
-        DAuthLogger.e("设置密码时传的didToken:"+didToken)
-        return RequestApi().setPassword(passwordParam, didToken)?.ret
+    override suspend fun setPassword(passwordParam: SetPasswordParam): BaseResponse? {
+        return RequestApi().setPassword(passwordParam)
     }
 
     /**
@@ -370,5 +356,13 @@ class DAuthLogin : ILoginApi {
         val accessToken = prefs.getAccessToken()
         val body = QueryByAuthIdParam(authId, accessToken)
         return RequestApi().queryByAuthId(body)
+    }
+
+    override suspend fun checkEmail(email: String, verifyCode: String): BaseResponse? {
+        val body = CheckEmailParam(
+            email,
+            verifyCode
+        )
+        return RequestApi().checkEmail(body)
     }
 }

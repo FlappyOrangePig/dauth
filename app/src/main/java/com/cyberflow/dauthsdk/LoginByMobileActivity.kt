@@ -34,7 +34,7 @@ class LoginByMobileActivity: BaseActivity() {
         initView()
     }
 
-    fun initView() {
+    private fun initView() {
         binding.tvSendCode.setOnClickListener {
             val phone = binding.edtAccount.text.toString()
             lifecycleScope.launch {

@@ -23,7 +23,7 @@ object RelayerRequester {
 
     private val useDevServer get() = DAuthSDK.impl.config.useDevRelayerServer
     private val url = if (useDevServer) {
-        "http://172.16.12.117:8888/relayer/committrans"
+        "http://172.16.12.170:8888/relayer/committrans"
     } else {
         ConfigurationManager.urls().relayerUrl
     }

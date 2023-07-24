@@ -24,10 +24,9 @@ import com.cyberflow.dauthsdk.login.model.BindEmailParam
 import com.cyberflow.dauthsdk.login.model.BindPhoneParam
 import com.cyberflow.dauthsdk.login.model.BindRealInfoParam
 import com.cyberflow.dauthsdk.login.model.BindWalletParam
+import com.cyberflow.dauthsdk.login.model.CheckEmailParam
 import com.cyberflow.dauthsdk.login.model.CreateAccountParam
 import com.cyberflow.dauthsdk.login.model.CreateAccountRes
-import com.cyberflow.dauthsdk.login.model.GetParticipantsParam
-import com.cyberflow.dauthsdk.login.model.GetParticipantsRes
 import com.cyberflow.dauthsdk.login.model.LoginParam
 import com.cyberflow.dauthsdk.login.model.LoginRes
 import com.cyberflow.dauthsdk.login.model.LogoutParam
@@ -49,10 +48,12 @@ import com.cyberflow.dauthsdk.login.model.TokenAuthenticationRes
 import com.cyberflow.dauthsdk.login.model.UnbindEmailParam
 import com.cyberflow.dauthsdk.login.model.UnbindPhoneParam
 import com.cyberflow.dauthsdk.login.model.UpdateBaseInfoParam
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 
 private const val USER_TYPE_OF_EMAIL = 10
 private const val USER_TYPE_OF_PHONE = 60
+private const val AUTHORIZATION = "Authorization"
+
+
 class RequestApi : ApiClient() {
 
     /**
@@ -65,7 +66,7 @@ class RequestApi : ApiClient() {
     suspend fun ownAuthorize(body: AuthorizeParam, didToken: String): AuthorizeRes? {
         val localVariableConfig = RequestConfig(
             reqUrl = ReqUrl.PathUrl("/account/v1/oauth2/auth"),
-            headers = mapOf("Authorization" to didToken)
+            headers = mapOf(AUTHORIZATION to didToken)
         )
         return request<AuthorizeRes>(localVariableConfig, body)
     }
@@ -195,7 +196,7 @@ class RequestApi : ApiClient() {
     ): TokenAuthenticationRes? {
         val localVariableConfig = RequestConfig(
             ReqUrl.PathUrl("/account/v1/oauth2/token"),
-            headers = mapOf("Authorization" to didToken.orEmpty())
+            headers = mapOf(AUTHORIZATION to didToken.orEmpty())
         )
         return request<TokenAuthenticationRes>(localVariableConfig, body)
     }
@@ -355,10 +356,16 @@ class RequestApi : ApiClient() {
      * 设置密码
      * @param body password 密码 Authorization 登录后的didtoken
      */
-    suspend fun setPassword(body: SetPasswordParam, didToken: String?): BaseResponse? {
+    suspend fun setPassword(body: SetPasswordParam): BaseResponse? {
         val headers = RequestConfig(
-            ReqUrl.PathUrl("/account/v1/password/set"),
-            headers = mapOf("Authorization" to didToken.orEmpty())
+            ReqUrl.PathUrl("/account/v1/password/set")
+        )
+        return request<BaseResponse>(headers, body)
+    }
+
+    suspend fun checkEmail(body: CheckEmailParam): BaseResponse? {
+        val headers = RequestConfig(
+            ReqUrl.PathUrl("/account/v1/email/check")
         )
         return request<BaseResponse>(headers, body)
     }

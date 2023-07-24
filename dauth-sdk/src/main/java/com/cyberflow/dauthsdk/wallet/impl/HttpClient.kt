@@ -34,10 +34,10 @@ object HttpClient {
         connectTimeout(10, TimeUnit.SECONDS)
         readTimeout(10, TimeUnit.SECONDS)
         writeTimeout(10, TimeUnit.SECONDS)
-        addInterceptor(HttpLoggingInterceptor { message ->
+        addInterceptor(okhttp3.logging.HttpLoggingInterceptor { message ->
             DAuthLogger.d(message, TAG)
         }.apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
             redactHeader.forEach {
                 redactHeader(it)
             }

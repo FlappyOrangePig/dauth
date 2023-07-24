@@ -7,6 +7,7 @@
     <string name="sign">签名</string>
     <string name="success">成功</string>
     <string name="failure">失败</string>
+    <string name="network_error">网络错误</string>
     <string name="create_aa">创建aa</string>
     <string name="transfer_money_to_aa">给aa转钱</string>
 </resources>
