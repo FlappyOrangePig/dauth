@@ -1,16 +1,11 @@
 package com.cyberflow.dauthsdk.mpc
 
 import androidx.annotation.Keep
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.mpc.ext.runSpending
-import com.cyberflow.dauthsdk.wallet.ext.app
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.cleanHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.prependHexPrefix
 import com.cyberflow.dauthsdk.wallet.util.sha3
-import com.cyberflow.dauthsdk.wallet.util.sha3String
 import com.cyberflow.dauthsdk.wallet.util.toHexString
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -21,14 +16,6 @@ import kotlin.random.Random
 
 private const val TAG = "DAuthJniInvoker"
 
-private fun ByteArray.printable(): String {
-    val sb = StringBuilder()
-    for (b in this) {
-        sb.append(String.format("%02X ", b))
-    }
-    return sb.toString()
-}
-
 /**
  * 使用kotlin进行调用，方便使用内联函数
  */
@@ -38,7 +25,6 @@ object DAuthJniInvoker {
     private val jni by lazy { DAuthJni.getInstance() }
 
     fun initialize(){
-
         Thread {
             DAuthLogger.d(">>> thread", TAG)
             initializeInner()
@@ -52,46 +38,7 @@ object DAuthJniInvoker {
     private fun initializeInner() {
         jni.init()
 
-        val keystore = Managers.mpcKeyStore
-        val keyInSp = keystore.getAllKeys()/*.let { emptyList<String>() }*/
-        val keys = if (keyInSp.isEmpty()) {
-            runSpending(TAG, "generateSignKeys") {
-                generateSignKeys().also {
-                    keystore.setAllKeys(it.toList())
-                }
-            }
-        } else {
-            keyInSp.toTypedArray()
-        }
-        /*runSpending(TAG, "refreshKeys") {
-            jni.refreshKeys(MpcKeyIds.getKeyIds(), keys)
-        }*/
-
         val msg = genRandomMsg()
-        val msgHash = msg.sha3String().cleanHexPrefix()
-
-        /*runSpending(TAG, "localSign") {
-            val account = generateEoaAddress(msg, keys)
-            DAuthLogger.d("localSign account=$account", TAG)
-        }*/
-
-        /*runSpending("remoteSignMsg") {
-            DAuthLogger.d("remoteSignMsg msgHash=$msgHash", TAG)
-            val byteArrayList = ArrayList<JniOutBuffer>()
-            jni.remoteSignMsg(
-                msgHash,
-                keys[0],
-                MpcKeyIds.getLocalId(),
-                MpcKeyIds.getRemoteIdsToSign(),
-                byteArrayList
-            )
-            val returnedBytes = if (byteArrayList.isNotEmpty()){
-                byteArrayList.first().bytes
-            } else{
-                null
-            }
-            DAuthLogger.d("outBuffer[${returnedBytes?.size}]=${returnedBytes?.printable()}", TAG)
-        }*/
 
         // 模拟多轮签名
         LocalMpcSign.mpcSign(msg)

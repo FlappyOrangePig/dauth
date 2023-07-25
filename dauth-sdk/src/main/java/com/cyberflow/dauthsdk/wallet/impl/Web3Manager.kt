@@ -2,16 +2,17 @@ package com.cyberflow.dauthsdk.wallet.impl
 
 import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
-import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.entity.Web3jResponseError
+import com.cyberflow.dauthsdk.mpc.ext.ElapsedContext
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.websocket.WebsocketManager
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
@@ -371,18 +372,27 @@ object Web3Manager {
         val faAddress = addresses.factoryAddress
         val entryPointAddress = addresses.entryPointAddress
 
-        val gasPrice =
-            web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
+        val context = ElapsedContext(TAG)
+
+        val gasPrice = context.runSpending("getGasPrice") {
+            web3j.ethGasPrice().awaitLite { it.gasPrice }
+        }
         DAuthLogger.d("gasPrice=$gasPrice", TAG)
+        if (gasPrice == null) {
+            DAuthLogger.e("gas error")
+            return DAuthResult.SdkError()
+        }
 
-        val entryPoint = EntryPoint.load(
-            entryPointAddress,
-            web3j,
-            transactionManager(eoaAddress),
-            StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
-        )
-
-        val nonce = entryPoint.getNonce(aaAddress, BigInteger.ZERO).awaitLite()
+        val nonce = context.runSpending("getNonce") {
+            val entryPoint = EntryPoint.load(
+                entryPointAddress,
+                web3j,
+                transactionManager(eoaAddress),
+                StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
+            )
+            val nonce = entryPoint.getNonce(aaAddress, BigInteger.ZERO).awaitLite()
+            nonce
+        }
         DAuthLogger.d("nonce=$nonce")
         if (nonce == null) {
             DAuthLogger.e("nonce error")
@@ -392,82 +402,99 @@ object Web3Manager {
         val noTransactions = nonce.noTransactions()
         DAuthLogger.d("noTransactions=$noTransactions")
 
-        val isDeployed = isCodeDeployed(aaAddress)
+        val isDeployed = context.runSpending("isDeployed") {
+            isCodeDeployed(aaAddress)
+        }
+        DAuthLogger.d("isDeployed=$isDeployed")
         if (isDeployed == null) {
             DAuthLogger.e("not deployed")
             return DAuthResult.SdkError()
         }
 
-        DAuthLogger.d("isDeployed=$isDeployed")
-        val initCode = if (noTransactions && !isDeployed) {
-            // 创建新aa账号
-            DAuthLogger.d("deploy aa account", TAG)
+        val initCode = context.runSpending("createInitCode") {
+            if (noTransactions && !isDeployed) {
+                // 创建新aa账号
+                DAuthLogger.d("deploy aa account", TAG)
 
-            // 生成initCode
-            // initCode需要把工厂地址和方法打在一起
-            val funcCreateAccount = FunctionEncodeUtil.getCreateAccountFunction(eoaAddress)
-            val initCodeHex = encodePacked(Address(faAddress), DynamicBytes(funcCreateAccount))
-            DAuthLogger.d("initCodeHex=$initCodeHex", TAG)
-            initCodeHex.hexStringToByteArray()
-        } else {
-            // 创建新aa账号
-            DAuthLogger.d("aa account exists", TAG)
-            byteArrayOf()
+                // 生成initCode
+                // initCode需要把工厂地址和方法打在一起
+                val funcCreateAccount = FunctionEncodeUtil.getCreateAccountFunction(eoaAddress)
+                val initCodeHex = encodePacked(Address(faAddress), DynamicBytes(funcCreateAccount))
+                DAuthLogger.d("initCodeHex=$initCodeHex", TAG)
+                initCodeHex.hexStringToByteArray()
+            } else {
+                // 创建新aa账号
+                DAuthLogger.d("aa account exists", TAG)
+                byteArrayOf()
+            }
         }
 
         // 构造创建AA账号的userOperation
-        val userOperation = UserOperation(
-            aaAddress,
-            nonce,
-            initCode,
-            callData,
-            BigInteger.ZERO,
-            BigInteger.ZERO,
-            BigInteger.ZERO,
-            gasPrice,
-            gasPrice,
-            byteArrayOf(),
-            byteArrayOf()
-        )
-        DAuthLogger.d("initCode=${userOperation.initCode.sha3().toHexString()}", TAG)
-        DAuthLogger.d("callData=${userOperation.callData.sha3().toHexString()}", TAG)
-        DAuthLogger.d(
-            "paymasterAndData=${userOperation.paymasterAndData.sha3().toHexString()}",
-            TAG
-        )
+        val userOperation = context.runSpending("createUserOperation") {
+            UserOperation(
+                aaAddress,
+                nonce,
+                initCode,
+                callData,
+                BigInteger.ZERO,
+                BigInteger.ZERO,
+                BigInteger.ZERO,
+                gasPrice,
+                gasPrice,
+                byteArrayOf(),
+                byteArrayOf()
+            ).also { userOp ->
+                DAuthLogger.d("initCode=${userOp.initCode.sha3().toHexString()}", TAG)
+                DAuthLogger.d("callData=${userOp.callData.sha3().toHexString()}", TAG)
+                DAuthLogger.d(
+                    "paymasterAndData=${userOp.paymasterAndData.sha3().toHexString()}",
+                    TAG
+                )
+            }
+        }
 
-        // 预估费用
-        val funcSimulateHandleOp = FunctionEncodeUtil.getSimulateHandleOpFunction(userOperation)
-        val funcSimulateHandleOpHex = funcSimulateHandleOp.toHexString()
-        val funcCallTx = Transaction.createFunctionCallTransaction(null, null, null, null, entryPointAddress, funcSimulateHandleOpHex)
-        val gasException = web3j.ethEstimateGas(funcCallTx).awaitException()
+        val gasException = context.runSpending("getGasException") {
+            // 预估费用
+            val funcSimulateHandleOp = FunctionEncodeUtil.getSimulateHandleOpFunction(userOperation)
+            val funcSimulateHandleOpHex = funcSimulateHandleOp.toHexString()
+            val funcCallTx = Transaction.createFunctionCallTransaction(null, null, null, null, entryPointAddress, funcSimulateHandleOpHex)
+            val gasException = web3j.ethEstimateGas(funcCallTx).awaitException()
+            gasException
+        }
         DAuthLogger.d("gasException=$gasException", TAG)
         if (gasException == null) {
             DAuthLogger.e("estimate gas error", TAG)
             return DAuthResult.SdkError()
         }
-        val estimateInfo = getEstimateInfo(gasException)
+        val estimateInfo = context.runSpending("getEstimateInfo") {
+            getEstimateInfo(gasException)
+        }
         if (estimateInfo == null) {
             DAuthLogger.e("estimateInfo error", TAG)
             return DAuthResult.SdkError()
         }
-        val estimateData = estimateInfo.cleanHexPrefix()
-        val verificationGasLimit = Numeric.toBigInt(estimateData.substring(8, 8 + 64))
-        val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64))
-        DAuthLogger.d("estimateData=$estimateData", TAG)
-        DAuthLogger.d("verificationGasLimit=$verificationGasLimit", TAG)
-        DAuthLogger.d("callGasLimit=$callGasLimit", TAG)
 
-        userOperation.verificationGasLimit = verificationGasLimit
-        userOperation.callGasLimit = callGasLimit.multiply(BigInteger("10"))
+        val successResult = context.runSpending("create success result") {
+            val estimateData = estimateInfo.cleanHexPrefix()
+            val verificationGasLimit = Numeric.toBigInt(estimateData.substring(8, 8 + 64))
+            val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64))
+            DAuthLogger.d("estimateData=$estimateData", TAG)
+            DAuthLogger.d("verificationGasLimit=$verificationGasLimit", TAG)
+            DAuthLogger.d("callGasLimit=$callGasLimit", TAG)
 
-        return DAuthResult.Success(
-            CreateUserOpAndEstimateGasData(
-                verificationGasLimit.multiply(gasPrice),
-                callGasLimit.multiply(gasPrice),
-                userOp = userOperation
+            userOperation.verificationGasLimit = verificationGasLimit
+            userOperation.callGasLimit = callGasLimit.multiply(BigInteger("10"))
+
+            DAuthResult.Success(
+                CreateUserOpAndEstimateGasData(
+                    verificationGasLimit.multiply(gasPrice),
+                    callGasLimit.multiply(gasPrice),
+                    userOp = userOperation
+                )
             )
-        )
+        }
+        context.traceElapsedList()
+        return successResult
     }
 
     suspend fun executeUserOperation(
@@ -476,7 +503,9 @@ object Web3Manager {
     ): DAuthResult<String> {
         DAuthLogger.d("executeUserOperation useOp=$userOperation", TAG)
 
-        val balanceResult = getBalance(aaAddress)
+        val context = ElapsedContext(TAG)
+
+        val balanceResult = context.runSpending("getBalance") { getBalance(aaAddress) }
         if (balanceResult !is DAuthResult.Success) {
             DAuthLogger.e("balance error")
             return DAuthResult.SdkError()
@@ -495,7 +524,7 @@ object Web3Manager {
         val addresses = ConfigurationManager.addresses()
         val entryPointAddress = addresses.entryPointAddress
 
-        val code = userOperation.encodeUserOp()
+        val code = context.runSpending("encodeUserOp") { userOperation.encodeUserOp() }
         DAuthLogger.d("code=$code", TAG)
         val codeHash = code.sha3()
         DAuthLogger.d("codeHash=$codeHash", TAG)
@@ -505,35 +534,48 @@ object Web3Manager {
             DAuthLogger.d("chainId error", TAG)
             return DAuthResult.SdkError()
         }
-        val relCode = encodeRelCode(
-            codeHash,
-            entryPointAddress,
-            chainId
-        )
+        val relCode = context.runSpending("encodeRelCode") {
+            encodeRelCode(
+                codeHash,
+                entryPointAddress,
+                chainId
+            )
+        }
 
         DAuthLogger.d("relCode=$relCode", TAG)
         val hash = relCode.sha3()
         DAuthLogger.d("hash=$hash", TAG)
 
-        val ethMsgHash = SignUtil.getMessageHash(hash.hexStringToByteArray(), true)
+        val ethMsgHash = context.runSpending("getMessageHash") {
+            SignUtil.getMessageHash(
+                hash.hexStringToByteArray(),
+                true
+            )
+        }
         val ethMsgHashHex = ethMsgHash.toHexString()
         DAuthLogger.d("toBeSignedHex=$ethMsgHashHex", TAG)
 
-        val localSign = DAuthSDK.impl.config.localSign
-        val signatureData = if (localSign) {
-            // 本地2片签
-            DAuthJniInvoker.localSignMsg(ethMsgHashHex, Managers.mpcKeyStore.getAllKeys().toTypedArray())!!
-                .toSignatureData()
+        val signatureData = context.runSpending("sign") {
+            val localSign = DAuthSDK.impl.config.localSign
+            if (localSign) {
+                // 本地2片签
+                DAuthJniInvoker.localSignMsg(
+                    ethMsgHashHex,
+                    Managers.mpcKeyStore.getAllKeys().toTypedArray()
+                )!!
+                    .toSignatureData()
 
-            // 模拟多轮签名
-            //LocalMpcSign.mpcSign(ethMsgHashHex)
-        } else if (true) {
-            // mpc签
-            WebsocketManager.instance.mpcSign(ethMsgHashHex)
-        } else {
-            // 本地内置密钥普通签
-            val privateKey = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
-            SignUtil.signMessage(ethMsgHash, Credentials.create(privateKey).ecKeyPair)
+                // 模拟多轮签名
+                //LocalMpcSign.mpcSign(ethMsgHashHex)
+            } else if (true) {
+                // mpc签
+                WebsocketManager.instance.mpcSign(ethMsgHashHex)
+            } else {
+                // 本地内置密钥普通签
+                val privateKey =
+                    "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
+                SignUtil.signMessage(ethMsgHash, Credentials.create(privateKey).ecKeyPair)
+            }
         }
         if (signatureData == null) {
             DAuthLogger.e("mpc sign error")
@@ -541,10 +583,12 @@ object Web3Manager {
         }
 
         val signature = signatureData.r + signatureData.s + signatureData.v
-        val signer = DAuthJniInvoker.getWalletAddress(
-            ethMsgHash,
-            signatureData
-        )
+        val signer = context.runSpending("getSigner") {
+            DAuthJniInvoker.getWalletAddress(
+                ethMsgHash,
+                signatureData
+            )
+        }
         if (signer == null){
             DAuthLogger.e("signer error")
             return DAuthResult.SdkError()
@@ -559,9 +603,13 @@ object Web3Manager {
 
         val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
         if (useLocalRelayer) {
-            val gasPrice =
-                web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
+            val gasPrice = context.runSpending("getPrice"){
+                web3j.ethGasPrice().awaitLite { it.gasPrice }
+            }
             DAuthLogger.d("gasPrice=$gasPrice", TAG)
+            if (gasPrice == null) {
+                return DAuthResult.SdkError()
+            }
 
             // 部署aa账号的eoa账号地址，最终部署在服务端，entryPoint的TransactionManager需要
             val relayerEoaAddress = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
@@ -572,9 +620,10 @@ object Web3Manager {
                 StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
             )
 
-            val receipt = entryPointDeploy.handleOp(userOpCopy).awaitLite()
+            val receipt = context.runSpending("handleOp") {
+                entryPointDeploy.handleOp(userOpCopy).awaitLite()
+            }
             DAuthLogger.d("handleOp receipt=$receipt", TAG)
-
             val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
             DAuthLogger.d("transactionHash=$transactionHash", TAG)
             return DAuthResult.Success(transactionHash)
@@ -591,6 +640,7 @@ object Web3Manager {
                     DAuthResult.SdkError()
                 }
             }
+            context.traceElapsedList()
             return DAuthResult.Success(sendResult.info)
         }
     }

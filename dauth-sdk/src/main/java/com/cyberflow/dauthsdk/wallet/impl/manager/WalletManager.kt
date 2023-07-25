@@ -10,6 +10,7 @@ import com.cyberflow.dauthsdk.login.network.RequestApiMpc
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcServers
+import com.cyberflow.dauthsdk.mpc.ext.ElapsedContext
 import com.cyberflow.dauthsdk.wallet.ext.digest
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.CreateWalletTask
 import com.cyberflow.dauthsdk.wallet.impl.manager.task.RestoreWalletTask
@@ -62,6 +63,8 @@ class WalletManager internal constructor() {
         DAuthLogger.d("createWallet", TAG)
         val mpcApi = RequestApiMpc()
 
+        val context = ElapsedContext(TAG)
+
         val state = getState()
         DAuthLogger.d("state=$state", TAG)
         // 钱包已OK，不需要创建
@@ -71,7 +74,7 @@ class WalletManager internal constructor() {
         }
 
         // 拉取MPC服务器信息
-        val participantsResult = MpcServers.getServers()
+        val participantsResult = context.runSpending("getParticipants") { MpcServers.getServers() }
         if (participantsResult == null) {
             DAuthLogger.d("participantsResult error", TAG)
             return DAuthResult.SdkError()
@@ -88,7 +91,10 @@ class WalletManager internal constructor() {
                 }
 
                 STATE_INIT -> {
-                    when (val keysResult = getKeysToRestore(mpcApi, participants)) {
+                    val keysResult = context.runSpending("getRestoreKeyInfo") {
+                        getKeysToRestore(mpcApi, participants)
+                    }
+                    when (keysResult) {
                         is KeysToRestoreResult.NetworkError -> {
                             DAuthLogger.e("network error when check restore", TAG)
                             return DAuthResult.SdkError()
@@ -114,10 +120,12 @@ class WalletManager internal constructor() {
 
         return if (restoreKeyInfo != null) {
             RestoreWalletTask(
+                context,
                 restoreKeyInfo
             ).execute()
         } else {
             CreateWalletTask(
+                context,
                 loginPrefs,
                 participants
             ).execute()
