@@ -25,6 +25,7 @@ class ThirdPlatformLogin private constructor() {
         val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
         if (authorizeToken2Res?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = authorizeToken2Res.data?.didToken.orEmpty()
+            DAuthLogger.d("第三方登录后的didToken:  $didToken")
             val googleUserInfo = JwtDecoder().decoded(didToken)
             val accessToken = authorizeToken2Res.data?.accessToken.orEmpty()
             DAuthLogger.d("第三方登录后获取的accessToken：$accessToken")

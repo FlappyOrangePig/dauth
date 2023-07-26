@@ -327,9 +327,13 @@ class DAuthLogin : ILoginApi {
 
     /**
      * @param passWord 密码
-     * 设置密码
+     * 设置登录密码
      */
     override suspend fun setPassword(passwordParam: SetPasswordParam): BaseResponse? {
+        val accessToken = prefs.getAccessToken()
+        val authid = prefs.getAuthId()
+        passwordParam.access_token = accessToken
+        passwordParam.authid = authid
         return RequestApi().setPassword(passwordParam)
     }
 
