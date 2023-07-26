@@ -26,53 +26,42 @@
         android:layout_marginTop="50dp"/>
 
     <EditText
+        style="@style/Theme.client.EditText"
         android:id="@+id/edt_account"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:paddingStart="20dp"
         android:hint="输入账号"
-        android:singleLine="true"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:background="@drawable/account_btn_shape"
         app:layout_constraintTop_toBottomOf="@id/tv_dauth_register"
         android:layout_marginTop="20dp"/>
 
     <EditText
+        style="@style/Theme.client.EditText"
         android:id="@+id/edt_password"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:paddingStart="20dp"
         android:hint="输入密码"
         android:inputType="textPassword"
-        android:singleLine="true"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:background="@drawable/account_btn_shape"
         app:layout_constraintTop_toBottomOf="@id/edt_account"
         android:layout_marginTop="20dp"/>
 
     <EditText
+        style="@style/Theme.client.EditText"
         android:id="@+id/edt_ensure_password"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:paddingStart="20dp"
         android:hint="确认密码"
         android:inputType="textPassword"
-        android:singleLine="true"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:background="@drawable/account_btn_shape"
         app:layout_constraintTop_toBottomOf="@id/edt_password"
         android:layout_marginTop="20dp"/>
 
     <Button
+        style="@style/Theme.client.BlueButton"
         android:id="@+id/btn_dauth_register"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -80,8 +69,6 @@
         android:layout_marginEnd="50dp"
         android:text="注册"
         android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:background="@drawable/allow_btn_shape"
         app:layout_constraintTop_toBottomOf="@id/edt_ensure_password"
         android:layout_marginBottom="50dp"
         android:layout_marginTop="30dp"

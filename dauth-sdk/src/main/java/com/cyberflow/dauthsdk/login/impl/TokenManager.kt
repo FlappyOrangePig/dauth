@@ -18,6 +18,7 @@ internal class TokenManager private constructor() {
     }
 
     private val prefs get() = Managers.loginPrefs
+    private val requestApi get() = Managers.requestApi
 
     private suspend fun refreshToken(): RefreshTokenParamRes? {
         // 刷新token
@@ -25,22 +26,21 @@ internal class TokenManager private constructor() {
         val userType = prefs.getUserType()
         val refreshToken = prefs.getRefreshToken()
         val body = RefreshTokenParam(authId, userType, refreshToken)
-        return RequestApi().refreshToken(body)
+        return requestApi.refreshToken(body)
     }
 
-    internal suspend fun <T> authenticatedRequest(request: (accessToken: String?) -> T?): T? {
-        val accessToken = prefs.getAccessToken()
-        DAuthLogger.e("TokenManager accessToken is valid: ${accessToken.maskSensitiveData()}")
-        val response = request(accessToken)
+    internal suspend fun <T> authenticatedRequest(request: () -> T?): T? {
+        val response = request()
         val baseResponse = response as? BaseResponse ?: return null
         if (baseResponse.ret == ResponseCode.TOKEN_IS_INVALIDATE) {
             val refreshResponse = refreshToken()
-            if (refreshResponse?.ret == 0) {
+            if (refreshResponse != null && refreshResponse.isSuccess()) {
                 val newAccessToken = refreshResponse.data?.accessToken
                 val newRefreshToken = refreshResponse.data?.refreshToken
                 val expireTime = refreshResponse.data?.expireIn
+                DAuthLogger.d("save new token:${newAccessToken?.maskSensitiveData()}")
                 prefs.putLoginInfo(newAccessToken, refreshToken = newRefreshToken, expireTime = expireTime)
-                return request(newAccessToken)
+                return request()
             }
         }
         return response

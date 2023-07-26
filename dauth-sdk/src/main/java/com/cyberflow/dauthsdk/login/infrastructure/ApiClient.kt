@@ -7,6 +7,7 @@ import com.cyberflow.dauthsdk.login.model.IAuthorizationRequest
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.SignUtils
 import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
+import com.cyberflow.dauthsdk.wallet.impl.ConfigurationManager
 import com.cyberflow.dauthsdk.wallet.impl.HttpClient
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import kotlinx.coroutines.*
@@ -20,10 +21,8 @@ import java.util.regex.Pattern
 
 
 //账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter
-open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
+open class ApiClient {
     companion object {
-        internal const val BASE_TEST_URL = "https://api-dev.infras.online"
-        internal const val BASE_FORMAL_URL = "https://api.infras.online/"
         protected const val ContentType = "Content-Type"
         protected const val Accept = "Accept"
         protected const val JsonMediaType = "application/json"
@@ -31,9 +30,6 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
 
         private val clientId get() = DAuthSDK.impl.config.clientId.orEmpty()
         private val clientSecret get() = DAuthSDK.impl.config.clientSecret.orEmpty()
-        protected val didToken get() = Managers.loginPrefs.getDidToken()
-        protected val authId get() = Managers.loginPrefs.getAuthId()
-        protected val accessToken get() = Managers.loginPrefs.getAccessToken()
 
         @JvmStatic
         var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
@@ -45,6 +41,12 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
             )
         )
     }
+
+    private val loginPrefs get() = Managers.loginPrefs
+    protected val baseUrl get() = ConfigurationManager.urls().baseUrl
+    protected val didToken get() = loginPrefs.getDidToken()
+    protected val authId get() = loginPrefs.getAuthId()
+    protected val accessToken get() = loginPrefs.getAccessToken()
 
     protected inline fun <reified T> requestBody(
         content: T,
@@ -61,7 +63,8 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
             @Suppress("UNCHECKED_CAST")
             val map = SignUtils.objToMap(content)
 
-            if (content is IAccessTokenRequest) {
+            val needAccessToken = content is IAccessTokenRequest || hasAccessToken(content)
+            if (needAccessToken) {
                 map["authid"] = authId
                 map["access_token"] = accessToken
             }
@@ -134,15 +137,7 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
     ): T? = withContext(Dispatchers.IO) {
         runCatchingWithLogSuspend {
             if (auth) {
-                TokenManager.instance.authenticatedRequest { accessToken ->
-                    try {
-                        val accessTokenFields = body::class.java.getDeclaredField("access_token")
-                        accessTokenFields.isAccessible = true
-                        accessTokenFields.set(body, accessToken.orEmpty())
-                        accessTokenFields.isAccessible = false
-                    } catch (t: Throwable) {
-                        DAuthLogger.e(t.stackTraceToString())
-                    }
+                TokenManager.instance.authenticatedRequest {
                     requestInner(requestConfig, body)
                 }
             } else {
@@ -246,4 +241,16 @@ open class ApiClient(val baseUrl: String = BASE_TEST_URL) {
 
         return File.createTempFile(prefix, suffix);
     }
+
+    protected fun hasAccessToken(obj: Any?): Boolean {
+        obj ?: return false
+        val fields = obj.javaClass.declaredFields
+        for (field in fields) {
+            if (field.name == "access_token") {
+                return true
+            }
+        }
+        return false
+    }
 }
+

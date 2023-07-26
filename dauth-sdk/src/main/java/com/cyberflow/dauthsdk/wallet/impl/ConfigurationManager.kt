@@ -1,14 +1,13 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
+private const val ARBITRUM_TEST = "https://arbitrum-goerli.public.blastapi.io/"
+private const val HOST_DEV = "api-dev.infras.online"
+private const val HOST_TEST = "api-test.infras.online"
+
 internal object ConfigurationManager {
-    private fun configuration() = Test
+    private fun configuration() = Dev
     internal fun urls() = configuration().getServerUrls
     internal fun addresses() = configuration().getAddress
-
-    /**
-     * 测试开关
-     */
-    internal const val saveAllKeys = true
 }
 
 internal interface DAuthConfiguration {
@@ -22,26 +21,26 @@ internal interface DAuthAddress {
 }
 
 internal interface DAuthServerUrls {
+    val baseUrlHost: String
     val providerRpc: String
-    val webSocketUrl: String
-    val relayerUrl: String
+    val baseUrl: String get() = "https://${baseUrlHost}"
+    val webSocketUrl: String get() = "wss://${baseUrlHost}/mpc/sign"
+    val relayerUrl: String get() = "${baseUrl}/relayer/committrans"
 }
 
 private object Dev : DAuthConfiguration {
     override val getAddress: DAuthAddress = object : DAuthAddress {
         override val factoryAddress: String
-            get() = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+            get() = "0x3feB9a9B764A54B46dB90c74001694329A90F2D5"
         override val entryPointAddress: String
-            get() = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+            get() = "0x809a09b33DbF8730eACbDcAc945bA8e6299b2C49"
     }
 
     override val getServerUrls: DAuthServerUrls = object : DAuthServerUrls {
+        override val baseUrlHost: String
+            get() = HOST_DEV
         override val providerRpc: String
-            get() = "http://172.16.13.155:8545"
-        override val webSocketUrl: String
-            get() = "ws://api-dev.infras.online/mpc/sign"
-        override val relayerUrl: String
-            get() = "https://api-dev.infras.online/relayer/committrans"
+            get() = ARBITRUM_TEST
     }
 }
 
@@ -54,12 +53,10 @@ private object Test : DAuthConfiguration {
     }
 
     override val getServerUrls: DAuthServerUrls = object : DAuthServerUrls {
+        override val baseUrlHost: String
+            get() = HOST_TEST
         override val providerRpc: String
-            get() = "https://arbitrum-goerli.public.blastapi.io/"
-        override val webSocketUrl: String
-            get() = "ws://api-dev.infras.online/mpc/sign"
-        override val relayerUrl: String
-            get() = "https://api-dev.infras.online/relayer/committrans"
+            get() = ARBITRUM_TEST
     }
 }
 

@@ -9,8 +9,6 @@ import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
 import com.cyberflow.dauthsdk.login.model.GetSecretKeyRes
 import com.cyberflow.dauthsdk.login.model.SetSecretKeyParam
 import com.cyberflow.dauthsdk.login.model.SetSecretKeyRes
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 
 object MpcServiceConst {
     const val NotAllowedError = 2000000
@@ -28,25 +26,16 @@ object MpcServiceConst {
     const val MpcSecretAlreadyBoundError = 2000011
 }
 
-class RequestApiMpc : ApiClient() {
-    private val loginPrefs get() = Managers.loginPrefs
-    private val accessToken get() = loginPrefs.getAccessToken()
-    private val authId get() = loginPrefs.getAuthId()
+class RequestApiMpc internal constructor(): ApiClient() {
 
     suspend fun getParticipants(): GetParticipantsRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/wallet/v1/participants/get"))
-        val param = GetParticipantsParam(
-            access_token = accessToken,
-            authid = authId
-        )
-        return request<GetParticipantsRes>(localVariableConfig, param, true)
+        return request<GetParticipantsRes>(localVariableConfig, GetParticipantsParam(), true)
     }
 
     suspend fun setKey(url: String, key: String, mergeResult: String?): SetSecretKeyRes? {
         val localVariableConfig = RequestConfig(reqUrl = ReqUrl.WholePathUrl(url))
         val param = SetSecretKeyParam(
-            access_token = accessToken,
-            authid = authId,
             keyshare = key,
             keyresult = mergeResult
         )
@@ -56,8 +45,6 @@ class RequestApiMpc : ApiClient() {
     suspend fun getKey(url: String, type: Int): GetSecretKeyRes? {
         val localVariableConfig = RequestConfig(reqUrl = ReqUrl.WholePathUrl(url))
         val param = GetSecretKeyParam(
-            access_token = accessToken,
-            authid = authId,
             type
         )
         return request<GetSecretKeyRes>(localVariableConfig, param, true)

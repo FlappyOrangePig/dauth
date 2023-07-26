@@ -12,7 +12,7 @@ import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 
 class ThirdPlatformLogin private constructor() {
 
-    private val prefs get() = Managers.loginPrefs
+    private val requestApi get() = Managers.requestApi
 
     companion object {
         val instance by lazy {
@@ -22,7 +22,7 @@ class ThirdPlatformLogin private constructor() {
 
     suspend fun thirdPlatFormLogin(body: AuthorizeToken2Param) : LoginResultData {
         var loginResultData: LoginResultData? = null
-        val authorizeToken2Res = RequestApi().authorizeExchangedToken(body)
+        val authorizeToken2Res = requestApi.authorizeExchangedToken(body)
         if (authorizeToken2Res?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = authorizeToken2Res.data?.didToken.orEmpty()
             DAuthLogger.d("第三方登录后的didToken:  $didToken")

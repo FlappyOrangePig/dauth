@@ -5,8 +5,8 @@ import android.app.Application
 import android.content.Context
 import com.cyberflow.dauthsdk.api.ILoginApi
 import com.cyberflow.dauthsdk.api.SdkConfig
-import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
+import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.SetPasswordData
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
 import com.cyberflow.dauthsdk.login.callback.WalletCallback
@@ -17,7 +17,6 @@ import com.cyberflow.dauthsdk.login.constant.LoginConst.SIGN_METHOD
 import com.cyberflow.dauthsdk.login.constant.LoginConst.TWITTER
 import com.cyberflow.dauthsdk.login.model.*
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.twitter.TwitterLoginManager
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtChallengeCode
@@ -28,7 +27,6 @@ import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers
 
 private const val FIX_TWITTER_JS_ISSUE = false
 private const val TYPE_OF_WALLET_AUTH = 20
@@ -47,6 +45,7 @@ class DAuthLogin : ILoginApi {
 
     private val prefs get() = Managers.loginPrefs
     private val walletManager get() = Managers.walletManager
+    private val requestApi get() = Managers.requestApi
     @Volatile
     private var logOutJob: Job? = null
 
@@ -77,7 +76,7 @@ class DAuthLogin : ILoginApi {
      */
     private suspend fun loginAuth(codeChallengeCode: String, didToken: String): String {
         val body = AuthorizeParam(USER_TYPE_OF_EMAIL, codeChallengeCode, SIGN_METHOD)
-        val authorizeParam = RequestApi().ownAuthorize(body, didToken)
+        val authorizeParam = requestApi.ownAuthorize(body, didToken)
         val code = authorizeParam?.data?.code.orEmpty()  //获取临时code
         DAuthLogger.e("ownAuthorize 临时code： $code ")
         return code
@@ -93,7 +92,7 @@ class DAuthLogin : ILoginApi {
         didToken: String?
     ): TokenAuthenticationRes? {
         val body = TokenAuthenticationParam(codeVerifier, code)
-        return RequestApi().ownOauth2Token(body, didToken)
+        return requestApi.ownOauth2Token(body, didToken)
     }
 
     /**
@@ -153,7 +152,7 @@ class DAuthLogin : ILoginApi {
             account = account
         )
 
-        val createAccountRes = RequestApi().createAccount(createAccountParam)
+        val createAccountRes = requestApi.createAccount(createAccountParam)
         code = createAccountRes?.ret
         return code
     }
@@ -200,7 +199,7 @@ class DAuthLogin : ILoginApi {
     }
 
     private suspend fun mobileOrEmailCommonReq(loginParam: LoginParam): LoginResultData {
-        val loginRes = RequestApi().login(loginParam)
+        val loginRes = requestApi.login(loginParam)
         if (loginRes?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
             val didToken = loginRes.data?.didToken.orEmpty()
             val userInfo = JwtDecoder().decoded(didToken)
@@ -241,7 +240,7 @@ class DAuthLogin : ILoginApi {
         @OptIn(DelicateCoroutinesApi::class)
         logOutJob = GlobalScope.launch {
             runCatchingWithLogSuspend {
-                RequestApi().logout(requestBody)
+                requestApi.logout(requestBody)
             }
         }
         clearAccountInfo()
@@ -259,7 +258,7 @@ class DAuthLogin : ILoginApi {
      */
 
     override suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): SetPasswordData {
-        val response = RequestApi().resetByPassword(resetPwdParams)
+        val response = requestApi.resetByPassword(resetPwdParams)
         if(response?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
            return SetPasswordData(ResponseCode.RESPONSE_CORRECT_CODE,response.info)
         }
@@ -272,7 +271,7 @@ class DAuthLogin : ILoginApi {
      */
     override suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): BaseResponse? {
         val body = SendPhoneVerifyCodeParam(openudid = null, phone, areaCode)
-        return RequestApi().sendPhoneVerifyCode(body)
+        return requestApi.sendPhoneVerifyCode(body)
     }
 
     /**
@@ -280,7 +279,7 @@ class DAuthLogin : ILoginApi {
      */
     override suspend fun sendEmailVerifyCode(email: String): BaseResponse? {
         val body = SendEmailVerifyCodeParam(email)
-        return RequestApi().sendEmailVerifyCode(body)
+        return requestApi.sendEmailVerifyCode(body)
     }
 
     /**
@@ -291,7 +290,7 @@ class DAuthLogin : ILoginApi {
      *  verify_code(验证码)
      */
     override suspend fun bindPhone(bindParams: BindPhoneParam) {
-        RequestApi().bindPhone(bindParams)
+        requestApi.bindPhone(bindParams)
     }
 
     /**
@@ -302,7 +301,7 @@ class DAuthLogin : ILoginApi {
         val authId = prefs.getAuthId()
         val accessToken = prefs.getAccessToken()
         val body = BindEmailParam(authId, email, verifyCode, accessToken)
-        return RequestApi().bindEmail(body)
+        return requestApi.bindEmail(body)
     }
 
     /**
@@ -326,15 +325,11 @@ class DAuthLogin : ILoginApi {
     }
 
     /**
-     * @param passWord 密码
+     * @param passwordParam 密码
      * 设置登录密码
      */
     override suspend fun setPassword(passwordParam: SetPasswordParam): BaseResponse? {
-        val accessToken = prefs.getAccessToken()
-        val authid = prefs.getAuthId()
-        passwordParam.access_token = accessToken
-        passwordParam.authid = authid
-        return RequestApi().setPassword(passwordParam)
+        return requestApi.setPassword(passwordParam)
     }
 
     /**
@@ -344,7 +339,7 @@ class DAuthLogin : ILoginApi {
      */
     override suspend fun queryAccountByEmail(email: String): AccountRes? {
         val authId = prefs.getAuthId()
-        val requestApi = RequestApi()
+        val requestApi = requestApi
         val accessToken = prefs.getAccessToken()
         DAuthLogger.d("queryAccountByEmail accessToken:$accessToken")
         val body = QueryByEMailParam(email, accessToken, authId)
@@ -359,7 +354,7 @@ class DAuthLogin : ILoginApi {
         val authId = prefs.getAuthId()
         val accessToken = prefs.getAccessToken()
         val body = QueryByAuthIdParam(authId, accessToken)
-        return RequestApi().queryByAuthId(body)
+        return requestApi.queryByAuthId(body)
     }
 
     override suspend fun checkEmail(email: String, verifyCode: String): BaseResponse? {
@@ -367,6 +362,6 @@ class DAuthLogin : ILoginApi {
             email,
             verifyCode
         )
-        return RequestApi().checkEmail(body)
+        return requestApi.checkEmail(body)
     }
 }

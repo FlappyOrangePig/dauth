@@ -26,21 +26,21 @@
             android:textSize="12sp" />
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_query_balance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="查询钱包余额"/>
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_query_account_by_mail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="根据邮箱查询用户"/>
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_query_account_by_openid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,35 +48,35 @@
             android:textAllCaps="false" />
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_set_pwd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="设置邮箱登录密码" />
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_bind_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="第三方登录绑定邮箱" />
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_check_mail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="检验用户邮箱" />
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_btn_wallet_page"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="跳转钱包页面"/>
 
         <Button
-            style="@style/Theme.client.BlueButton"
+            style="@style/Theme.client.BlueButtonWithLittleMargin"
             android:id="@+id/btn_quit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

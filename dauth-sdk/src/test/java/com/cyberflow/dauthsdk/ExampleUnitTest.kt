@@ -87,7 +87,6 @@ class ExampleUnitTest {
             `when`(getAccessToken()).thenReturn(accessToken)
             `when`(getAuthId()).thenReturn(authId)
             `when`(getDidToken()).thenReturn(didToken)
-            `when`(getExpireTime()).thenReturn(Long.MAX_VALUE)
             Managers.loginPrefs = this
         }
         mock(MpcKeyStore::class.java).apply {

@@ -15,11 +15,10 @@ private const val REFRESH_TOKEN = "refresh_token"
 private const val EXPIRE_TIME = "expire_in"
 private const val USER_TYPE = "user_type"
 private const val DEFAULT_USER_TYPE = 0
-private const val GOOGLE_CLIENT_ID = "google_client_id"
 
 private const val TAG = "LoginPrefs"
 
-class LoginPrefs {
+open class LoginPrefs {
 
     private val context get() = app()
     private val defaultAsync = true
@@ -32,18 +31,9 @@ class LoginPrefs {
         return getPrefs().getString(ACCESS_TOKEN, null).orEmpty()
     }
 
-    fun setAccessToken(accessToken: String) {
-        getPrefs().edit().putString(ACCESS_TOKEN, accessToken).apply()
-    }
-
-    fun setRefreshToken(refreshToken: String?) {
-        getPrefs().edit().putString(REFRESH_TOKEN, refreshToken).apply()
-    }
-
     fun getAuthId(): String {
         return getPrefs().getString(AUTH_ID, null).orEmpty()
     }
-
 
     fun getDidToken(): String {
         return getPrefs().getString(DID_TOKEN, null).orEmpty()
@@ -53,20 +43,8 @@ class LoginPrefs {
         return getPrefs().getString(REFRESH_TOKEN, null).orEmpty()
     }
 
-    fun setExpireTime(expireTime: Long) {
-        getPrefs().edit().putLong(EXPIRE_TIME, expireTime).apply()
-    }
-
-    fun getExpireTime(): Long {
-        return getPrefs().getLong(EXPIRE_TIME, 0L)
-    }
-
     fun getUserType() : Int {
         return getPrefs().getInt(USER_TYPE, DEFAULT_USER_TYPE)
-    }
-
-    fun getGoogleClientId(): String {
-        return getPrefs().getString(GOOGLE_CLIENT_ID,"").orEmpty()
     }
 
     fun putLoginInfo(
@@ -111,6 +89,7 @@ class LoginPrefs {
             }
         }
 
+        DAuthLogger.d("putLoginInfo $values", TAG)
         put(values, async)
     }
 
@@ -141,7 +120,7 @@ class LoginPrefs {
         }
     }
 
-    protected fun modify(async: Boolean = true, block: (editor: SharedPreferences.Editor) -> Unit) {
+    private fun modify(async: Boolean = true, block: (editor: SharedPreferences.Editor) -> Unit) {
         getPrefs().edit().apply {
             block.invoke(this)
             if (async) {

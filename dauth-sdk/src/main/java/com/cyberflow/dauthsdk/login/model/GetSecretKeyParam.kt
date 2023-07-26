@@ -1,10 +1,8 @@
 package com.cyberflow.dauthsdk.login.model
 
 class GetSecretKeyParam(
-    override var access_token: String,
-    override val authid: String,
     val type: Int
-) : BaseTokenRequestParam()
+) : IAccessTokenRequest
 
 internal object GetSecretKeyParamConst {
     const val TYPE_KEY = 0

@@ -29,9 +29,10 @@ internal class CreateWalletTask(
     private val loginPrefs: LoginPrefs,
     private val participants: List<GetParticipantsRes.Participant>
 ) {
-    private val mpcApi: RequestApiMpc = RequestApiMpc()
+    private val mpcApi: RequestApiMpc = Managers.requestApiMpc
     private val keystore get() = Managers.mpcKeyStore
     private val walletPrefsV2 get() = Managers.walletPrefsV2
+    private val requestApi = Managers.requestApi
 
     suspend fun execute(): DAuthResult<CreateWalletData> {
         ThreadUtil.assertInMainThread(false)
@@ -125,7 +126,7 @@ internal class CreateWalletTask(
             mergeResult
         )
         val bindResponse = context.runSpending("bindWallet") {
-            RequestApi().bindWallet(bindWalletParam)
+            requestApi.bindWallet(bindWalletParam)
         }
         if (bindResponse == null) {
             DAuthLogger.e("bind network error", TAG)

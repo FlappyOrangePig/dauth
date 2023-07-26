@@ -30,7 +30,7 @@ class ResetPasswordActivity : BaseActivity() {
         }
     }
 
-     fun initView() {
+     private fun initView() {
         binding.ivBack.setOnClickListener {
             finish()
         }
