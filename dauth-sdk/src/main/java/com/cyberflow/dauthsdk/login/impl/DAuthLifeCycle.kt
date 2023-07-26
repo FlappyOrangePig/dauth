@@ -3,10 +3,15 @@ package com.cyberflow.dauthsdk.login.impl
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+import android.view.WindowManager
 import android.webkit.WebView
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.google.android.gms.auth.api.signin.internal.SignInHubActivity
 import java.lang.reflect.Field
 
 object DAuthLifeCycle : ActivityLifecycleCallbacks {
@@ -65,8 +70,27 @@ object DAuthLifeCycle : ActivityLifecycleCallbacks {
         }
     }
 
+    private fun Activity.fixGoogleSignInStatusBar() {
+        // 给谷歌登录页面改为沉浸式
+        // 然而并没有什么卵用，状态栏变黑是对话框的问题
+        if (this::class == SignInHubActivity::class) {
+            DAuthLogger.d("make SignInHubActivity immersive")
+            val w = this.window
+            w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            w.statusBarColor = Color.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                w.setDecorFitsSystemWindows(true)
+            } else {
+                w.decorView.systemUiVisibility = SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            }
+            w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+    }
+
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        DAuthLogger.d("onCreate${activity.javaClass.simpleName}")
+        DAuthLogger.d("onCreate ${activity.javaClass.simpleName}")
+        activity.fixGoogleSignInStatusBar()
     }
 
     override fun onActivityStarted(activity: Activity) {

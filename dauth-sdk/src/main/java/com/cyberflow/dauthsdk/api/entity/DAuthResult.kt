@@ -12,8 +12,8 @@ sealed class DAuthResult<T> {
         }
     }
 
-    class Web3Error<T>(val code: Int, val msg: String) : DAuthResult<T>() {
-        override fun getError(): String? {
+    class ServerError<T>(val code: Int, val msg: String) : DAuthResult<T>() {
+        override fun getError(): String {
             return msg
         }
 
@@ -24,7 +24,7 @@ sealed class DAuthResult<T> {
     }
 
     class NetworkError<T>(val throwable: Throwable? = null) : DAuthResult<T>() {
-        override fun getError(): String? {
+        override fun getError(): String {
             return throwable?.stackTraceToString().orEmpty()
         }
 
@@ -35,7 +35,7 @@ sealed class DAuthResult<T> {
     }
 
     class SdkError<T>(val code: Int = SDK_ERROR_UNKNOWN) : DAuthResult<T>() {
-        override fun getError(): String? {
+        override fun getError(): String {
             return "sdk error:$code"
         }
 

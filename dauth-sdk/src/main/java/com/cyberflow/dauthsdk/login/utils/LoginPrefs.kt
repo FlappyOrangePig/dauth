@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.impl.DAuthLogin
-import com.cyberflow.dauthsdk.wallet.ext.app
 
 private const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
 private const val ACCESS_TOKEN = "access_token"
@@ -18,9 +17,8 @@ private const val DEFAULT_USER_TYPE = 0
 
 private const val TAG = "LoginPrefs"
 
-open class LoginPrefs {
+internal class LoginPrefs internal constructor(private val context: Context) {
 
-    private val context get() = app()
     private val defaultAsync = true
 
     private fun getPrefs(): SharedPreferences {

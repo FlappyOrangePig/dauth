@@ -1,7 +1,7 @@
 ext {
 }.versions = [
         version_code                 : 1,
-        version_name                 : '0.0.8',
+        version_name                 : '0.0.9',
         min_sdk                      : 23,
         target_sdk                   : 33,
         compile_sdk                  : 33,
@@ -93,6 +93,7 @@ ext {
         // 3rd
         web3j_core                    : "org.web3j:core:$versions.web3j_core",
         web3j_contract                : "org.web3j:contracts:$versions.web3j_core",
+        web3j_abi                     : "org.web3j:abi:$versions.web3j_core",
         webkit                        : "androidx.webkit:webkit:$versions.webkit",
 
         // google

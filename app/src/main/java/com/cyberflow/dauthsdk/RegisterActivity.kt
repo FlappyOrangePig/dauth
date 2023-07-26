@@ -8,11 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class RegisterActivity : BaseActivity() {
     private var _binding: ActivityRegisterLayoutBinding? = null
     private val binding: ActivityRegisterLayoutBinding get() = _binding!!
+    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     companion object {
         fun launch(context: Context) {
@@ -25,33 +28,38 @@ class RegisterActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityRegisterLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
-        initView()
+        binding.initView()
     }
 
-     private fun initView() {
-        binding.ivBack.setOnClickListener {
+    private fun ActivityRegisterLayoutBinding.initView() {
+        ivBack.setOnClickListener {
             finish()
         }
 
-        binding.btnDauthRegister.setOnClickListener {
-            val account = binding.edtAccount.text.toString()
-            val password = binding.edtPassword.text.toString()
-            val ensurePassword = binding.edtEnsurePassword.text.toString()
-            if(account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
+        btnDauthRegister.setOnClickListener {
+            val context = it.context
+            val account = edtAccount.text.toString()
+            val password = edtPassword.text.toString()
+            val ensurePassword = edtEnsurePassword.text.toString()
+            if (account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
                 lifecycleScope.launch {
-                    val code =
-                        DAuthSDK.instance.createDAuthAccount(account, password, ensurePassword)
-                    if(code != null) {
-                        if(code == 0) {
-                            MainActivity.launch(this@RegisterActivity)
+                    loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                    val code = DAuthSDK.instance.createDAuthAccount(
+                        account,
+                        password,
+                        ensurePassword
+                    )
+                    loadingDialog.dismiss()
+                    if (code != null) {
+                        if (code == 0) {
+                            MainActivity.launch(context)
                         } else {
-                            ToastUtil.show(this@RegisterActivity,
-                                "创建自有账号失败 errorCode: $code")
+                            ToastUtil.show(context, "创建自有账号失败 errorCode: $code")
                         }
                     }
                 }
             } else {
-                ToastUtil.show(this, "请输入账号或密码")
+                ToastUtil.show(context, "请输入账号或密码")
             }
         }
     }

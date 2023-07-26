@@ -46,6 +46,7 @@ class DAuthLogin : ILoginApi {
     private val prefs get() = Managers.loginPrefs
     private val walletManager get() = Managers.walletManager
     private val requestApi get() = Managers.requestApi
+    private val deviceId get() = Managers.deviceId
     @Volatile
     private var logOutJob: Job? = null
 
@@ -58,7 +59,6 @@ class DAuthLogin : ILoginApi {
             appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
         }
     }
-
 
     override suspend fun login(account: String, passWord: String): LoginResultData? {
         val loginParam = LoginParam(
@@ -144,7 +144,7 @@ class DAuthLogin : ILoginApi {
         val code: Int?
         val createAccountParam = CreateAccountParam(
             ACCOUNT_TYPE_OF_OWN,
-            "123456",
+            this.deviceId,
             is_login = 1,
             password = passWord,
             confirm_password = confirmPwd,

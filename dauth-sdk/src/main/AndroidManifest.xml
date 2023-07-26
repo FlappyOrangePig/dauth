@@ -17,11 +17,8 @@
         <activity
             android:theme="@style/AppTheme.Transparent"
             android:name=".login.view.ThirdPartyResultActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+            android:exported="false">
+            
         </activity>
 
         <meta-data android:name="DAUTH_VERSION"  android:value="${sdkVersion}" />

@@ -45,7 +45,7 @@ class DAuthSDK private constructor(
                         "getVersionCode=${ai?.getVersionCode()}\n"
             )
         }
-        Managers.inject()
+        Managers.inject(appContext)
         loginApi.initSDK(context, config)
         DAuthLogger.i("init sdk ok")
         if (DebugUtil.isAppDebuggable(context)) {

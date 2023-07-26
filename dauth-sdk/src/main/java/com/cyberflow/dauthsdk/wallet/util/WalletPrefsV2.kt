@@ -3,8 +3,6 @@ package com.cyberflow.dauthsdk.wallet.util
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import com.cyberflow.dauthsdk.wallet.ext.app
-import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager.Companion.STATE_INIT
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager.Companion.STATE_OK
 
@@ -13,9 +11,7 @@ private const val KEY_EOA_ADDRESS = "KEY_EOA_ADDRESS"
 private const val KEY_AA_ADDRESS = "KEY_AA_ADDRESS"
 private const val KEY_WALLET_STATE = "KEY_WALLET_STATE"
 
-class WalletPrefsV2 {
-
-    private val context get() = app()
+internal class WalletPrefsV2 internal constructor(private val context: Context) {
 
     private fun getPrefs(): SharedPreferences {
         return context.getSharedPreferences(FILE_WALLET_INFO, Context.MODE_PRIVATE)

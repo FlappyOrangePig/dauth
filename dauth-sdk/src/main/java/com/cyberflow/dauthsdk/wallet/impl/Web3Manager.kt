@@ -2,6 +2,7 @@ package com.cyberflow.dauthsdk.wallet.impl
 
 import androidx.annotation.VisibleForTesting
 import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.api.entity.CommitTransactionData
 import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
@@ -169,14 +170,15 @@ private fun UserOperation.reload() = UserOperation(
     signature
 )
 
-object Web3Manager {
+internal class Web3Manager {
 
-    internal val web3j: Web3j by lazy {
-        Web3j.build(
-            HttpService(
-                ConfigurationManager.urls().providerRpc,
-                HttpClient.client
-            )
+    private var _web3j: Web3j? = null
+    internal val web3j: Web3j get() = _web3j!!
+
+    fun reset(url: String) {
+        _web3j?.shutdown()
+        _web3j = Web3j.build(
+            HttpService(url, HttpClient.client)
         )
     }
 
@@ -188,7 +190,7 @@ object Web3Manager {
             try {
                 val r = send()
                 if (r.hasError()) {
-                    DAuthResult.Web3Error(r.error.code, r.error.message)
+                    DAuthResult.ServerError(r.error.code, r.error.message)
                 } else {
                     val d = block.invoke(r)
                     DAuthResult.Success(d)
@@ -364,9 +366,10 @@ object Web3Manager {
         return aaAddress
     }
 
-    suspend fun createUserOpAndEstimateGas(eoaAddress: String,
-                                           aaAddress: String,
-                                           callData: ByteArray
+    suspend fun createUserOpAndEstimateGas(
+        eoaAddress: String,
+        aaAddress: String,
+        callData: ByteArray
     ): DAuthResult<CreateUserOpAndEstimateGasData> {
         val addresses = ConfigurationManager.addresses()
         val faAddress = addresses.factoryAddress
@@ -457,7 +460,14 @@ object Web3Manager {
             // 预估费用
             val funcSimulateHandleOp = FunctionEncodeUtil.getSimulateHandleOpFunction(userOperation)
             val funcSimulateHandleOpHex = funcSimulateHandleOp.toHexString()
-            val funcCallTx = Transaction.createFunctionCallTransaction(null, null, null, null, entryPointAddress, funcSimulateHandleOpHex)
+            val funcCallTx = Transaction.createFunctionCallTransaction(
+                null,
+                null,
+                null,
+                null,
+                entryPointAddress,
+                funcSimulateHandleOpHex
+            )
             val gasException = web3j.ethEstimateGas(funcCallTx).awaitException()
             gasException
         }
@@ -500,7 +510,7 @@ object Web3Manager {
     suspend fun executeUserOperation(
         userOperation: UserOperation,
         aaAddress: String,
-    ): DAuthResult<String> {
+    ): DAuthResult<CommitTransactionData> {
         DAuthLogger.d("executeUserOperation useOp=$userOperation", TAG)
 
         val context = ElapsedContext(TAG)
@@ -589,7 +599,7 @@ object Web3Manager {
                 signatureData
             )
         }
-        if (signer == null){
+        if (signer == null) {
             DAuthLogger.e("signer error")
             return DAuthResult.SdkError()
         }
@@ -603,7 +613,7 @@ object Web3Manager {
 
         val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
         if (useLocalRelayer) {
-            val gasPrice = context.runSpending("getPrice"){
+            val gasPrice = context.runSpending("getPrice") {
                 web3j.ethGasPrice().awaitLite { it.gasPrice }
             }
             DAuthLogger.d("gasPrice=$gasPrice", TAG)
@@ -626,22 +636,22 @@ object Web3Manager {
             DAuthLogger.d("handleOp receipt=$receipt", TAG)
             val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
             DAuthLogger.d("transactionHash=$transactionHash", TAG)
-            return DAuthResult.Success(transactionHash)
+            return DAuthResult.Success(CommitTransactionData(transactionHash))
         } else {
             val sendResult = RelayerRequester.sendRequest(userOpCopy)
             DAuthLogger.d("sendResult=$sendResult", TAG)
             if (sendResult == null) {
-                return DAuthResult.SdkError()
+                return DAuthResult.NetworkError()
             }
             if (!sendResult.isSuccess()) {
                 return if (ResponseCode.isLoggedOut(sendResult.ret)) {
                     DAuthResult.SdkError(DAuthResult.SDK_ERROR_LOGGED_OUT)
                 } else {
-                    DAuthResult.SdkError()
+                    DAuthResult.ServerError(sendResult.ret, sendResult.info)
                 }
             }
             context.traceElapsedList()
-            return DAuthResult.Success(sendResult.info)
+            return DAuthResult.Success(CommitTransactionData(sendResult.info))
         }
     }
 

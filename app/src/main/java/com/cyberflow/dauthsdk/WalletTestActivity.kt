@@ -149,7 +149,7 @@ class WalletTestActivity : BaseActivity() {
                                 val executeResult = api.execute(data.userOp)
                                 loadingDialog.dismiss()
                                 if (executeResult !is DAuthResult.Success) {
-                                    ToastUtil.show(context, "执行失败")
+                                    ToastUtil.show(context, "执行失败，${executeResult.getError()}")
                                 } else {
                                     ToastUtil.show(context, "执行成功，trHash=${executeResult.data}")
                                 }

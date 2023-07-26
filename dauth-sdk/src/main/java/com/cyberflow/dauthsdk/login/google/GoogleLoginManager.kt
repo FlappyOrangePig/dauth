@@ -2,7 +2,8 @@ package com.cyberflow.dauthsdk.login.google
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager.NameNotFoundException
+import androidx.core.app.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
@@ -16,9 +17,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
-
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 private const val AUTH_TYPE_OF_GOOGLE = 30
+
+private const val TAG = "GoogleLoginManager"
 
 class GoogleLoginManager {
     val context get() = app()
@@ -28,46 +32,52 @@ class GoogleLoginManager {
         }
     }
 
-    private fun signInClient(activity: Activity): GoogleSignInClient? {
-        try {
-            val googleClientId = DAuthSDK.impl.config.googleClientId.orEmpty()
-            //requestIdToken需要使用Web客户端ID才能成功，不要使用安卓ClientID
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+    private fun signInClient(activity: Activity): GoogleSignInClient {
+        val googleClientId = DAuthSDK.impl.config.googleClientId.orEmpty()
+        return GoogleSignIn.getClient(
+            activity,
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(googleClientId)
                 .requestEmail()
                 .build()
-            return GoogleSignIn.getClient(activity, gso)
-        } catch (e: NameNotFoundException) {
-            DAuthLogger.e(e.stackTraceToString())
-        }
-       return null
+        )
     }
 
-    fun googleSignInAuth(activity: Activity, requestCodeSignIn: Int, requestCodeOpenGoogleService: Int) {
+    fun googleSignInAuth(activity: ComponentActivity, requestCodeSignIn: Int, requestCodeOpenGoogleService: Int) {
         val api = GoogleApiAvailability.getInstance()
         val result = api.isGooglePlayServicesAvailable(activity)
         DAuthLogger.d("google available:$result")
         if (result != ConnectionResult.SUCCESS) {
             if (api.isUserResolvableError(result)) {
                 DAuthLogger.d("let user open")
-                val dialog = api.getErrorDialog(
+                api.getErrorDialog(
                     activity,
                     result,
                     requestCodeOpenGoogleService
-                ) {
-                    activity.finish()
-                }
-                if (dialog != null) {
-                    dialog.show()
-                } else {
-                    activity.finish()
-                }
+                )?.apply {
+                    setOnDismissListener { activity.finish() }
+                    show()
+                } ?: activity.finish()
+            } else {
+                activity.finish()
             }
             return
         }
 
-        signInClient(activity)?.let {
-            val signInIntent = it.signInIntent
+        val googleSignInClient = signInClient(activity)
+        activity.lifecycleScope.launch {
+            if (GoogleSignIn.getLastSignedInAccount(activity) != null) {
+                // logout the account so that the user can change another account
+                DAuthLogger.d("google sign out start...", TAG)
+                try {
+                    googleSignInClient.signOut().await()
+                    DAuthLogger.d("google sign out done", TAG)
+                } catch (e: Exception) {
+                    // ignore
+                    DAuthLogger.w( "google sign out error: $e", TAG)
+                }
+            }
+            val signInIntent = googleSignInClient.signInIntent
             activity.startActivityForResult(signInIntent, requestCodeSignIn)
         }
     }

@@ -9,6 +9,7 @@ import android.os.Build
 import com.cyberflow.dauthsdk.api.DAuthSDK
 
 internal fun safeApp() = DAuthSDK.impl.context.applicationContext as? Application
+@Deprecated("使用依赖注入方便单元测试", ReplaceWith("Managers"))
 internal fun app() = safeApp()!!
 
 internal fun Context.applicationInfo() =

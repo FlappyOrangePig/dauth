@@ -1,0 +1,103 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+skin rose
+
+|app|
+start
+:即将创建交易;
+:调用createUserOpAndEstimateGas();
+|#AntiqueWhite|core-sdk|
+:sdk被调用;
+note right: createUserOpAndEstimateGas()
+:把用户操作编码成callData;
+:获取gasPrice;
+|eth-rpc|
+:ethGasPrice();
+|core-sdk|
+:获取nonce;
+|eth-rpc|
+:entryPoint.getNonce();
+|core-sdk|
+:获取code是否部署;
+note right: isDeployed
+|eth-rpc|
+:ethGetCode();
+|core-sdk|
+if (nonce==0 && !isDeployed) then (Y)
+    :创建AA合约账户的部署代码;
+    note right: initCode
+else (N)
+endif
+
+:创建userOperation;
+if (有initCode？) then (Y)
+    :为userOperation填入initCode;
+else (N)
+endif
+
+:entryPoint.simulateHandleOp();
+note right:评估燃料费
+
+:在userOperation中填入\nverificationGasLimit和callGasLimit;
+
+|app|
+:返回userOperation和评估的燃料费;
+:展示费用给用户;
+if (执行？) then (Y)
+else (N)
+    stop
+endif
+:即将执行交易;
+:调用executeUserOperation();
+
+|core-sdk|
+:sdk被调用;
+note right: executeUserOperation()
+
+:获取gasBalance;
+|eth-rpc|
+:ethGetBalance();
+
+|core-sdk|
+if (balance==0？) then (Y)
+    |app|
+    :交易失败;
+    stop
+else (N)
+endif
+
+|core-sdk|
+:编码userOperation;
+:建立websocket连接准备签名;
+
+:1;
+|dauth-server|
+:1;
+note right: mpc-server
+|core-sdk|
+:2;
+|dauth-server|
+:2;
+|core-sdk|
+:3;
+|dauth-server|
+:3;
+
+|core-sdk|
+:...;
+:经过多轮签名，得到签名结果;
+
+|dauth-server|
+:提交交易接口，返回提交的结果;
+note right: relayer-server
+note right: /relayer/committrans
+|core-sdk|
+:返回给sdk调用者;
+
+|app|
+:处理sdk返回的结果;
+note right: 包含交易hash
+
+stop
+
+@enduml

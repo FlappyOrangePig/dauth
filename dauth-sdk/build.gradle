@@ -51,6 +51,7 @@ dependencies {
 
     // Google sdk
     implementation libraries.google_service_auth
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
 
     // twitter
     implementation libraries.twitter
@@ -67,7 +68,7 @@ dependencies {
     // web3j
     api libraries.web3j_core
     api libraries.web3j_contract
-    api "org.web3j:abi:4.10.1"
+    api libraries.web3j_abi
 
     // WalletConnect sign-sdk
     /*implementation(platform("com.walletconnect:android-bom:1.12.0"))

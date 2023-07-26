@@ -1,0 +1,93 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+skin rose
+|app|
+start
+:点击google，调用loginWithType();
+|#AntiqueWhite|core-sdk|
+:登录;
+note right: loginWithType()
+:google返回id和token;
+|DAuthServer|
+:登录注册接口，返回是否有钱包;
+note right: /sociallogin/exchangedtoken
+|core-sdk|
+:返回登录结果及【钱包状态】;
+|app|
+if (本地有钱包？) is (Y) then
+    |app|
+    :登录成功;
+    stop
+else (N)
+    :调用createWallet();
+    |core-sdk|
+    :创建钱包;
+    note right: createWallet()
+    if (本地有钱包？) is (Y) then
+        |app|
+        :创建钱包成功;
+        stop
+    else (N)
+        |core-sdk|
+        :调用getParticipants();
+        |DAuthServer|
+        :获取密钥服务器列表接口，返回节点;
+        note right: /participants/get
+        |core-sdk|
+        :调用DAuthServer getKey();
+        |DAuthServer|
+        :获取密钥接口，返回密钥和MergeResult;
+        note right: /mpc/secret/get
+        |core-sdk|
+        :从AppServer getKey;
+        note right: 没画和appServer的交互
+        if (有2片可供恢复的密钥？) then (Y)
+            :key0 = MergeResult - key1 - key2;
+            note right: key0=本地\nkey1=dauthServer\nkey2=appServer
+            :保存密钥;
+            :保存钱包地址;
+            |app|
+            :创建钱包成功;
+            stop
+        else (N)
+            |core-sdk|
+            :调用so创建密钥，返回3片秘钥;
+            note right: 没画和so交互的
+            |core-sdk|
+            :生成3片密钥之和--MergeResult;
+            :计算出EOA地址;
+            :根据EOA地址从链上拿AA地址;
+            |core-sdk|
+            :绑定钱包地址：调用bindWallet();
+            |DAuthServer|
+            :绑定钱包地址;
+            note right: /wallet/v1/bind
+            |core-sdk|
+            :调用DAuthServer的setKey();
+            |DAuthServer|
+            :绑定钱包地址;
+            note right: /mpc/secret/set
+            |core-sdk|
+            :调用appServer的setKey();
+            note right: 没画和appServer的交互\nappServer需按DAuth的抽象建立密钥服务
+
+            |core-sdk|
+            if (调用所有接口成功？) is (N) then
+                |app|
+                :创建钱包失败;
+                :回登录页面\n从头开始;
+                stop
+            else (Y)
+                |core-sdk|
+                :清除其他的key;
+                :钱包初始化完成;
+                |app|
+                :创建钱包成功;
+                :注册成功;
+                stop
+            endif
+        endif
+    endif
+endif
+
+@enduml

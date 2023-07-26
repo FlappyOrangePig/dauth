@@ -1,5 +1,6 @@
 package com.cyberflow.dauthsdk.api
 
+import com.cyberflow.dauthsdk.api.entity.CommitTransactionData
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
@@ -80,7 +81,7 @@ interface IWalletApi {
      * @param userOperation 用户操作，由[createUserOpAndEstimateGas]方法创建
      * @return 成功则返回txHash
      */
-    suspend fun execute(userOperation: UserOperation): DAuthResult<String>
+    suspend fun execute(userOperation: UserOperation): DAuthResult<CommitTransactionData>
 
     fun getWeb3j(): Web3j
 

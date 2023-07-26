@@ -22,7 +22,7 @@ private suspend inline fun <S, T : Response<*>, D> Request<S, T>.await(crossinli
         try {
             val r = send()
             if (r.hasError()) {
-                DAuthResult.Web3Error(r.error.code, r.error.message)
+                DAuthResult.ServerError(r.error.code, r.error.message)
             } else {
                 val d = block.invoke(r)
                 DAuthResult.Success(d)

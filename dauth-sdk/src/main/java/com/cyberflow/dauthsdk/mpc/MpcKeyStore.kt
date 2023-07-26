@@ -3,15 +3,12 @@ package com.cyberflow.dauthsdk.mpc
 import android.annotation.SuppressLint
 import android.content.Context
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.wallet.ext.app
 
 private const val TAG = "MpcKeyStore"
 private const val FILE = "mpc_keystore"
 private const val KEY_MERGE_RESULT = "key_merge_result"
 
-class MpcKeyStore {
-
-    private val context get() = app()
+class MpcKeyStore internal constructor(private val context: Context) {
     private val file get() = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
     fun getAllKeys(): List<String> {

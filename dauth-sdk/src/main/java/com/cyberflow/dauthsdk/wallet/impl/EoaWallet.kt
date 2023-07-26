@@ -1,10 +1,12 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
 import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.entity.CommitTransactionData
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_ADDRESS
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
@@ -39,6 +41,7 @@ private const val TAG = "EoaWallet"
 class EoaWallet internal constructor(): IWalletApi {
 
     private val walletPrefsV2 get() = Managers.walletPrefsV2
+    private val web3m get() = Managers.web3m
 
     override suspend fun createWallet(forceCreate: Boolean): DAuthResult<CreateWalletData> {
         return withContext(Dispatchers.Default) {
@@ -68,18 +71,18 @@ class EoaWallet internal constructor(): IWalletApi {
     ): DAuthResult<WalletBalanceData> {
         val r = when (tokenType) {
             is TokenType.Eth -> {
-                Web3Manager.getBalance(walletAddress)
+                web3m.getBalance(walletAddress)
             }
 
             is TokenType.ERC20 -> {
-                Web3Manager.getERC20Balance(
+                web3m.getERC20Balance(
                     contractAddress = tokenType.contractAddress,
                     accountAddress = walletAddress
                 )
             }
 
             is TokenType.ERC721 -> {
-                Web3Manager.getERC721NftTokenIds(
+                web3m.getERC721NftTokenIds(
                     contractAddress = tokenType.contractAddress,
                     walletAddress = walletAddress
                 )
@@ -98,7 +101,7 @@ class EoaWallet internal constructor(): IWalletApi {
             return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
         }
         val address = addressResult.data.aaAddress
-        return Web3Manager.estimateGas(address, toUserId, amount).also {
+        return web3m.estimateGas(address, toUserId, amount).also {
             DAuthLogger.d("estimateGas from=$address to=$toUserId amount=$amount result=$it", TAG)
         }
     }
@@ -108,7 +111,7 @@ class EoaWallet internal constructor(): IWalletApi {
         amount: BigInteger
     ): DAuthResult<SendTransactionData> {
         DAuthLogger.d("sendTransaction $toAddress $amount", TAG)
-        return Web3Manager.sendTransaction(toAddress, amount).also {
+        return web3m.sendTransaction(toAddress, amount).also {
             DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it", TAG)
         }
     }
@@ -121,7 +124,7 @@ class EoaWallet internal constructor(): IWalletApi {
     ): DAuthResult<T> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_ADDRESS)
         }
         val signerAddress = addressResult.data.signerAddress
         val function = Function(
@@ -139,13 +142,13 @@ class EoaWallet internal constructor(): IWalletApi {
 
     override suspend fun execute(
         userOperation: UserOperation
-    ): DAuthResult<String> {
+    ): DAuthResult<CommitTransactionData> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_ADDRESS)
         }
         val aaAddress = addressResult.data.aaAddress
-        return Web3Manager.executeUserOperation(userOperation, aaAddress)
+        return web3m.executeUserOperation(userOperation, aaAddress)
     }
 
     override suspend fun createUserOpAndEstimateGas(
@@ -155,7 +158,7 @@ class EoaWallet internal constructor(): IWalletApi {
     ): DAuthResult<CreateUserOpAndEstimateGasData> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_ADDRESS)
         }
         val signerAddress = addressResult.data.signerAddress
         val aaAddress = addressResult.data.aaAddress
@@ -170,7 +173,7 @@ class EoaWallet internal constructor(): IWalletApi {
         val encodedFunction = FunctionEncoder.encode(function)
         val callData = Numeric.hexStringToByteArray(encodedFunction)
 
-        val execResult = Web3Manager.createUserOpAndEstimateGas(signerAddress, aaAddress, callData)
+        val execResult = web3m.createUserOpAndEstimateGas(signerAddress, aaAddress, callData)
         DAuthLogger.d(
             "createUserOpAndEstimateGas $contractAddress $balance ${func.size} result=$execResult",
             TAG
@@ -179,7 +182,7 @@ class EoaWallet internal constructor(): IWalletApi {
     }
 
     override fun getWeb3j(): Web3j {
-        return Web3Manager.web3j
+        return web3m.web3j
     }
 
     override suspend fun mpcSign(msgHash: String): Sign.SignatureData? {

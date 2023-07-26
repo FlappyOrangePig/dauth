@@ -77,7 +77,7 @@ class WalletManager internal constructor() {
         val participantsResult = context.runSpending("getParticipants") { MpcServers.getServers() }
         if (participantsResult == null) {
             DAuthLogger.d("participantsResult error", TAG)
-            return DAuthResult.SdkError()
+            return DAuthResult.NetworkError()
         }
         val participants = participantsResult.participants
         DAuthLogger.d("participants=$participants", TAG)
@@ -97,7 +97,7 @@ class WalletManager internal constructor() {
                     when (keysResult) {
                         is KeysToRestoreResult.NetworkError -> {
                             DAuthLogger.e("network error when check restore", TAG)
-                            return DAuthResult.SdkError()
+                            return DAuthResult.NetworkError()
                         }
 
                         is KeysToRestoreResult.CannotRestore -> {

@@ -1,6 +1,5 @@
 package com.cyberflow.dauthsdk.wallet.util
 
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.wallet.ext.app
 import org.web3j.crypto.Bip32ECKeyPair
@@ -17,7 +16,6 @@ import java.io.File
 object CredentialsUtil {
 
     private val context get() = app()
-    private val config get() = DAuthSDK.impl.config
     private val useTestNetwork get() = false
     private val useInnerAccount get() = false
     private const val PASSWORD = ""
