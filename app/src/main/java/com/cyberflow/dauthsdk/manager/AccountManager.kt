@@ -1,13 +1,18 @@
 package com.cyberflow.dauthsdk.manager
 
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.IDAuthApi
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.WalletAddressData
 
-object AccountManager {
+internal object AccountManager {
 
-    private var sdk: IDAuthApi = DAuthSDK.instance
+    private lateinit var sdk: IDAuthApi
+
+    fun attachSdk(sdk: IDAuthApi){
+        this.sdk = sdk
+    }
+
+    internal fun sdk() = sdk
 
     private suspend fun getAccountAddressResult(): DAuthResult<WalletAddressData> {
         return sdk.queryWalletAddress()
@@ -24,3 +29,5 @@ object AccountManager {
         return !getAccountAddress().isNullOrEmpty()
     }
 }
+
+internal fun sdk() = AccountManager.sdk()

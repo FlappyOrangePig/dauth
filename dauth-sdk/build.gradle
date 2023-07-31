@@ -44,7 +44,7 @@ dependencies {
     //日志拦截器
     implementation libraries.okhttp_logging_interceptor
     implementation libraries.okhttp
-    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    //implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
 
     // implementation platform('com.google.firebase:firebase-bom:31.4.0')
     // implementation 'com.google.firebase:firebase-auth-ktx'
@@ -54,8 +54,11 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
 
     // twitter
-    implementation libraries.twitter
+    //implementation libraries.twitter
     implementation libraries.twitter_core
+    implementation "com.google.code.gson:gson:2.10.1" // twitter依赖
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
 
     implementation libraries.moshi
 
@@ -71,7 +74,7 @@ dependencies {
     api libraries.web3j_abi
 
     // WalletConnect sign-sdk
-    /*implementation(platform("com.walletconnect:android-bom:1.12.0"))
+    implementation(platform("com.walletconnect:android-bom:1.12.0"))
     implementation("com.walletconnect:android-core") {
         // 与web3j重复
         exclude group: 'org.bouncycastle'
@@ -79,20 +82,7 @@ dependencies {
     implementation("com.walletconnect:sign") {
         // 与web3j重复
         exclude group: 'org.bouncycastle'
-    }*/
+    }
 }
 
 apply from: '../maven_publish.gradle'
-
-/*afterEvaluate{
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = 'com.infras'
-                artifactId = 'dauth'
-                version = '1.0'
-            }
-        }
-    }
-}*/

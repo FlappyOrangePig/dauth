@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityResetPwdLayoutBinding
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.model.ResetByPasswordParam
+import com.cyberflow.dauthsdk.manager.sdk
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_EMAIL = 10
@@ -15,6 +15,7 @@ class ResetPasswordActivity : BaseActivity() {
 
     private var _binding: ActivityResetPwdLayoutBinding? = null
     private val binding: ActivityResetPwdLayoutBinding get() = _binding!!
+    private val sdk get() = sdk()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +48,7 @@ class ResetPasswordActivity : BaseActivity() {
                         USER_TYPE_OF_EMAIL, account = account,
                         verify_code = verifyCode, password = password
                     )
-                    val setPasswordData = DAuthSDK.instance.setRecoverPassword(params)
+                    val setPasswordData = sdk.setRecoverPassword(params)
                     if (setPasswordData.code == 0) {
                         ToastUtil.show(
                             this@ResetPasswordActivity, "重置密码成功")
@@ -63,7 +64,7 @@ class ResetPasswordActivity : BaseActivity() {
         binding.tvSendCode.setOnClickListener {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
-                val response = DAuthSDK.instance.sendEmailVerifyCode(account)
+                val response = sdk.sendEmailVerifyCode(account)
                 if(response?.ret == 0) {
                     ToastUtil.show(this@ResetPasswordActivity, "验证码发送成功")
                 }

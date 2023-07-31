@@ -2,12 +2,11 @@ package com.cyberflow.dauthsdk.wallet.util
 
 import android.os.Handler
 import android.os.Looper
-import java.util.concurrent.Executors
 
 internal object ThreadUtil {
 
     private val handle by lazy { Handler(Looper.getMainLooper()) }
-    private val ioExecutorService by lazy { Executors.newCachedThreadPool() }
+    private val ioExecutorService by lazy { ExecutorUtl.buildThreadPoolExecutorService("ioExecutorService") }
 
     fun isMainThread(): Boolean {
         return Looper.getMainLooper().thread == Thread.currentThread()

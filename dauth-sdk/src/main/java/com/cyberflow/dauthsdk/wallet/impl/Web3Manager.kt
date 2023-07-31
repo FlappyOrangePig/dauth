@@ -380,7 +380,7 @@ internal class Web3Manager {
         val gasPrice = context.runSpending("getGasPrice") {
             web3j.ethGasPrice().awaitLite { it.gasPrice }
         }
-        DAuthLogger.d("gasPrice=$gasPrice", TAG)
+        DAuthLogger.i("gasPrice=$gasPrice", TAG)
         if (gasPrice == null) {
             DAuthLogger.e("gas error")
             return DAuthResult.SdkError()
@@ -396,19 +396,19 @@ internal class Web3Manager {
             val nonce = entryPoint.getNonce(aaAddress, BigInteger.ZERO).awaitLite()
             nonce
         }
-        DAuthLogger.d("nonce=$nonce")
+        DAuthLogger.i("nonce=$nonce")
         if (nonce == null) {
             DAuthLogger.e("nonce error")
             return DAuthResult.SdkError()
         }
 
         val noTransactions = nonce.noTransactions()
-        DAuthLogger.d("noTransactions=$noTransactions")
+        DAuthLogger.i("noTransactions=$noTransactions")
 
         val isDeployed = context.runSpending("isDeployed") {
             isCodeDeployed(aaAddress)
         }
-        DAuthLogger.d("isDeployed=$isDeployed")
+        DAuthLogger.i("isDeployed=$isDeployed")
         if (isDeployed == null) {
             DAuthLogger.e("not deployed")
             return DAuthResult.SdkError()
@@ -417,17 +417,17 @@ internal class Web3Manager {
         val initCode = context.runSpending("createInitCode") {
             if (noTransactions && !isDeployed) {
                 // 创建新aa账号
-                DAuthLogger.d("deploy aa account", TAG)
+                DAuthLogger.i("deploy aa account", TAG)
 
                 // 生成initCode
                 // initCode需要把工厂地址和方法打在一起
                 val funcCreateAccount = FunctionEncodeUtil.getCreateAccountFunction(eoaAddress)
                 val initCodeHex = encodePacked(Address(faAddress), DynamicBytes(funcCreateAccount))
-                DAuthLogger.d("initCodeHex=$initCodeHex", TAG)
+                DAuthLogger.i("initCodeHex=$initCodeHex", TAG)
                 initCodeHex.hexStringToByteArray()
             } else {
                 // 创建新aa账号
-                DAuthLogger.d("aa account exists", TAG)
+                DAuthLogger.i("aa account exists", TAG)
                 byteArrayOf()
             }
         }
@@ -447,9 +447,9 @@ internal class Web3Manager {
                 byteArrayOf(),
                 byteArrayOf()
             ).also { userOp ->
-                DAuthLogger.d("initCode=${userOp.initCode.sha3().toHexString()}", TAG)
-                DAuthLogger.d("callData=${userOp.callData.sha3().toHexString()}", TAG)
-                DAuthLogger.d(
+                DAuthLogger.i("initCode=${userOp.initCode.sha3().toHexString()}", TAG)
+                DAuthLogger.i("callData=${userOp.callData.sha3().toHexString()}", TAG)
+                DAuthLogger.i(
                     "paymasterAndData=${userOp.paymasterAndData.sha3().toHexString()}",
                     TAG
                 )
@@ -471,7 +471,7 @@ internal class Web3Manager {
             val gasException = web3j.ethEstimateGas(funcCallTx).awaitException()
             gasException
         }
-        DAuthLogger.d("gasException=$gasException", TAG)
+        DAuthLogger.i("gasException=$gasException", TAG)
         if (gasException == null) {
             DAuthLogger.e("estimate gas error", TAG)
             return DAuthResult.SdkError()
@@ -488,9 +488,9 @@ internal class Web3Manager {
             val estimateData = estimateInfo.cleanHexPrefix()
             val verificationGasLimit = Numeric.toBigInt(estimateData.substring(8, 8 + 64))
             val callGasLimit = Numeric.toBigInt(estimateData.substring(8 + 64))
-            DAuthLogger.d("estimateData=$estimateData", TAG)
-            DAuthLogger.d("verificationGasLimit=$verificationGasLimit", TAG)
-            DAuthLogger.d("callGasLimit=$callGasLimit", TAG)
+            DAuthLogger.i("estimateData=$estimateData", TAG)
+            DAuthLogger.i("verificationGasLimit=$verificationGasLimit", TAG)
+            DAuthLogger.i("callGasLimit=$callGasLimit", TAG)
 
             userOperation.verificationGasLimit = verificationGasLimit
             userOperation.callGasLimit = callGasLimit.multiply(BigInteger("10"))
@@ -511,7 +511,7 @@ internal class Web3Manager {
         userOperation: UserOperation,
         aaAddress: String,
     ): DAuthResult<CommitTransactionData> {
-        DAuthLogger.d("executeUserOperation useOp=$userOperation", TAG)
+        DAuthLogger.i("executeUserOperation useOp=$userOperation", TAG)
 
         val context = ElapsedContext(TAG)
 
@@ -521,7 +521,7 @@ internal class Web3Manager {
             return DAuthResult.SdkError()
         }
         val balanceData = balanceResult.data
-        DAuthLogger.d("balance=$balanceData", TAG)
+        DAuthLogger.i("balance=$balanceData", TAG)
         if (balanceData !is WalletBalanceData.Eth) {
             DAuthLogger.e("balance type error")
             return DAuthResult.SdkError()
@@ -535,13 +535,13 @@ internal class Web3Manager {
         val entryPointAddress = addresses.entryPointAddress
 
         val code = context.runSpending("encodeUserOp") { userOperation.encodeUserOp() }
-        DAuthLogger.d("code=$code", TAG)
+        DAuthLogger.i("code=$code", TAG)
         val codeHash = code.sha3()
-        DAuthLogger.d("codeHash=$codeHash", TAG)
+        DAuthLogger.i("codeHash=$codeHash", TAG)
         val chainId = web3j.ethChainId().awaitLite { it.chainId }
-        DAuthLogger.d("chainId=$chainId", TAG)
+        DAuthLogger.i("chainId=$chainId", TAG)
         if (chainId == null) {
-            DAuthLogger.d("chainId error", TAG)
+            DAuthLogger.e("chainId error", TAG)
             return DAuthResult.SdkError()
         }
         val relCode = context.runSpending("encodeRelCode") {
@@ -552,9 +552,9 @@ internal class Web3Manager {
             )
         }
 
-        DAuthLogger.d("relCode=$relCode", TAG)
+        DAuthLogger.i("relCode=$relCode", TAG)
         val hash = relCode.sha3()
-        DAuthLogger.d("hash=$hash", TAG)
+        DAuthLogger.i("hash=$hash", TAG)
 
         val ethMsgHash = context.runSpending("getMessageHash") {
             SignUtil.getMessageHash(
@@ -563,7 +563,7 @@ internal class Web3Manager {
             )
         }
         val ethMsgHashHex = ethMsgHash.toHexString()
-        DAuthLogger.d("toBeSignedHex=$ethMsgHashHex", TAG)
+        DAuthLogger.i("toBeSignedHex=$ethMsgHashHex", TAG)
 
         val signatureData = context.runSpending("sign") {
             val localSign = DAuthSDK.impl.config.localSign
@@ -604,19 +604,19 @@ internal class Web3Manager {
             return DAuthResult.SdkError()
         }
 
-        DAuthLogger.d("signer=$signer", TAG)
+        DAuthLogger.i("signer=$signer", TAG)
 
         userOperation.signature = signature
 
         val userOpCopy = userOperation.reload()
-        DAuthLogger.d("signature=${signature.toHexString()} ${signature.size}", TAG)
+        DAuthLogger.i("signature=${signature.toHexString()} ${signature.size}", TAG)
 
         val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
         if (useLocalRelayer) {
             val gasPrice = context.runSpending("getPrice") {
                 web3j.ethGasPrice().awaitLite { it.gasPrice }
             }
-            DAuthLogger.d("gasPrice=$gasPrice", TAG)
+            DAuthLogger.i("gasPrice=$gasPrice", TAG)
             if (gasPrice == null) {
                 return DAuthResult.SdkError()
             }
@@ -633,13 +633,13 @@ internal class Web3Manager {
             val receipt = context.runSpending("handleOp") {
                 entryPointDeploy.handleOp(userOpCopy).awaitLite()
             }
-            DAuthLogger.d("handleOp receipt=$receipt", TAG)
+            DAuthLogger.i("handleOp receipt=$receipt", TAG)
             val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
-            DAuthLogger.d("transactionHash=$transactionHash", TAG)
+            DAuthLogger.i("transactionHash=$transactionHash", TAG)
             return DAuthResult.Success(CommitTransactionData(transactionHash))
         } else {
             val sendResult = RelayerRequester.sendRequest(userOpCopy)
-            DAuthLogger.d("sendResult=$sendResult", TAG)
+            DAuthLogger.i("sendResult=$sendResult", TAG)
             if (sendResult == null) {
                 return DAuthResult.NetworkError()
             }

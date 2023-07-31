@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.webkit.SslErrorHandler
+import android.webkit.URLUtil
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -17,6 +19,7 @@ class WalletWebViewViewModel : ViewModel() {
 
     fun initWebViewClient(webView: WebView) {
         initWebViewSettings(webView)
+        webView.webChromeClient = WebChromeClient()
         webView.webViewClient = object : WebViewClient() {
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
@@ -40,15 +43,31 @@ class WalletWebViewViewModel : ViewModel() {
             }
 
             override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
-                DAuthLogger.e("shouldOverrideUrlLoading:  $url")
-                return if (url != null && url.startsWith("wc:")) {
-                    view.context.startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    )
-                    true
-                } else {
+                val r = if (url == null) {
                     false
+                } else {
+                    if (url.startsWith("https://metamask.app.link/")){
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        view.context.startActivity(intent)
+                        true
+                    } else if (URLUtil.isNetworkUrl(url)) {
+                        false
+                    } else if (url.startsWith("wc:")) {
+                        view.context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        )
+                        true
+                    } /*else if (url.startsWith("metamask:")) {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        view.context.startActivity(intent)
+                        true
+                    }*/ else {
+                        // do something if app is not installed
+                        true
+                    }
                 }
+                DAuthLogger.e("shouldOverrideUrlLoading: $url $r")
+                return r
             }
 
             @SuppressLint("WebViewClientOnReceivedSslError")
@@ -70,7 +89,7 @@ class WalletWebViewViewModel : ViewModel() {
         webSetting.javaScriptEnabled = true
         webSetting.setSupportZoom(true)
         webSetting.databaseEnabled = true
-        webSetting.domStorageEnabled = false
+        webSetting.domStorageEnabled = true
     }
 
 }

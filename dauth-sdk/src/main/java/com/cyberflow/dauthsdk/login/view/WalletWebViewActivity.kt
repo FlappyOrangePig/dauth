@@ -18,7 +18,8 @@ import com.cyberflow.dauthsdk.login.network.RequestApi
 import com.cyberflow.dauthsdk.login.utils.*
 
 private const val TAG = "X5WebViewActivity"
-private const val H5_URL = "https://wallet.51ailike.com/#/login"
+//private const val H5_URL = "https://wallet.51ailike.com/#/login"
+private const val H5_URL = "http://172.16.12.186:5500/index.html"
 private const val WEB_VIEW_ACTIVITY_EXTRA = "WEB_VIEW_ACTIVITY_EXTRA"
 
 class WalletWebViewActivity : AppCompatActivity() {

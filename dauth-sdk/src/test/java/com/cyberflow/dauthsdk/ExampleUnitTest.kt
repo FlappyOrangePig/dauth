@@ -14,6 +14,7 @@ import com.cyberflow.dauthsdk.mpc.MpcKeyIds
 import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.SignResult
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
+import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
 import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
@@ -147,19 +148,16 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testMoshi() {
+    fun testMoshi() = runBlocking {
         val src = "{\n" +
-                "    rh:9C1EBE663DEC7297A789865C093AD4316A2C439A45AB678AD2E33B99B3036C40\n" +
-                "    sh:7B70CDA795A9D7E531D3235C0942BFC5EFF3AE9FEE04A87E2D09077DE827962C\n" +
-                "    r:70615123879174677076162287035806532589155507673192136049551130616831817247808\n" +
-                "    s:55833786623070531251084825236099197801247607792756364041738090651206036198956\n" +
-                "    v:0\n" +
-                "    }"
-
-        val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory())
-            .add(KotlinJsonAdapterFactory()).build()
-        val j = moshi.adapter(SignResult::class.java).lenient().fromJson(src)
-        println(j)
+                "\"rh\": \"9C1EBE663DEC7297A789865C093AD4316A2C439A45AB678AD2E33B99B3036C40\",\n" +
+                "\"sh\": \"9C1EBE663DEC7297A789865C093AD4316A2C439A45AB678AD2E33B99B3036C40\",\n" +
+                "\"r\": \"70615123879174677076162287035806532589155507673192136049551130616831817247808\",\n" +
+                "\"s\": \"70615123879174677076162287035806532589155507673192136049551130616831817247808\",\n" +
+                "\"v\": 0\n" +
+                "}"
+        val j: SignResult? = MoshiUtil.fromJson(src, true)
+        println(MoshiUtil.toJson(j))
     }
 
     @Test

@@ -83,7 +83,7 @@ internal class LoginPrefs internal constructor(private val context: Context) {
             DAuthLogger.d("set authId $lastAuthId -> $authId", TAG)
             if (lastAuthId != authId) {
                 DAuthLogger.d("authId changed", TAG)
-                (DAuthSDK.impl.loginApi as? DAuthLogin)?.clearAccountInfo()
+                DAuthSDK.impl.loginApi.clearAccountInfo()
             }
         }
 

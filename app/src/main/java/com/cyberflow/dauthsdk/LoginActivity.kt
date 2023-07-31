@@ -4,12 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityLoginLayoutBinding
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.manager.AccountManager
+import com.cyberflow.dauthsdk.manager.sdk
+import com.cyberflow.dauthsdk.util.HideApiUtil
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 
@@ -20,9 +21,10 @@ private const val FACEBOOK = "FACEBOOK"
 private const val ACCOUNT_TYPE_OF_EMAIL = 10
 
 class LoginActivity : BaseActivity() {
-    var loginBinding: ActivityLoginLayoutBinding? = null
+    private var loginBinding: ActivityLoginLayoutBinding? = null
     private val binding: ActivityLoginLayoutBinding get() = loginBinding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
+    private val sdk get() = sdk()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +40,7 @@ class LoginActivity : BaseActivity() {
             val account = binding.edtAccount.text.toString()
             val password = binding.edtPassword.text.toString()
             lifecycleScope.launch {
-                val loginResultData = DAuthSDK.instance.loginByMobileOrEmail(
+                val loginResultData = sdk.loginByMobileOrEmail(
                     account,
                     password,
                     ACCOUNT_TYPE_OF_EMAIL
@@ -77,30 +79,36 @@ class LoginActivity : BaseActivity() {
 
         binding.ivGoogle.setOnClickListener {
             lifecycleScope.launch {
-                val loginResultData = DAuthSDK.instance.loginWithType(GOOGLE, this@LoginActivity)
+                val loginResultData = sdk.loginWithType(GOOGLE, this@LoginActivity)
                 handleLoginResult(loginResultData)
             }
         }
 
         binding.ivTwitter.setOnClickListener {
             lifecycleScope.launch {
-                val loginResultData = DAuthSDK.instance.loginWithType(TWITTER, this@LoginActivity)
+                val loginResultData = sdk.loginWithType(TWITTER, this@LoginActivity)
                 handleLoginResult(loginResultData)
             }
         }
 
-        binding.ivWallet.setOnClickListener {
+        binding.ivWalletConnect.setOnClickListener {
             lifecycleScope.launch {
-                val code = DAuthSDK.instance.link2EOAWallet(this@LoginActivity)
+                // wallet connect v1 方式：废弃
+                /*val code = sdk.link2EOAWallet(this@LoginActivity)
                 DAuthLogger.d("EOA钱包登录返回code:$code")
-                handleLoginResult(code)
+                handleLoginResult(code)*/
+
+                kotlin.runCatching {
+                    val connectResult =  HideApiUtil.getEoaApi().connectWallet()
+                    ToastUtil.show(it.context, "$connectResult")
+                }
             }
         }
 
         binding.tvSendCode.setOnClickListener {
             val account = binding.edtAccount.text.toString()
             lifecycleScope.launch {
-                val response = DAuthSDK.instance.sendEmailVerifyCode(account)
+                val response = sdk.sendEmailVerifyCode(account)
                 if (response?.ret == 0) {
                     ToastUtil.show(applicationContext, "验证码发送成功")
                     DAuthLogger.d("验证码发送成功")
@@ -116,6 +124,13 @@ class LoginActivity : BaseActivity() {
 
         binding.tvDauth.setOnClickListener {
             WalletTestActivity.launch(it.context)
+        }
+
+        binding.ivMetamask.setOnClickListener {
+            lifecycleScope.launch {
+                val connectResult = HideApiUtil.getEoaApi().connectWallet()
+                ToastUtil.show(it.context, "$connectResult")
+            }
         }
     }
 
@@ -149,7 +164,7 @@ class LoginActivity : BaseActivity() {
     private fun handleCreateWallet() {
         lifecycleScope.launch {
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val createWalletRes = DAuthSDK.instance.createWallet(false)
+            val createWalletRes = sdk.createWallet(false)
             loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address
@@ -168,7 +183,7 @@ class LoginActivity : BaseActivity() {
     private fun testWeb3() {
         lifecycleScope.launch {
             // 查询明达的MIMO-NFT列表
-            /*val tokenIds = DAuthSDK.instance.queryWalletBalance(
+            /*val tokenIds = sdk.queryWalletBalance(
                 MING_DA_S_ADDRESS, TokenType.ERC721(
                     MIMO_AVATAR_CONTRACT_ADDRESS
                 )
@@ -176,7 +191,7 @@ class LoginActivity : BaseActivity() {
             ToastUtil.show(this@LoginActivity, tokenIds.toString())*/
 
             // 查询sepolia-test上面某人的BULL_TOKEN
-            /*val balance = DAuthSDK.instance.queryWalletBalance(
+            /*val balance = sdk.queryWalletBalance(
                 Web3Const.ANY_ONE_WHO_RECEIVE_BULL_TOKEN_ON_SEPOLIA_TEST_NETWORK,
                 TokenType.ERC20(Web3Const.BULL_TOKEN_CONTRACT_ADDRESS)
             )
@@ -196,7 +211,7 @@ class LoginActivity : BaseActivity() {
             }
 
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val accountResult = DAuthSDK.instance.queryAccountByAuthid()
+            val accountResult = sdk.queryAccountByAuthid()
             loadingDialog.dismiss()
             if (accountResult == null) {
                 ToastUtil.show(this@LoginActivity, "网络错误")
@@ -212,7 +227,7 @@ class LoginActivity : BaseActivity() {
 
                 ResponseCode.isLoggedOut(ret) -> {
                     ToastUtil.show(this@LoginActivity, "登录状态已失效 $ret")
-                    DAuthSDK.instance.logout()
+                    sdk.logout()
                 }
 
                 else -> {

@@ -17,7 +17,7 @@ import org.web3j.protocol.Web3j
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 
-interface IWalletApi {
+interface IAAWalletApi {
 
     /**
      * 创建钱包
@@ -39,24 +39,6 @@ interface IWalletApi {
      * @return 查询结果
      */
     suspend fun queryWalletBalance(walletAddress: String, tokenType: TokenType): DAuthResult<WalletBalanceData>
-
-    /**
-     * 预估交易费用
-     * @param toUserId 目标账户
-     * @param amount 转账金额，单位wei
-     * @return 计算结果
-     */
-    @Deprecated("不再提供，直接调用合约计算Gas")
-    suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData>
-
-    /**
-     * 发送交易
-     * @param toAddress 目标地址
-     * @param amount 交易金额
-     * @return 交易结果
-     */
-    @Deprecated("不再提供，直接调用合约发送")
-    suspend fun sendTransaction(toAddress: String, amount: BigInteger): DAuthResult<SendTransactionData>
 
     /**
      * 创建[UserOperation]并计算燃料费

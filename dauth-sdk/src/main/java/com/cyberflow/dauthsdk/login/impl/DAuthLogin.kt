@@ -35,13 +35,7 @@ private const val IS_REGISTER = 1       // 如果账号不存在则注册并登�
 private const val AREA_CODE = "86"      // 手机区号
 private const val VERIFY_CODE_LENGTH = 4
 
-class DAuthLogin : ILoginApi {
-
-    companion object {
-        val instance: ILoginApi by lazy {
-            DAuthLogin()
-        }
-    }
+internal class DAuthLogin internal constructor() : ILoginApi {
 
     private val prefs get() = Managers.loginPrefs
     private val walletManager get() = Managers.walletManager

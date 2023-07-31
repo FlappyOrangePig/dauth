@@ -6,11 +6,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMobileLoginLayoutBinding
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
-import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.manager.AccountManager
+import com.cyberflow.dauthsdk.manager.sdk
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 
@@ -19,6 +19,7 @@ class LoginByMobileActivity: BaseActivity() {
     private var _binding: ActivityMobileLoginLayoutBinding?  = null
     private val binding: ActivityMobileLoginLayoutBinding get() = _binding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
+    private val sdk get() = sdk()
 
     companion object {
         fun launch(context: Context) {
@@ -38,7 +39,7 @@ class LoginByMobileActivity: BaseActivity() {
         binding.tvSendCode.setOnClickListener {
             val phone = binding.edtAccount.text.toString()
             lifecycleScope.launch {
-                DAuthSDK.instance.sendPhoneVerifyCode(phone,"86")
+                sdk().sendPhoneVerifyCode(phone,"86")
             }
         }
 
@@ -46,7 +47,7 @@ class LoginByMobileActivity: BaseActivity() {
             val phone = binding.edtAccount.text.toString()
             val verifyCode = binding.edtVerifyCode.text.toString()
             lifecycleScope.launch {
-                val result = DAuthSDK.instance.loginByMobileOrEmail(phone, verifyCode, USER_TYPE_OF_MOBILE)
+                val result = sdk.loginByMobileOrEmail(phone, verifyCode, USER_TYPE_OF_MOBILE)
                 handleLoginResult(result)
             }
         }
@@ -77,7 +78,7 @@ class LoginByMobileActivity: BaseActivity() {
     private fun handleCreateWallet() {
         lifecycleScope.launch {
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val createWalletRes = DAuthSDK.instance.createWallet(false)
+            val createWalletRes = sdk.createWallet(false)
             loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address

@@ -1,4 +1,4 @@
 package com.cyberflow.dauthsdk.api
 
-interface IDAuthApi : ILoginApi, IWalletApi {
+interface IDAuthApi : ILoginApi, IAAWalletApi {
 }

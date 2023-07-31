@@ -10,6 +10,7 @@ import com.cyberflow.dauthsdk.login.impl.ThirdPlatformLogin
 import com.cyberflow.dauthsdk.login.model.AuthorizeToken2Param
 import com.cyberflow.dauthsdk.login.model.DAuthUser
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.google.gson.Gson
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.DefaultLogger
@@ -76,8 +77,7 @@ class TwitterLoginManager private constructor() {
                     userData.openid = twitterUserInfo?.idStr
                     userData.head_img_url = twitterUserInfo?.profileImageUrl
                     userData.nickname = twitterUserInfo?.screenName
-                    val gson = Gson()
-                    val twitterUser = gson.toJson(userData)
+                    val twitterUser = MoshiUtil.toJson(userData)
                     it.resume(twitterUser)
                 }
 

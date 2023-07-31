@@ -3,6 +3,7 @@ package com.cyberflow.dauthsdk
 import android.app.Application
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.SdkConfig
+import com.cyberflow.dauthsdk.manager.AccountManager
 
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
@@ -31,6 +32,8 @@ class MyApplication : Application() {
             useDevRelayerServer = false
             googleClientId = GOOGLE_CLIENT_ID
         }
-        DAuthSDK.instance.initSDK(this, config = config)
+        val sdk = DAuthSDK.instance
+        sdk.initSDK(this, config = config)
+        AccountManager.attachSdk(sdk)
     }
 }

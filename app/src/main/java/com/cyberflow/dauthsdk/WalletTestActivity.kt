@@ -6,10 +6,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityWalletTestBinding
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.ext.mount
+import com.cyberflow.dauthsdk.manager.sdk
 import com.cyberflow.dauthsdk.util.DialogHelper
 import com.cyberflow.dauthsdk.util.GasUtil
 import com.cyberflow.dauthsdk.util.LogUtil
@@ -46,7 +46,7 @@ class WalletTestActivity : BaseActivity() {
     private var _binding: ActivityWalletTestBinding? = null
     private val binding: ActivityWalletTestBinding get() = _binding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
-    private val api by lazy { DAuthSDK.instance }
+    private val sdk get() = sdk()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +58,7 @@ class WalletTestActivity : BaseActivity() {
     private fun createWallet(force: Boolean) {
         lifecycleScope.launch {
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val result = api.createWallet(force)
+            val result = sdk.createWallet(force)
             loadingDialog.dismiss()
             if (result !is DAuthResult.Success) {
                 ToastUtil.show(this@WalletTestActivity, "创建失败 ${result.getError()}")
@@ -80,7 +80,7 @@ class WalletTestActivity : BaseActivity() {
             val msg = "abcdef"
             lifecycleScope.launch{
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val r = api.mpcSign(msg)
+                val r = sdk.mpcSign(msg)
                 loadingDialog.dismiss()
                 LogUtil.i(TAG, "hex=$r")
                 ToastUtil.show(context, r.toString())
@@ -90,7 +90,7 @@ class WalletTestActivity : BaseActivity() {
             lifecycleScope.launch {
 
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val addressResult = api.queryWalletAddress()
+                val addressResult = sdk.queryWalletAddress()
                 loadingDialog.dismiss()
                 if (addressResult !is DAuthResult.Success) {
                     ToastUtil.show(context, "获取地址失败")
@@ -128,7 +128,7 @@ class WalletTestActivity : BaseActivity() {
                     }
 
                     loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                    val result = api.createUserOpAndEstimateGas(
+                    val result = sdk.createUserOpAndEstimateGas(
                         args.address,
                         args.amound,
                         args.byteArray
@@ -146,7 +146,7 @@ class WalletTestActivity : BaseActivity() {
                                     supportFragmentManager,
                                     LoadingDialogFragment.TAG
                                 )
-                                val executeResult = api.execute(data.userOp)
+                                val executeResult = sdk.execute(data.userOp)
                                 loadingDialog.dismiss()
                                 if (executeResult !is DAuthResult.Success) {
                                     ToastUtil.show(context, "执行失败，${executeResult.getError()}")
@@ -163,7 +163,7 @@ class WalletTestActivity : BaseActivity() {
         btnTransferMoneyToAa.setOnClickListener {
             lifecycleScope.launch {
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val addressResult = api.queryWalletAddress()
+                val addressResult = sdk.queryWalletAddress()
                 loadingDialog.dismiss()
                 if (addressResult !is DAuthResult.Success) {
                     ToastUtil.show(context, "获取地址失败")
@@ -184,7 +184,7 @@ class WalletTestActivity : BaseActivity() {
         btnGetBalance.setOnClickListener {
             lifecycleScope.launch {
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val addressResult = api.queryWalletAddress()
+                val addressResult = sdk.queryWalletAddress()
                 loadingDialog.dismiss()
                 if (addressResult !is DAuthResult.Success) {
                     ToastUtil.show(context, "获取地址失败")
@@ -192,7 +192,7 @@ class WalletTestActivity : BaseActivity() {
                 }
                 val address = addressResult.data.aaAddress
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val balanceResult = api.queryWalletBalance(address, TokenType.Eth)
+                val balanceResult = sdk.queryWalletBalance(address, TokenType.Eth)
                 loadingDialog.dismiss()
                 if (balanceResult !is DAuthResult.Success) {
                     ToastUtil.show(context, "查询余额失败")
@@ -206,7 +206,7 @@ class WalletTestActivity : BaseActivity() {
             lifecycleScope.launch {
                 val address = TO_ADDRESS
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val balanceResult = api.queryWalletBalance(address, TokenType.Eth)
+                val balanceResult = sdk.queryWalletBalance(address, TokenType.Eth)
                 loadingDialog.dismiss()
                 if (balanceResult !is DAuthResult.Success) {
                     ToastUtil.show(context, "查询余额失败")
@@ -218,7 +218,7 @@ class WalletTestActivity : BaseActivity() {
         }
         btnAaExists.setOnClickListener {
             lifecycleScope.launch {
-                val addressResult = api.queryWalletAddress()
+                val addressResult = sdk.queryWalletAddress()
                 if (addressResult !is DAuthResult.Success) {
                     ToastUtil.show(context, "获取地址失败")
                     return@launch
@@ -246,7 +246,7 @@ class WalletTestActivity : BaseActivity() {
             }*/
         }
         btnClearData.setOnClickListener {
-            DAuthSDK.instance.deleteWallet()
+            sdk.deleteWallet()
         }
         btnImportKey.setOnClickListener {
             val keys = listOf(
@@ -256,14 +256,14 @@ class WalletTestActivity : BaseActivity() {
             )
             lifecycleScope.launch {
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                DAuthSDK.instance.restoreKeys(keys)
+                sdk.restoreKeys(keys)
                 loadingDialog.dismiss()
                 initData()
             }
         }
         btnUserOpEvent.setOnClickListener {
             lifecycleScope.launch {
-                val a = DAuthSDK.instance.queryWalletAddress()
+                val a = sdk.queryWalletAddress()
                 if (a !is DAuthResult.Success) {
                     return@launch
                 }
@@ -279,7 +279,7 @@ class WalletTestActivity : BaseActivity() {
 
     private fun initData() {
         lifecycleScope.launch {
-            when(val address = api.queryWalletAddress()){
+            when(val address = sdk.queryWalletAddress()){
                 is DAuthResult.Success -> {
                     val aa = address.data.aaAddress
                     val signer = address.data.signerAddress

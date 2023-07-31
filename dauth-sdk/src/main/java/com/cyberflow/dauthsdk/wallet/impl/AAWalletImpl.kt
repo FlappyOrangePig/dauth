@@ -1,6 +1,6 @@
 package com.cyberflow.dauthsdk.wallet.impl
 
-import com.cyberflow.dauthsdk.api.IWalletApi
+import com.cyberflow.dauthsdk.api.IAAWalletApi
 import com.cyberflow.dauthsdk.api.entity.CommitTransactionData
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
@@ -32,13 +32,13 @@ import org.web3j.protocol.Web3j
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 
-private const val TAG = "EoaWallet"
+private const val TAG = "AAWalletImpl"
 
 /**
  * 模拟钱包实现类。
  * 在AA钱包开发完成前先创建假数据。
  */
-class EoaWallet internal constructor(): IWalletApi {
+class AAWalletImpl internal constructor(): IAAWalletApi {
 
     private val walletPrefsV2 get() = Managers.walletPrefsV2
     private val web3m get() = Managers.web3m
@@ -90,54 +90,6 @@ class EoaWallet internal constructor(): IWalletApi {
         }
         DAuthLogger.i("queryWalletBalance $r", TAG)
         return r
-    }
-
-    override suspend fun estimateGas(
-        toUserId: String,
-        amount: BigInteger
-    ): DAuthResult<EstimateGasData> {
-        val addressResult = queryWalletAddress()
-        if (addressResult !is DAuthResult.Success) {
-            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS)
-        }
-        val address = addressResult.data.aaAddress
-        return web3m.estimateGas(address, toUserId, amount).also {
-            DAuthLogger.d("estimateGas from=$address to=$toUserId amount=$amount result=$it", TAG)
-        }
-    }
-
-    override suspend fun sendTransaction(
-        toAddress: String,
-        amount: BigInteger
-    ): DAuthResult<SendTransactionData> {
-        DAuthLogger.d("sendTransaction $toAddress $amount", TAG)
-        return web3m.sendTransaction(toAddress, amount).also {
-            DAuthLogger.i("sendTransaction to=$toAddress amount=$amount result=$it", TAG)
-        }
-    }
-
-    private suspend fun <T> dealWithUserOperationCall(
-        contractAddress: String,
-        balance: BigInteger,
-        func: ByteArray,
-        block: suspend (String, ByteArray) -> DAuthResult<T>
-    ): DAuthResult<T> {
-        val addressResult = queryWalletAddress()
-        if (addressResult !is DAuthResult.Success) {
-            return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_ADDRESS)
-        }
-        val signerAddress = addressResult.data.signerAddress
-        val function = Function(
-            DAuthAccount.FUNC_EXECUTE,
-            listOf<Type<*>>(
-                Address(contractAddress.prependHexPrefix()),
-                Uint256(balance),
-                DynamicBytes(func)
-            ), emptyList<TypeReference<*>>()
-        )
-        val encodedFunction = FunctionEncoder.encode(function)
-        val callData = Numeric.hexStringToByteArray(encodedFunction)
-        return block.invoke(signerAddress, callData)
     }
 
     override suspend fun execute(

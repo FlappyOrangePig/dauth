@@ -9,20 +9,22 @@ import com.cyberflow.dauthsdk.wallet.ext.getMetaData
 import com.cyberflow.dauthsdk.wallet.ext.getPackageInfo
 import com.cyberflow.dauthsdk.wallet.ext.getVersionCode
 import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLog
-import com.cyberflow.dauthsdk.wallet.impl.WalletHolder
+import com.cyberflow.dauthsdk.wallet.impl.AAWalletImpl
+import com.cyberflow.dauthsdk.wallet.impl.EoaWalletImpl
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.util.DebugUtil
+import com.cyberflow.dauthsdk.wallet.util.KeystoreUtil
 
 class DAuthSDK private constructor(
-    internal val loginApi: ILoginApi,
-    private val walletApi: IWalletApi
-) : IDAuthApi, ILoginApi by loginApi,
-    IWalletApi by walletApi {
+    internal val loginApi: DAuthLogin,
+    private val aaWalletApi: AAWalletImpl,
+    private val eoaWalletApi: EoaWalletImpl,
+) : IDAuthApi, ILoginApi by loginApi, IAAWalletApi by aaWalletApi {
 
     companion object {
         val instance: IDAuthApi get() = impl
         internal val impl: DAuthSDK by lazy {
-            DAuthSDK(DAuthLogin.instance, WalletHolder.walletApi)
+            DAuthSDK(DAuthLogin(), AAWalletImpl(), EoaWalletImpl())
         }
     }
 
@@ -36,6 +38,25 @@ class DAuthSDK private constructor(
         this._context = appContext
         this._config = config
         initializeCheck()
+        Managers.inject(appContext)
+        loginApi.initSDK(context, config)
+        KeystoreUtil.setupBouncyCastle()
+        DAuthLogger.i("init sdk ok")
+        printSdkVersion()
+        printDebugInfo()
+    }
+
+    private fun initializeCheck() {
+        context
+    }
+
+    @VisibleForTesting
+    fun initSDKForTest(context: Context, config: SdkConfig) {
+        this._context = context
+        this._config = config
+    }
+
+    private fun printSdkVersion() {
         runCatchingWithLog {
             val ai = context.getPackageInfo()
             DAuthLogger.i(
@@ -45,9 +66,9 @@ class DAuthSDK private constructor(
                         "getVersionCode=${ai?.getVersionCode()}\n"
             )
         }
-        Managers.inject(appContext)
-        loginApi.initSDK(context, config)
-        DAuthLogger.i("init sdk ok")
+    }
+
+    private fun printDebugInfo() {
         if (DebugUtil.isAppDebuggable(context)) {
             val loginPrefs = Managers.loginPrefs
             val trace = StringBuilder()
@@ -56,15 +77,5 @@ class DAuthSDK private constructor(
                 .appendLine("accessToken=${loginPrefs.getAccessToken()}")
             DAuthLogger.d(trace.toString())
         }
-    }
-
-    private fun initializeCheck() {
-        context
-    }
-
-    @VisibleForTesting
-    fun initSDKForTest(context: Context, config: SdkConfig){
-        this._context = context
-        this._config = config
     }
 }

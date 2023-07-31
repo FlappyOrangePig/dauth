@@ -52,7 +52,7 @@ dependencies {
 
     implementation libraries.constraintlayout
     //implementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
-    //implementation 'com.github.FlappyOrangePig:dauth:0.0.3'
+    //implementation 'com.github.FlappyOrangePig:dauth:0.0.10'
     implementation project(':dauth-sdk')
 }
 

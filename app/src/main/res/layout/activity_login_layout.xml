@@ -18,39 +18,70 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/iv_google"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <LinearLayout
+        android:id="@+id/ll_sso"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="5dp"
-        android:src="@drawable/ic_google"
-        app:layout_constraintBottom_toTopOf="@id/edt_account"
-        app:layout_constraintStart_toStartOf="@id/edt_account"
-        app:layout_constraintTop_toBottomOf="@id/tv_dauth" />
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_dauth">
 
-    <ImageView
-        android:id="@+id/iv_twitter"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="5dp"
-        android:src="@drawable/ic_twitter"
-        app:layout_constraintBottom_toTopOf="@id/edt_account"
-        app:layout_constraintStart_toEndOf="@id/iv_google"
-        app:layout_constraintTop_toBottomOf="@id/tv_dauth" />
+        <ImageView
+            android:id="@+id/iv_google"
+            android:layout_width="@dimen/svg_logo_size"
+            android:layout_height="@dimen/svg_logo_size"
+            android:layout_marginStart="5dp"
+            app:srcCompat="@drawable/svg_ic_google" />
 
-    <ImageView
-        android:id="@+id/iv_facebook"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="5dp"
-        android:src="@drawable/ic_facebook"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/edt_account"
-        app:layout_constraintStart_toEndOf="@id/iv_twitter"
-        app:layout_constraintTop_toBottomOf="@id/tv_dauth" />
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="0dp" />
+
+        <ImageView
+            android:id="@+id/iv_twitter"
+            android:layout_width="@dimen/svg_logo_size"
+            android:layout_height="@dimen/svg_logo_size"
+            android:layout_marginStart="0dp"
+            app:srcCompat="@drawable/svg_ic_twitter" />
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="0dp" />
+
+        <ImageView
+            android:id="@+id/iv_facebook"
+            android:layout_width="@dimen/svg_logo_size"
+            android:layout_height="@dimen/svg_logo_size"
+            android:visibility="visible"
+            app:srcCompat="@drawable/svg_ic_facebook" />
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="0dp" />
+
+        <ImageView
+            android:id="@+id/iv_wallet_connect"
+            android:layout_width="@dimen/svg_logo_size"
+            android:layout_height="@dimen/svg_logo_size"
+            app:srcCompat="@drawable/svg_ic_wallet_connect" />
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="0dp" />
+
+        <ImageView
+            android:id="@+id/iv_metamask"
+            android:layout_width="@dimen/svg_logo_size"
+            android:layout_height="@dimen/svg_logo_size"
+            app:srcCompat="@drawable/svg_ic_metamask" />
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="0dp" />
+
+    </LinearLayout>
 
     <EditText
         android:id="@+id/edt_account"
@@ -58,10 +89,10 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="70dp"
         android:layout_marginEnd="50dp"
         android:hint="Enter email address"
-        app:layout_constraintTop_toBottomOf="@id/iv_google" />
+        app:layout_constraintTop_toBottomOf="@id/tv_dauth" />
 
     <TextView
         android:id="@+id/tv_switch_pwd"
@@ -76,15 +107,7 @@
         app:layout_constraintEnd_toEndOf="@id/edt_account"
         app:layout_constraintTop_toTopOf="@id/edt_account" />
 
-    <ImageView
-        android:id="@+id/iv_wallet"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:src="@drawable/ic_wallet_connect"
-        app:layout_constraintStart_toEndOf="@id/iv_facebook"
-        app:layout_constraintTop_toBottomOf="@id/tv_dauth" />
+
 
     <EditText
         android:id="@+id/edt_password"

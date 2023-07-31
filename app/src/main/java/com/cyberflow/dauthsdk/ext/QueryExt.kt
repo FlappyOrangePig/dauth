@@ -3,14 +3,13 @@ package com.cyberflow.dauthsdk.ext
 import com.cyberflow.dauth.R
 import com.cyberflow.dauthsdk.MyApplication
 import com.cyberflow.dauthsdk.ToastUtil
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
 import com.cyberflow.dauthsdk.login.network.BaseResponse
-import java.math.BigInteger
+import com.cyberflow.dauthsdk.manager.sdk
 
 suspend fun myAddress() =
-    (DAuthSDK.instance.queryWalletAddress() as? DAuthResult.Success)?.data?.aaAddress
+    (sdk().queryWalletAddress() as? DAuthResult.Success)?.data?.aaAddress
 
 fun WalletBalanceData.mount() = when (this) {
     is WalletBalanceData.Eth -> {

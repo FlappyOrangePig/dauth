@@ -4,12 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityRegisterLayoutBinding
-import com.cyberflow.dauthsdk.api.DAuthSDK
+import com.cyberflow.dauthsdk.manager.sdk
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class RegisterActivity : BaseActivity() {
@@ -44,7 +42,7 @@ class RegisterActivity : BaseActivity() {
             if (account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
                 lifecycleScope.launch {
                     loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                    val code = DAuthSDK.instance.createDAuthAccount(
+                    val code = sdk().createDAuthAccount(
                         account,
                         password,
                         ensurePassword

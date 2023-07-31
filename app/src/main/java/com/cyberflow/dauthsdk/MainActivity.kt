@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.cyberflow.dauth.databinding.ActivityMainLayoutBinding
-import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
 import com.cyberflow.dauthsdk.api.entity.TokenType
 import com.cyberflow.dauthsdk.ext.handleByToast
@@ -17,6 +16,7 @@ import com.cyberflow.dauthsdk.login.model.AccountRes
 import com.cyberflow.dauthsdk.login.model.SetPasswordParam
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.manager.AccountManager
+import com.cyberflow.dauthsdk.manager.sdk
 import com.cyberflow.dauthsdk.util.DemoPrefs
 import com.cyberflow.dauthsdk.util.DialogHelper
 import com.cyberflow.dauthsdk.widget.LoadingDialogFragment
@@ -34,7 +34,7 @@ class MainActivity : BaseActivity() {
     private var mainBinding: ActivityMainLayoutBinding? = null
     private val binding: ActivityMainLayoutBinding get() = mainBinding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
-    private val api get() = DAuthSDK.instance
+    private val sdk get() = sdk()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +72,7 @@ class MainActivity : BaseActivity() {
                     DemoPrefs.setLastEmail(mail)
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                        val accountRes = api.queryAccountByEmail(mail)
+                        val accountRes = sdk.queryAccountByEmail(mail)
                         loadingDialog.dismiss()
                         val data = accountRes?.data
                         if (data == null) {
@@ -99,7 +99,7 @@ class MainActivity : BaseActivity() {
                     DemoPrefs.setLastEmail(mail)
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                        val response = api.sendEmailVerifyCode(mail)
+                        val response = sdk.sendEmailVerifyCode(mail)
                         loadingDialog.dismiss()
                         if (response?.ret != 0) {
                             return@launch
@@ -116,7 +116,7 @@ class MainActivity : BaseActivity() {
                                         supportFragmentManager,
                                         LoadingDialogFragment.TAG
                                     )
-                                    val result = api.bindEmail(mail, code)
+                                    val result = sdk.bindEmail(mail, code)
                                     loadingDialog.dismiss()
                                     result.handleByToast()
                                 }
@@ -137,7 +137,7 @@ class MainActivity : BaseActivity() {
                     DemoPrefs.setLastEmail(mail)
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                        val response = api.sendEmailVerifyCode(mail)
+                        val response = sdk.sendEmailVerifyCode(mail)
                         loadingDialog.dismiss()
                         if (response?.ret != 0) {
                             return@launch
@@ -154,7 +154,7 @@ class MainActivity : BaseActivity() {
                                         supportFragmentManager,
                                         LoadingDialogFragment.TAG
                                     )
-                                    val result = api.checkEmail(mail, code)
+                                    val result = sdk.checkEmail(mail, code)
                                     loadingDialog.dismiss()
                                     result.handleByToast()
                                 }
@@ -170,7 +170,7 @@ class MainActivity : BaseActivity() {
         }
 
         binding.btnQuit.setOnClickListener {
-            api.logout()
+            sdk.logout()
             finish()
         }
 
@@ -185,7 +185,7 @@ class MainActivity : BaseActivity() {
         DialogHelper.showInputDialogMayHaveLeak(this, "Enter Password") { password ->
             lifecycleScope.launch {
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val result = api.setPassword(SetPasswordParam().apply { this.password = password })
+                val result = sdk.setPassword(SetPasswordParam().apply { this.password = password })
                 loadingDialog.dismiss()
                 result.handleByToast()
             }
@@ -194,7 +194,7 @@ class MainActivity : BaseActivity() {
 
     private suspend fun showEth(sb: StringBuilder) {
         val address = myAddress() ?: return
-        val balanceResult = api.queryWalletBalance(address, TokenType.Eth)
+        val balanceResult = sdk.queryWalletBalance(address, TokenType.Eth)
         var result: String? = null
 
         when (balanceResult) {
@@ -210,7 +210,7 @@ class MainActivity : BaseActivity() {
     private suspend fun showUsdt(sb: StringBuilder) {
         val address = myAddress() ?: return
         val balanceResult =
-            api.queryWalletBalance(address, TokenType.ERC20(Web3Const.ERC20))
+            sdk.queryWalletBalance(address, TokenType.ERC20(Web3Const.ERC20))
         var result: String? = null
 
         when (balanceResult) {
@@ -226,7 +226,7 @@ class MainActivity : BaseActivity() {
     private suspend fun showNfts(sb: StringBuilder) {
         val address = myAddress() ?: return
         val balance =
-            api.queryWalletBalance(address, TokenType.ERC721(Web3Const.ERC721))
+            sdk.queryWalletBalance(address, TokenType.ERC721(Web3Const.ERC721))
         var result: String? = null
 
         when (balance) {
@@ -247,7 +247,7 @@ class MainActivity : BaseActivity() {
         lifecycleScope.launch {
             binding.tvWalletAddress.text = "AA钱包地址：${AccountManager.getAccountAddress()}"
 
-            val accountRes = api.queryAccountByAuthid()
+            val accountRes = sdk.queryAccountByAuthid()
             val data = accountRes?.data
             if (data == null) {
                 ToastUtil.show(this@MainActivity, "查询用户信息失败")

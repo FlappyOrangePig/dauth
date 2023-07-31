@@ -48,12 +48,12 @@ internal class ElapsedContext(
     }
 
     internal fun traceElapsedList() {
-        DAuthLogger.d("**** trace elapsed list **** >>>", logTag)
+        DAuthLogger.i("**** trace elapsed list **** >>>", logTag)
         val totalSpent = this.elapsedList.sumOf { it.elapsedMs }
-        DAuthLogger.d("total spent $totalSpent", logTag)
+        DAuthLogger.i("total spent $totalSpent", logTag)
         this.elapsedList.forEachIndexed { i, e ->
-            DAuthLogger.d("$i) ${e.log} spent ${e.elapsedMs}ms", logTag)
+            DAuthLogger.i("$i) ${e.log} spent ${e.elapsedMs}ms", logTag)
         }
-        DAuthLogger.d("**** trace elapsed list **** <<<", logTag)
+        DAuthLogger.i("**** trace elapsed list **** <<<", logTag)
     }
 }

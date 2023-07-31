@@ -17,9 +17,8 @@
         <activity
             android:theme="@style/AppTheme.Transparent"
             android:name=".login.view.ThirdPartyResultActivity"
-            android:exported="false">
-            
-        </activity>
+            android:excludeFromRecents="true"
+            android:exported="false"/>
 
         <meta-data android:name="DAUTH_VERSION"  android:value="${sdkVersion}" />
 
