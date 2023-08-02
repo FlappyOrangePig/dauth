@@ -1,5 +1,7 @@
 package com.cyberflow.dauthsdk.api.entity
 
+import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+
 sealed class DAuthResult<T> {
 
     abstract fun getError(): String?
@@ -14,18 +16,18 @@ sealed class DAuthResult<T> {
 
     class ServerError<T>(val code: Int, val msg: String) : DAuthResult<T>() {
         override fun getError(): String {
-            return msg
+            return "server error:$msg"
         }
 
         override fun toString(): String {
-            return "Web3Error(code=$code, msg='$msg')"
+            return "ServerError(code=$code, msg='$msg')"
         }
 
     }
 
     class NetworkError<T>(val throwable: Throwable? = null) : DAuthResult<T>() {
         override fun getError(): String {
-            return throwable?.stackTraceToString().orEmpty()
+            return "network error:${throwable?.message.orEmpty()}"
         }
 
         override fun toString(): String {
@@ -34,7 +36,7 @@ sealed class DAuthResult<T> {
 
     }
 
-    class SdkError<T>(val code: Int = SDK_ERROR_UNKNOWN) : DAuthResult<T>() {
+    class SdkError<T>(val code: Int) : DAuthResult<T>() {
         override fun getError(): String {
             return "sdk error:$code"
         }
@@ -54,5 +56,49 @@ sealed class DAuthResult<T> {
         const val SDK_ERROR_RESTORE_KEY_BY_MERGE_RESULT = 6
         const val SDK_ERROR_CANNOT_GENERATE_ADDRESS = 7
         const val SDK_ERROR_SET_KEY = 8
+        const val SDK_ERROR_AA_ADDRESS_INVALID = 9
+        const val SDK_ERROR_NO_BALANCE = 10
+        const val SDK_ERROR_ESTIMATE_SIMULATE = 11
+        const val SDK_ERROR_ESTIMATE_SIMULATE_DECODE = 12
+        const val SDK_ERROR_BALANCE_TYPE = 13
+        const val SDK_ERROR_SIGN = 14
+        const val SDK_ERROR_GET_SIGNER_BY_SIGNATURE = 14
     }
+}
+
+internal fun <T> DAuthResult<T>.traceResult(
+    tag: String,
+    log: String
+): DAuthResult<T> {
+    when (this) {
+        is DAuthResult.Success -> {
+            DAuthLogger.i("$log:${this.data}", tag)
+        }
+
+        is DAuthResult.NetworkError, is DAuthResult.SdkError, is DAuthResult.ServerError -> {
+            DAuthLogger.e("$log:${this.getError()}", tag)
+        }
+    }
+    return this
+}
+
+internal fun <SRC, DST> DAuthResult<SRC>.transformError(): DAuthResult<DST> {
+    val error: DAuthResult<DST> = when (this) {
+        is DAuthResult.Success -> {
+            throw IllegalArgumentException("cannot transform success")
+        }
+
+        is DAuthResult.NetworkError -> {
+            DAuthResult.NetworkError(this.throwable)
+        }
+
+        is DAuthResult.SdkError -> {
+            DAuthResult.SdkError(this.code)
+        }
+
+        is DAuthResult.ServerError -> {
+            DAuthResult.ServerError(this.code, this.msg)
+        }
+    }
+    return error
 }

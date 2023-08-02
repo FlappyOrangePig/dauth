@@ -2,13 +2,15 @@ package com.cyberflow.dauthsdk.wallet.impl.manager.task
 
 import com.cyberflow.dauthsdk.api.entity.CreateWalletData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.traceResult
+import com.cyberflow.dauthsdk.api.entity.transformError
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
+import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.ext.ElapsedContext
 import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
 import com.cyberflow.dauthsdk.wallet.impl.manager.KeysToRestoreResult
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager.Companion.STATE_INIT
-import com.cyberflow.dauthsdk.wallet.impl.manager.task.util.WalletTaskUtil
 import com.cyberflow.dauthsdk.wallet.util.AssertUtil
 
 private const val TAG = "RestoreWalletTask"
@@ -34,13 +36,26 @@ internal class RestoreWalletTask(
         }
 
         val newKeys = arrayOf(localKey, restoreKeyInfo.k1, restoreKeyInfo.k2)
-        val addressResult = context.runSpending("generateAddress") {
-            WalletTaskUtil.generateAddress(newKeys)
+        // 生成账号
+        val signerAddress = context.runSpending("generateEoaAddress") {
+            val msg = DAuthJniInvoker.genRandomMsg()
+            DAuthJniInvoker.generateEoaAddress(msg.toByteArray(), newKeys).also {
+                DAuthLogger.i("generateEoaAddress $it", TAG)
+            }
+        } ?: return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GENERATE_ADDRESS)
+        val aaAddressResult = context.runSpending("generateAAAddress") {
+            // 根据EOA地址获取AA地址
+            val web3m = Managers.web3m
+            web3m.getAaAddressByEoaAddress(signerAddress)
+                .also { it.traceResult(TAG, "generateAAAddress") }
         }
-        DAuthLogger.d("addressResult=$addressResult", TAG)
-        if (addressResult == null) {
-            DAuthLogger.d("address error", TAG)
-            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_CANNOT_GENERATE_ADDRESS)
+        if (aaAddressResult !is DAuthResult.Success) {
+            return aaAddressResult.transformError()
+        }
+        val aaAddress = aaAddressResult.data
+        if (aaAddress.length <= 2) {
+            DAuthLogger.e("aa address too short")
+            return DAuthResult.SdkError(DAuthResult.SDK_ERROR_AA_ADDRESS_INVALID)
         }
 
         DAuthLogger.d("setLocalKey", TAG)
@@ -49,8 +64,8 @@ internal class RestoreWalletTask(
         }
 
         val r = context.runSpending("createResult") {
-            if (Managers.walletPrefsV2.setAddresses(addressResult.first, addressResult.second)) {
-                DAuthResult.Success(CreateWalletData(addressResult.second))
+            if (Managers.walletPrefsV2.setAddresses(signerAddress, aaAddress)) {
+                DAuthResult.Success(CreateWalletData(aaAddress))
             } else {
                 DAuthLogger.e("sp error", TAG)
                 DAuthResult.SdkError(DAuthResult.SDK_ERROR_UNKNOWN)

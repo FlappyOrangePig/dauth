@@ -9,7 +9,6 @@ import com.cyberflow.dauthsdk.api.entity.LoginResultData
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.SetPasswordData
 import com.cyberflow.dauthsdk.login.callback.ThirdPartyCallback
-import com.cyberflow.dauthsdk.login.callback.WalletCallback
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
 import com.cyberflow.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
 import com.cyberflow.dauthsdk.login.constant.LoginConst.GOOGLE
@@ -22,7 +21,6 @@ import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.login.utils.JwtChallengeCode
 import com.cyberflow.dauthsdk.login.utils.JwtDecoder
 import com.cyberflow.dauthsdk.login.view.ThirdPartyResultActivity
-import com.cyberflow.dauthsdk.login.view.WalletWebViewActivity
 import com.cyberflow.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
 import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
@@ -296,26 +294,6 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         val accessToken = prefs.getAccessToken()
         val body = BindEmailParam(authId, email, verifyCode, accessToken)
         return requestApi.bindEmail(body)
-    }
-
-    /**
-     * EOA钱包授权登录
-     */
-    override suspend fun link2EOAWallet(context: Context): LoginResultData? = suspendCancellableCoroutine {
-            continuation ->
-        val callback = object : WalletCallback {
-            override fun onResult(walletInfo: String) {
-                val body = AuthorizeToken2Param(
-                    user_type = TYPE_OF_WALLET_AUTH,
-                    user_data = walletInfo
-                )
-                CoroutineScope(Dispatchers.IO).launch {
-                    val loginResultData = ThirdPlatformLogin.instance.thirdPlatFormLogin(body)
-                    continuation.resume(loginResultData, null)
-                }
-            }
-        }
-        WalletWebViewActivity.launch(context, false, callback)
     }
 
     /**

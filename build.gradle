@@ -9,6 +9,7 @@ plugins {
     id 'com.android.application' version '8.0.2' apply false
     id 'com.android.library' version '8.0.2' apply false
     id 'org.jetbrains.kotlin.android' version '1.8.20' apply false
+    id "org.jetbrains.kotlin.kapt" version "1.8.20" apply false
     id "org.jetbrains.dokka" version "1.8.20" apply false
 }
 
@@ -24,6 +25,7 @@ subprojects {
                     versionCode versions.version_code
                     vectorDrawables.useSupportLibrary = true
                     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+                    consumerProguardFiles "consumer-rules.pro"
                 }
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_1_8
@@ -38,12 +40,27 @@ subprojects {
                         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                     }
                     debug {
-                        minifyEnabled false
+                        minifyEnabled true
                         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                     }
                 }
             }
             println("namespace=" + android.namespace)
+        }
+    }
+}
+
+/**
+ * 解决如下问题：
+ * 'compileDebugJavaWithJavac' task (current target is 1.8) and 'kaptGenerateStubsDebugKotlin'
+ * task (current target is 17) jvm target compatibility should be set to the same Java version.
+ * 原文：
+ * https://stackoverflow.com/questions/75650195/build-error-kspdebugkotlin-task-current-target-is-17
+ */
+allprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = "1.8"
         }
     }
 }

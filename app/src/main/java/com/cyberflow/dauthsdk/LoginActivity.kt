@@ -93,11 +93,6 @@ class LoginActivity : BaseActivity() {
 
         binding.ivWalletConnect.setOnClickListener {
             lifecycleScope.launch {
-                // wallet connect v1 方式：废弃
-                /*val code = sdk.link2EOAWallet(this@LoginActivity)
-                DAuthLogger.d("EOA钱包登录返回code:$code")
-                handleLoginResult(code)*/
-
                 kotlin.runCatching {
                     val connectResult =  HideApiUtil.getEoaApi().connectWallet()
                     ToastUtil.show(it.context, "$connectResult")
@@ -128,8 +123,7 @@ class LoginActivity : BaseActivity() {
 
         binding.ivMetamask.setOnClickListener {
             lifecycleScope.launch {
-                val connectResult = HideApiUtil.getEoaApi().connectWallet()
-                ToastUtil.show(it.context, "$connectResult")
+                // 待实现
             }
         }
     }

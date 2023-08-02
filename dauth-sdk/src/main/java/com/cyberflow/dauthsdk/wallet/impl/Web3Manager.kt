@@ -5,11 +5,20 @@ import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.api.entity.CommitTransactionData
 import com.cyberflow.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.cyberflow.dauthsdk.api.entity.DAuthResult
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_BALANCE_TYPE
 import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_CANNOT_GET_NONCE
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_ESTIMATE_SIMULATE
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_ESTIMATE_SIMULATE_DECODE
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_GET_SIGNER_BY_SIGNATURE
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_NO_BALANCE
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_SIGN
+import com.cyberflow.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_UNKNOWN
 import com.cyberflow.dauthsdk.api.entity.EstimateGasData
 import com.cyberflow.dauthsdk.api.entity.ResponseCode
 import com.cyberflow.dauthsdk.api.entity.SendTransactionData
 import com.cyberflow.dauthsdk.api.entity.WalletBalanceData
+import com.cyberflow.dauthsdk.api.entity.traceResult
+import com.cyberflow.dauthsdk.api.entity.transformError
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
 import com.cyberflow.dauthsdk.mpc.entity.Web3jResponseError
@@ -202,10 +211,6 @@ internal class Web3Manager {
         }
     }
 
-    private suspend inline fun <S, T : Response<*>, D> Request<S, T>.awaitLite(crossinline block: (T) -> D): D? {
-        return (await(block) as? DAuthResult.Success)?.data
-    }
-
     private suspend fun <T> RemoteCall<T>.await(): DAuthResult<T> = withContext(Dispatchers.IO) {
         try {
             val r = send()
@@ -214,10 +219,6 @@ internal class Web3Manager {
             DAuthLogger.e(android.util.Log.getStackTraceString(t))
             DAuthResult.NetworkError(t)
         }
-    }
-
-    private suspend fun <T> RemoteCall<T>.awaitLite(): T? {
-        return (await() as? DAuthResult.Success)?.data
     }
 
     private suspend fun <S, T : Response<*>> Request<S, T>.awaitException(): String? =
@@ -304,12 +305,13 @@ internal class Web3Manager {
             val transactionManager = ClientTransactionManager(web3j, accountAddress)
             ERC20.load(contractAddress, web3j, transactionManager, DefaultGasProvider())
         }
-        val callResult = contract.balanceOf(accountAddress).await()
-        DAuthLogger.d("getERC20Balance $callResult", TAG)
-        if (callResult is DAuthResult.Success) {
-            return DAuthResult.Success(WalletBalanceData.ERC20(callResult.data))
+        val callResult = contract.balanceOf(accountAddress)
+            .await()
+            .traceResult(TAG, "getERC20Balance")
+        if (callResult !is DAuthResult.Success) {
+            return callResult.transformError()
         }
-        return DAuthResult.NetworkError()
+        return DAuthResult.Success(WalletBalanceData.ERC20(callResult.data))
     }
 
     suspend fun getERC721NftTokenIds(
@@ -352,7 +354,7 @@ internal class Web3Manager {
         return DAuthResult.Success(WalletBalanceData.ERC721(arrayList))
     }
 
-    suspend fun getAaAddressByEoaAddress(eoaAddress: String): String? {
+    suspend fun getAaAddressByEoaAddress(eoaAddress: String): DAuthResult<String> {
         val addresses = ConfigurationManager.addresses()
         val faAddress = addresses.factoryAddress
         val accountFactory = DAuthAccountFactory.load(
@@ -361,9 +363,9 @@ internal class Web3Manager {
             transactionManager(eoaAddress),
             DefaultGasProvider()
         )
-        val aaAddress = accountFactory.getAddress(eoaAddress, BigInteger.ZERO).awaitLite()
-        DAuthLogger.d("get aa address by eoa address:$aaAddress", TAG)
-        return aaAddress
+        return accountFactory.getAddress(eoaAddress, BigInteger.ZERO)
+            .await()
+            .traceResult(TAG, "getAAAddress")
     }
 
     suspend fun createUserOpAndEstimateGas(
@@ -377,42 +379,43 @@ internal class Web3Manager {
 
         val context = ElapsedContext(TAG)
 
-        val gasPrice = context.runSpending("getGasPrice") {
-            web3j.ethGasPrice().awaitLite { it.gasPrice }
+        val gasPriceResult = context.runSpending("getGasPrice") {
+            web3j.ethGasPrice()
+                .await { it.gasPrice }
+                .also { it.traceResult(TAG, "getGasPrice") }
         }
-        DAuthLogger.i("gasPrice=$gasPrice", TAG)
-        if (gasPrice == null) {
-            DAuthLogger.e("gas error")
-            return DAuthResult.SdkError()
+        if (gasPriceResult !is DAuthResult.Success) {
+            return gasPriceResult.transformError()
         }
+        val gasPrice = gasPriceResult.data
 
-        val nonce = context.runSpending("getNonce") {
+        val nonceResult = context.runSpending("getNonce") {
             val entryPoint = EntryPoint.load(
                 entryPointAddress,
                 web3j,
                 transactionManager(eoaAddress),
                 StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
             )
-            val nonce = entryPoint.getNonce(aaAddress, BigInteger.ZERO).awaitLite()
-            nonce
+            entryPoint.getNonce(aaAddress, BigInteger.ZERO)
+                .await()
+                .also { it.traceResult(TAG, "getNonce") }
         }
-        DAuthLogger.i("nonce=$nonce")
-        if (nonce == null) {
-            DAuthLogger.e("nonce error")
-            return DAuthResult.SdkError()
+        if (nonceResult !is DAuthResult.Success) {
+            return nonceResult.transformError()
         }
+        val nonce = nonceResult.data
 
         val noTransactions = nonce.noTransactions()
         DAuthLogger.i("noTransactions=$noTransactions")
 
-        val isDeployed = context.runSpending("isDeployed") {
+        val isDeployedResult = context.runSpending("isDeployed") {
             isCodeDeployed(aaAddress)
+                .also { it.traceResult(TAG, "isDeployed") }
         }
-        DAuthLogger.i("isDeployed=$isDeployed")
-        if (isDeployed == null) {
-            DAuthLogger.e("not deployed")
-            return DAuthResult.SdkError()
+        if (isDeployedResult !is DAuthResult.Success){
+            return isDeployedResult.transformError()
         }
+        val isDeployed = isDeployedResult.data
 
         val initCode = context.runSpending("createInitCode") {
             if (noTransactions && !isDeployed) {
@@ -432,6 +435,8 @@ internal class Web3Manager {
             }
         }
 
+        val fee = BigInteger("1000")
+
         // 构造创建AA账号的userOperation
         val userOperation = context.runSpending("createUserOperation") {
             UserOperation(
@@ -442,8 +447,8 @@ internal class Web3Manager {
                 BigInteger.ZERO,
                 BigInteger.ZERO,
                 BigInteger.ZERO,
-                gasPrice,
-                gasPrice,
+                gasPrice.add(fee),
+                fee,
                 byteArrayOf(),
                 byteArrayOf()
             ).also { userOp ->
@@ -474,14 +479,14 @@ internal class Web3Manager {
         DAuthLogger.i("gasException=$gasException", TAG)
         if (gasException == null) {
             DAuthLogger.e("estimate gas error", TAG)
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_ESTIMATE_SIMULATE)
         }
         val estimateInfo = context.runSpending("getEstimateInfo") {
             getEstimateInfo(gasException)
         }
         if (estimateInfo == null) {
             DAuthLogger.e("estimateInfo error", TAG)
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_ESTIMATE_SIMULATE_DECODE)
         }
 
         val successResult = context.runSpending("create success result") {
@@ -515,20 +520,23 @@ internal class Web3Manager {
 
         val context = ElapsedContext(TAG)
 
-        val balanceResult = context.runSpending("getBalance") { getBalance(aaAddress) }
+        val balanceResult = context.runSpending("getBalance") {
+            getBalance(aaAddress).also {
+                it.traceResult(TAG, "getBalance")
+            }
+        }
         if (balanceResult !is DAuthResult.Success) {
-            DAuthLogger.e("balance error")
-            return DAuthResult.SdkError()
+            return balanceResult.transformError()
         }
         val balanceData = balanceResult.data
         DAuthLogger.i("balance=$balanceData", TAG)
         if (balanceData !is WalletBalanceData.Eth) {
             DAuthLogger.e("balance type error")
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_BALANCE_TYPE)
         }
         if (balanceData.amount <= BigInteger.ZERO) {
             DAuthLogger.e("no balance")
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_NO_BALANCE)
         }
 
         val addresses = ConfigurationManager.addresses()
@@ -538,12 +546,13 @@ internal class Web3Manager {
         DAuthLogger.i("code=$code", TAG)
         val codeHash = code.sha3()
         DAuthLogger.i("codeHash=$codeHash", TAG)
-        val chainId = web3j.ethChainId().awaitLite { it.chainId }
-        DAuthLogger.i("chainId=$chainId", TAG)
-        if (chainId == null) {
-            DAuthLogger.e("chainId error", TAG)
-            return DAuthResult.SdkError()
+        val chainIdResult = web3j.ethChainId()
+            .await { it.chainId }
+            .also { it.traceResult(TAG, "ethChainId") }
+        if (chainIdResult !is DAuthResult.Success){
+            return chainIdResult.transformError()
         }
+        val chainId = chainIdResult.data
         val relCode = context.runSpending("encodeRelCode") {
             encodeRelCode(
                 codeHash,
@@ -589,7 +598,7 @@ internal class Web3Manager {
         }
         if (signatureData == null) {
             DAuthLogger.e("mpc sign error")
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_SIGN)
         }
 
         val signature = signatureData.r + signatureData.s + signatureData.v
@@ -601,7 +610,7 @@ internal class Web3Manager {
         }
         if (signer == null) {
             DAuthLogger.e("signer error")
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_GET_SIGNER_BY_SIGNATURE)
         }
 
         DAuthLogger.i("signer=$signer", TAG)
@@ -613,13 +622,15 @@ internal class Web3Manager {
 
         val useLocalRelayer = DAuthSDK.impl.config.useLocalRelayer
         if (useLocalRelayer) {
-            val gasPrice = context.runSpending("getPrice") {
-                web3j.ethGasPrice().awaitLite { it.gasPrice }
+            val gasPriceResult = context.runSpending("getPrice") {
+                web3j.ethGasPrice()
+                    .await { it.gasPrice }
+                    .also { it.traceResult(TAG, "getPrice") }
             }
-            DAuthLogger.i("gasPrice=$gasPrice", TAG)
-            if (gasPrice == null) {
-                return DAuthResult.SdkError()
+            if (gasPriceResult !is DAuthResult.Success){
+                return gasPriceResult.transformError()
             }
+            val gasPrice = gasPriceResult.data
 
             // 部署aa账号的eoa账号地址，最终部署在服务端，entryPoint的TransactionManager需要
             val relayerEoaAddress = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
@@ -630,11 +641,18 @@ internal class Web3Manager {
                 StaticGasProvider(gasPrice, BigInteger.valueOf(2100000))
             )
 
-            val receipt = context.runSpending("handleOp") {
-                entryPointDeploy.handleOp(userOpCopy).awaitLite()
+            val receiptResult = context.runSpending("handleOp") {
+                entryPointDeploy.handleOp(userOpCopy)
+                    .await()
+                    .also { it.traceResult(TAG, "handleOp") }
             }
-            DAuthLogger.i("handleOp receipt=$receipt", TAG)
-            val transactionHash = receipt?.transactionHash ?: return DAuthResult.SdkError()
+            if (receiptResult !is DAuthResult.Success){
+                return receiptResult.transformError()
+            }
+            val receipt = receiptResult.data
+
+            val transactionHash = receipt?.transactionHash
+                ?: return DAuthResult.SdkError(SDK_ERROR_UNKNOWN)
             DAuthLogger.i("transactionHash=$transactionHash", TAG)
             return DAuthResult.Success(CommitTransactionData(transactionHash))
         } else {
@@ -661,19 +679,25 @@ internal class Web3Manager {
      * @param aaAddress aa账户地址
      * @return 是否部署。空为请求失败
      */
-    private suspend fun isCodeDeployed(aaAddress: String): Boolean? {
-        val code = web3j.ethGetCode(aaAddress, DefaultBlockParameterName.LATEST).awaitLite {
-            it.code
-        } ?: return null
-        val result = code != "0x"
-        DAuthLogger.d("getCodeByAddress $aaAddress -> $code result=$result", TAG)
-        return result
+    private suspend fun isCodeDeployed(aaAddress: String): DAuthResult<Boolean> {
+        val ethGetCodeResult = web3j.ethGetCode(aaAddress, DefaultBlockParameterName.LATEST)
+            .await { it.code }
+        if (ethGetCodeResult !is DAuthResult.Success) {
+            return ethGetCodeResult.transformError()
+        }
+        val code = ethGetCodeResult.data
+        val isCodeDeployed = code != "0x"
+        return DAuthResult.Success(isCodeDeployed)
     }
 
     suspend fun userOpFlow(eoaAddress: String): DAuthResult<Boolean> {
-        val gasPrice =
-            web3j.ethGasPrice().awaitLite { it.gasPrice } ?: return DAuthResult.SdkError()
-        DAuthLogger.d("gasPrice=$gasPrice", TAG)
+        val gasPriceResult =
+            web3j.ethGasPrice().await { it.gasPrice }
+                .also { it.traceResult(TAG, "gasPrice") }
+        if (gasPriceResult !is DAuthResult.Success){
+            return gasPriceResult.transformError()
+        }
+        val gasPrice = gasPriceResult.data
 
         val entryPointAddress = ConfigurationManager.addresses().entryPointAddress
         val entryPoint = EntryPoint.load(
@@ -685,7 +709,7 @@ internal class Web3Manager {
 
         val blockNumber = web3j.ethBlockNumber().await { it.blockNumber }
         if (blockNumber !is DAuthResult.Success) {
-            return DAuthResult.SdkError()
+            return DAuthResult.SdkError(SDK_ERROR_UNKNOWN)
         }
         val r: Boolean = suspendCancellableCoroutine { continuation ->
             val startBlock: DefaultBlockParameter = DefaultBlockParameterNumber(

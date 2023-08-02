@@ -71,12 +71,6 @@ interface ILoginApi {
      */
     suspend fun bindEmail(email: String, verifyCode: String) : BaseResponse?
 
-
-    /**
-     * EOA钱包授权登录
-     */
-    suspend fun link2EOAWallet(context: Context) : LoginResultData?
-
     /**
      * 设置密码
      * @param passWord

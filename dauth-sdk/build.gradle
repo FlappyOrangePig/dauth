@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.kapt'
     id "org.jetbrains.dokka"
 }
 
@@ -61,6 +62,7 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
 
     implementation libraries.moshi
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:1.14.0"
 
     // webview
     implementation libraries.webkit

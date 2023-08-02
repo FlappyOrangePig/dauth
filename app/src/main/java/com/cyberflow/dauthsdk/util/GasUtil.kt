@@ -3,6 +3,8 @@ package com.cyberflow.dauthsdk.util
 import org.web3j.utils.Convert
 import java.math.BigInteger
 
+private const val TAG = "GasUtil"
+
 object GasUtil {
 
     private val reversedUnits: List<Convert.Unit> by lazy {
@@ -10,11 +12,17 @@ object GasUtil {
     }
 
     fun getReadableGas(gasWei: BigInteger): String {
-        reversedUnits.forEach {
-            if (gasWei.toBigDecimal() >= it.weiFactor) {
-                return "${gasWei.toBigDecimal().divide(it.weiFactor)} ${it.name}"
+        return try {
+            val gasWeiBigDecimal = gasWei.toBigDecimal()
+            reversedUnits.forEach {
+                if (gasWeiBigDecimal >= it.weiFactor) {
+                    return "${gasWeiBigDecimal.divide(it.weiFactor)} ${it.name}"
+                }
             }
+            "0"
+        } catch (t: Throwable) {
+            LogUtil.e(TAG, t.stackTraceToString())
+            ""
         }
-        throw RuntimeException()
     }
 }

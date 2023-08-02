@@ -135,7 +135,7 @@ class WalletTestActivity : BaseActivity() {
                     )
                     loadingDialog.dismiss()
                     if (result !is DAuthResult.Success) {
-                        ToastUtil.show(context, "创建失败")
+                        ToastUtil.show(context, "创建失败 ${result.getError()}")
                     } else {
                         val data = result.data
                         val message = "计算成功\n认证费：${GasUtil.getReadableGas(data.verificationCost)}\n" +
