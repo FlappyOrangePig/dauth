@@ -1,4 +1,4 @@
-package com.cyberflow.dauth
+package com.infras.dauth
 
 import org.junit.Test
 

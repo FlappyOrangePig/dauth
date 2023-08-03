@@ -21,7 +21,7 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                groupId = "com.cyberflow.dauthsdk"
+                groupId = "com.infras.dauthsdk"
                 artifactId = project.getName()
                 version = android.defaultConfig.versionName
                 from components.release

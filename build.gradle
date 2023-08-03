@@ -66,5 +66,5 @@ allprojects {
 }
 
 /*configurations.all {
-    resolutionStrategy.force "com.cyberflow.dauthsdk:dauth-sdk-1.0.0-20230711.082503-1"
+    resolutionStrategy.force "com.infras.dauthsdk:dauth-sdk-1.0.0-20230711.082503-1"
 }*/

@@ -1,7 +1,7 @@
 ########################################
 # DAuth
 ########################################
--keep class com.cyberflow.dauthsdk.** { *; }
+-keep class com.infras.dauthsdk.** { *; }
 
 ########################################
 # bouncycastle

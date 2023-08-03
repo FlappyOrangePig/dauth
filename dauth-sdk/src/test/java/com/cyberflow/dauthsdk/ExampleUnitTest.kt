@@ -1,29 +1,25 @@
-package com.cyberflow.dauthsdk
+package com.infras.dauthsdk
 
 import android.content.Context
-import com.cyberflow.dauthsdk.api.DAuthSDK
-import com.cyberflow.dauthsdk.api.SdkConfig
-import com.cyberflow.dauthsdk.login.model.GetSecretKeyParam
-import com.cyberflow.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_KEY
-import com.cyberflow.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_MERGE_RESULT
-import com.cyberflow.dauthsdk.login.network.RequestApiMpc
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
-import com.cyberflow.dauthsdk.login.utils.maskSensitiveData
-import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker
-import com.cyberflow.dauthsdk.mpc.MpcKeyIds
-import com.cyberflow.dauthsdk.mpc.MpcKeyStore
-import com.cyberflow.dauthsdk.mpc.SignResult
-import com.cyberflow.dauthsdk.mpc.util.MergeResultUtil
-import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
-import com.cyberflow.dauthsdk.wallet.impl.manager.Managers
-import com.cyberflow.dauthsdk.wallet.impl.manager.WalletManager
-import com.cyberflow.dauthsdk.wallet.sol.DAuthAccount
-import com.cyberflow.dauthsdk.wallet.util.SignUtil
-import com.cyberflow.dauthsdk.wallet.util.WalletPrefsV2
-import com.cyberflow.dauthsdk.wallet.util.sha3
-import com.cyberflow.dauthsdk.wallet.util.sha3String
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.infras.dauthsdk.api.SdkConfig
+import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_KEY
+import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_MERGE_RESULT
+import com.infras.dauthsdk.login.network.RequestApiMpc
+import com.infras.dauthsdk.login.utils.LoginPrefs
+import com.infras.dauthsdk.login.utils.maskSensitiveData
+import com.infras.dauthsdk.mpc.DAuthJniInvoker
+import com.infras.dauthsdk.mpc.MpcKeyIds
+import com.infras.dauthsdk.mpc.MpcKeyStore
+import com.infras.dauthsdk.mpc.SignResult
+import com.infras.dauthsdk.login.model.CommitTransRes
+import com.infras.dauthsdk.mpc.util.MergeResultUtil
+import com.infras.dauthsdk.mpc.util.MoshiUtil
+import com.infras.dauthsdk.wallet.impl.manager.Managers
+import com.infras.dauthsdk.wallet.impl.manager.WalletManager
+import com.infras.dauthsdk.wallet.util.SignUtil
+import com.infras.dauthsdk.wallet.util.WalletPrefsV2
+import com.infras.dauthsdk.wallet.util.sha3
+import com.infras.dauthsdk.wallet.util.sha3String
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -117,13 +113,13 @@ class ExampleUnitTest {
         }
         Managers.walletManager = WalletManager()
 
-        (DAuthSDK.instance as DAuthSDK).initSDKForTest(context, config)
+        (com.infras.dauthsdk.api.DAuthSDK.instance as com.infras.dauthsdk.api.DAuthSDK).initSDKForTest(context, config)
     }
 
     @Test
     fun testCallContract() {
         val function = Function(
-            DAuthAccount.FUNC_ONERC1155RECEIVED,
+            com.infras.dauthsdk.wallet.sol.DAuthAccount.FUNC_ONERC1155RECEIVED,
             listOf<Type<*>>(
                 Address("123"),
                 Address("234"),
@@ -321,5 +317,13 @@ class ExampleUnitTest {
         for (i in 0..a.length) {
             println(a.substring(0, i).maskSensitiveData())
         }
+    }
+
+    @Test
+    fun testCommitTransRes() {
+        val response =
+            "{\"ret\":2000101,\"info\":\"call estimateGas err:execution reverted: balance not enough\"}"
+        val r = MoshiUtil.fromJson<CommitTransRes>(response)
+        println(MoshiUtil.toJson(r))
     }
 }

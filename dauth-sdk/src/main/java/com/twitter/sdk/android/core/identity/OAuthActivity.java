@@ -24,7 +24,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
-import com.cyberflow.dauthsdk.R;
+import com.infras.dauthsdk.R;
 import com.twitter.sdk.android.core.TwitterAuthException;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.internal.TwitterApi;

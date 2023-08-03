@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace 'com.cyberflow.dauthsdk'
+    namespace 'com.infras.dauthsdk'
     ndkVersion '22.1.7171670'
 
     defaultConfig {
@@ -17,10 +17,6 @@ android {
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             ldLibs 'c++_shared'
-        }
-
-        buildFeatures {
-            buildConfig = true
         }
     }
 

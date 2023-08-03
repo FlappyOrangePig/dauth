@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.cyberflow.dauth'
+    namespace 'com.infras.dauth'
     defaultConfig {
         applicationId "com.infras.dauth"
 
@@ -39,6 +39,25 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+    flavorDimensions "stage"
+    productFlavors {
+        prod {
+            dimension "stage"
+            resValue "string", "app_name", "dauth"
+            buildConfigField("Boolean", "IS_LIVE", "true")
+            buildConfigField("String", "CLIENT_ID", "\"ce475be992763ee5ff0c51faba901942\"")
+            buildConfigField("String", "CLIENT_SECRET", "\"G1Sr3Hs8a6xGnSDKK1aj9I0YpNUK3HmO\"")
+        }
+
+        dev {
+            dimension "stage"
+            resValue "string", "app_name", "dauth-dev"
+            buildConfigField("Boolean", "IS_LIVE", "false")
+            buildConfigField("String", "CLIENT_ID", "\"b86df4abc13f3bba4d4b2057bc6df910\"")
+            buildConfigField("String", "CLIENT_SECRET", "\"abc123&*@cde\"")
+        }
+    }
 }
 
 dependencies {
@@ -51,7 +70,7 @@ dependencies {
     androidTestImplementation libraries.espresso_core
 
     implementation libraries.constraintlayout
-    //implementation "com.cyberflow.dauthsdk:dauth-sdk:${versions.version_name}"
+    //implementation "com.infras.dauthsdk:dauth-sdk:${versions.version_name}"
     //implementation ("com.github.FlappyOrangePig:dauth:${versions.version_name}")
     implementation project(':dauth-sdk')
 }

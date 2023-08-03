@@ -62,7 +62,7 @@ jobjectArray cStrings2JStrings(JNIEnv *env, const char **cStrings, int count) {
 
 jobject createJniOutBuffer(JNIEnv* env, const void* outBuffer, unsigned int len, const char* id) {
     // Find the JniOutBuffer class and its constructor
-    jclass jniOutBufferClass = env->FindClass("com/cyberflow/dauthsdk/mpc/entity/JniOutBuffer");
+    jclass jniOutBufferClass = env->FindClass("com/infras/dauthsdk/mpc/entity/JniOutBuffer");
     jmethodID jniOutBufferConstructor = env->GetMethodID(jniOutBufferClass, "<init>", "([BLjava/lang/String;)V");
     // Create a new jbyteArray object and copy the contents of the C byte array to it
     jbyteArray jBytes = env->NewByteArray(len);
@@ -122,12 +122,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     return JNI_VERSION_1_6;
 }
 
-void Java_com_cyberflow_dauthsdk_mpc_DAuthJni_init(JNIEnv *env, jobject object) {
+void Java_com_infras_dauthsdk_mpc_DAuthJni_init(JNIEnv *env, jobject object) {
     std::string hello = "Hello dauth from JNI.";
     LOGD("init:%s", hello.c_str())
 }
 
-jobjectArray Java_com_cyberflow_dauthsdk_mpc_DAuthJni_generateSignKeys
+jobjectArray Java_com_infras_dauthsdk_mpc_DAuthJni_generateSignKeys
         (JNIEnv *env, jobject, jint threshold, jint nParties, jobjectArray keyIds) {
     LOGD("generateSignKeys:threshold=%d,nParties=%d", threshold, nParties)
 
@@ -145,7 +145,7 @@ jobjectArray Java_com_cyberflow_dauthsdk_mpc_DAuthJni_generateSignKeys
     return cStrings2JStrings(env, keys, nParties);
 }
 
-jobjectArray Java_com_cyberflow_dauthsdk_mpc_DAuthJni_refreshKeys
+jobjectArray Java_com_infras_dauthsdk_mpc_DAuthJni_refreshKeys
         (JNIEnv *env, jobject, jobjectArray ids, jobjectArray keys) {
     int count = env->GetArrayLength(ids);
     LOGD("refreshKeys:count=%d", count)
@@ -161,7 +161,7 @@ jobjectArray Java_com_cyberflow_dauthsdk_mpc_DAuthJni_refreshKeys
     return cStrings2JStrings(env, refreshed, count);
 }
 
-jstring Java_com_cyberflow_dauthsdk_mpc_DAuthJni_localSignMsg
+jstring Java_com_infras_dauthsdk_mpc_DAuthJni_localSignMsg
         (JNIEnv *env, jobject, jstring msgHash, jobjectArray ids, jobjectArray keys) {
     string strMsgHash = jstringToString(env, msgHash);
     int count = env->GetArrayLength(ids);
@@ -183,7 +183,7 @@ jstring Java_com_cyberflow_dauthsdk_mpc_DAuthJni_localSignMsg
     return env->NewStringUTF(signResult);
 }
 
-jlong Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignMsg
+jlong Java_com_infras_dauthsdk_mpc_DAuthJni_remoteSignMsg
         (JNIEnv *env, jobject, jstring msgHash, jstring localKey, jstring localId,
          jobjectArray remoteIds, jobject outBuffer) {
 
@@ -221,7 +221,7 @@ jlong Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignMsg
     return contextHandle;
 }
 
-jint Java_com_cyberflow_dauthsdk_mpc_DAuthJni_remoteSignRound
+jint Java_com_infras_dauthsdk_mpc_DAuthJni_remoteSignRound
         (JNIEnv *env, jobject, jlong context, jstring remoteId, jbyteArray buffer,
          jobject outBuffer) {
     void *contextHandler = reinterpret_cast<void *>(context);
@@ -256,7 +256,7 @@ release:
     return ret;
 }
 
-jstring Java_com_cyberflow_dauthsdk_mpc_DAuthJni_getSignature
+jstring Java_com_infras_dauthsdk_mpc_DAuthJni_getSignature
         (JNIEnv *env, jobject, jlong context) {
     void *contextHandler = reinterpret_cast<void *>(context);
     const char *signature = getSignature(contextHandler);

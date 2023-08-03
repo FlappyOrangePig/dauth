@@ -20,10 +20,10 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class com.cyberflow.dauthsdk.login.** { *; }
--keep class com.cyberflow.dauthsdk.wallet.sol.** { *; }
--keep class com.cyberflow.dauthsdk.mpc.entity.** { *; }
--keep class com.cyberflow.dauthsdk.api.** { *; }
+-keep class com.infras.dauthsdk.login.** { *; }
+-keep class com.infras.dauthsdk.wallet.sol.** { *; }
+-keep class com.infras.dauthsdk.mpc.entity.** { *; }
+-keep class com.infras.dauthsdk.api.** { *; }
 
 # Keep all JNI classes and their methods and fields
 -keepclasseswithmembers class * {
