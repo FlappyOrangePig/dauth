@@ -25,7 +25,7 @@ object RelayerRequester {
     private val url = if (useDevServer) {
         "http://172.16.12.170:8888/relayer/committrans"
     } else {
-        ConfigurationManager.urls().relayerUrl
+        "https://${ConfigurationManager.stage().baseUrlHost}/relayer/committrans"
     }
 
     suspend fun sendRequest(userOperation: UserOperation): CommitTransRes? {

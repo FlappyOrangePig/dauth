@@ -5,7 +5,7 @@ import com.cyberflow.dauthsdk.wallet.util.ThreadUtil
 
 private const val TAG = "CrashManager"
 
-class CrashManager internal constructor() {
+internal class CrashManager internal constructor() {
 
     private var initialized = false
 

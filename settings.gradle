@@ -15,6 +15,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         maven {
+            // 这玩意不能移除，twitter-sdk需要
             allowInsecureProtocol true
             url 'http://maven.aliyun.com/nexus/content/groups/public/'
         }

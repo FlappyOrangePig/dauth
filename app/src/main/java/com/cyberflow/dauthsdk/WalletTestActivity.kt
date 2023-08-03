@@ -232,19 +232,6 @@ class WalletTestActivity : BaseActivity() {
                 ToastUtil.show(it.context, text)
             }
         }
-        btnConnectWallet.setOnClickListener {
-            /*lifecycleScope.launch {
-                val c = ConnectManager.instance
-                withContext(Dispatchers.IO){
-                    c.connect()
-                }
-                c.accountAddress.collect {
-                    it?.let { nonNull ->
-                        ToastUtil.show(context, nonNull)
-                    }
-                }
-            }*/
-        }
         btnClearData.setOnClickListener {
             sdk.deleteWallet()
         }

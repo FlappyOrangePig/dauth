@@ -43,7 +43,7 @@ open class ApiClient {
     }
 
     private val loginPrefs get() = Managers.loginPrefs
-    protected val baseUrl get() = ConfigurationManager.urls().baseUrl
+    protected val baseUrl get() = "https://${ConfigurationManager.stage().baseUrlHost}"
     protected val didToken get() = loginPrefs.getDidToken()
     protected val authId get() = loginPrefs.getAuthId()
     protected val accessToken get() = loginPrefs.getAccessToken()
@@ -63,10 +63,14 @@ open class ApiClient {
             @Suppress("UNCHECKED_CAST")
             val map = SignUtils.objToMap(content)
 
-            val needAccessToken = content is IAccessTokenRequest || hasAccessToken(content)
+            val needAccessToken = hasAccessToken(content)
             if (needAccessToken) {
-                map["authid"] = authId
-                map["access_token"] = accessToken
+                if (authId.isNotEmpty()) {
+                    map["authid"] = authId
+                }
+                if (accessToken.isNotEmpty()) {
+                    map["access_token"] = accessToken
+                }
             }
 
             map["sign"] = SignUtils.sign(map)
@@ -132,11 +136,10 @@ open class ApiClient {
 
     internal suspend inline fun <reified T : Any?> request(
         requestConfig: RequestConfig,
-        body: Any,
-        auth: Boolean = false,
+        body: Any
     ): T? = withContext(Dispatchers.IO) {
         runCatchingWithLogSuspend {
-            if (auth) {
+            if (hasAccessToken(body)) {
                 TokenManager.instance.authenticatedRequest {
                     requestInner(requestConfig, body)
                 }
@@ -244,6 +247,9 @@ open class ApiClient {
 
     protected fun hasAccessToken(obj: Any?): Boolean {
         obj ?: return false
+        if (obj is IAccessTokenRequest) {
+            return true
+        }
         val fields = obj.javaClass.declaredFields
         for (field in fields) {
             if (field.name == "access_token") {

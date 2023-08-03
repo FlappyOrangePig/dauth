@@ -355,8 +355,8 @@ internal class Web3Manager {
     }
 
     suspend fun getAaAddressByEoaAddress(eoaAddress: String): DAuthResult<String> {
-        val addresses = ConfigurationManager.addresses()
-        val faAddress = addresses.factoryAddress
+        val chain = ConfigurationManager.chain()
+        val faAddress = chain.factoryAddress
         val accountFactory = DAuthAccountFactory.load(
             faAddress,
             web3j,
@@ -373,9 +373,9 @@ internal class Web3Manager {
         aaAddress: String,
         callData: ByteArray
     ): DAuthResult<CreateUserOpAndEstimateGasData> {
-        val addresses = ConfigurationManager.addresses()
-        val faAddress = addresses.factoryAddress
-        val entryPointAddress = addresses.entryPointAddress
+        val chain = ConfigurationManager.chain()
+        val faAddress = chain.factoryAddress
+        val entryPointAddress = chain.entryPointAddress
 
         val context = ElapsedContext(TAG)
 
@@ -539,8 +539,8 @@ internal class Web3Manager {
             return DAuthResult.SdkError(SDK_ERROR_NO_BALANCE)
         }
 
-        val addresses = ConfigurationManager.addresses()
-        val entryPointAddress = addresses.entryPointAddress
+        val chain = ConfigurationManager.chain()
+        val entryPointAddress = chain.entryPointAddress
 
         val code = context.runSpending("encodeUserOp") { userOperation.encodeUserOp() }
         DAuthLogger.i("code=$code", TAG)
@@ -699,7 +699,7 @@ internal class Web3Manager {
         }
         val gasPrice = gasPriceResult.data
 
-        val entryPointAddress = ConfigurationManager.addresses().entryPointAddress
+        val entryPointAddress = ConfigurationManager.chain().entryPointAddress
         val entryPoint = EntryPoint.load(
             entryPointAddress,
             web3j,

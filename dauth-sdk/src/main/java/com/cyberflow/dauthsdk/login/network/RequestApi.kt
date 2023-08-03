@@ -106,7 +106,7 @@ class RequestApi internal constructor() : ApiClient() {
 
     suspend fun bindEmail(body: BindEmailParam): BaseResponse? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/email/bind"))
-        return request<BaseResponse>(localVariableConfig, body, true)
+        return request<BaseResponse>(localVariableConfig, body)
     }
 
     /**
@@ -156,7 +156,7 @@ class RequestApi internal constructor() : ApiClient() {
 
     suspend fun getUserInfo(body: AuthorizeToken2Param): AuthorizeToken2Res? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/get_user_info"))
-        return request<AuthorizeToken2Res>(localVariableConfig, body, true)
+        return request<AuthorizeToken2Res>(localVariableConfig, body)
     }
 
 
@@ -178,12 +178,12 @@ class RequestApi internal constructor() : ApiClient() {
     suspend fun queryWallet(accessToken: String, authId: String): QueryWalletRes? {
         val body = QueryWalletParam(accessToken, authId)
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/wallet/v1/query"))
-        return request<QueryWalletRes>(localVariableConfig, body, true)
+        return request<QueryWalletRes>(localVariableConfig, body)
     }
 
     suspend fun bindWallet(bindWalletParam: BindWalletParam): BaseResponse?  {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/wallet/v1/bind"))
-        return request<BaseResponse>(localVariableConfig, bindWalletParam, true)
+        return request<BaseResponse>(localVariableConfig, bindWalletParam)
     }
 
 
@@ -224,7 +224,7 @@ class RequestApi internal constructor() : ApiClient() {
      */
     suspend fun queryByAuthId(body: QueryByAuthIdParam): AccountRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/userinfo/query"))
-        return request<AccountRes>(localVariableConfig, body, true)
+        return request<AccountRes>(localVariableConfig, body)
     }
 
     /**
@@ -235,7 +235,7 @@ class RequestApi internal constructor() : ApiClient() {
      */
     suspend fun queryByEMail(body: QueryByEMailParam): AccountRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/userinfo/email/query"))
-        return request<AccountRes>(localVariableConfig, body, true)
+        return request<AccountRes>(localVariableConfig, body)
     }
 
     /**
@@ -360,7 +360,7 @@ class RequestApi internal constructor() : ApiClient() {
         val headers = RequestConfig(
             ReqUrl.PathUrl("/account/v1/password/set")
         )
-        return request<BaseResponse>(headers, body, true)
+        return request<BaseResponse>(headers, body)
     }
 
     suspend fun checkEmail(body: CheckEmailParam): BaseResponse? {

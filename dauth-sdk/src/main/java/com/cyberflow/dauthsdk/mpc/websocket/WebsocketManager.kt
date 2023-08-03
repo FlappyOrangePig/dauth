@@ -3,11 +3,9 @@ package com.cyberflow.dauthsdk.mpc.websocket
 import android.os.CountDownTimer
 import com.cyberflow.dauthsdk.api.DAuthSDK
 import com.cyberflow.dauthsdk.login.utils.DAuthLogger
-import com.cyberflow.dauthsdk.login.utils.LoginPrefs
 import com.cyberflow.dauthsdk.mpc.CoSignerUser
 import com.cyberflow.dauthsdk.mpc.DAuthJniInvoker.toSignResult
 import com.cyberflow.dauthsdk.mpc.MpcKeyIds
-import com.cyberflow.dauthsdk.mpc.MpcKeyStore
 import com.cyberflow.dauthsdk.mpc.entity.MpcWsHeader
 import com.cyberflow.dauthsdk.mpc.util.MoshiUtil
 import com.cyberflow.dauthsdk.mpc.util.ZipUtil
@@ -37,7 +35,7 @@ internal class WebsocketManager private constructor() {
         private val serverUrl = if (useDevServer) {
             "ws://172.16.12.117:9001/"
         } else {
-            ConfigurationManager.urls().webSocketUrl
+            "wss://${ConfigurationManager.stage().baseUrlHost}/mpc/sign"
         }
     }
 

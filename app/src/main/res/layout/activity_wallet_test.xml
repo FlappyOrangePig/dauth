@@ -68,12 +68,6 @@
             android:text="判断地址是否部署了代码" />
 
         <Button
-            android:id="@+id/btn_connect_wallet"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="连接钱包" />
-
-        <Button
             android:id="@+id/btn_clear_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

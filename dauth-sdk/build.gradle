@@ -54,18 +54,17 @@ dependencies {
     implementation libraries.google_service_auth
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
 
-    // twitter
-    //implementation libraries.twitter
-    implementation libraries.twitter_core
-    implementation "com.google.code.gson:gson:2.10.1" // twitter依赖
+    // twitter -- 官方不再维护，拷贝com.twitter.android的代码自己维护
+    // implementation libraries.twitter
+    // implementation libraries.twitter_core
+    // twitter依赖
+    implementation "com.google.code.gson:gson:2.10.1"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
 
+    // moshi
     implementation libraries.moshi
     kapt "com.squareup.moshi:moshi-kotlin-codegen:1.14.0"
-
-    // webview
-    implementation libraries.webkit
 
     // jwt
     //implementation libraries.jwt

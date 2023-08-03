@@ -1,15 +1,53 @@
 package com.cyberflow.dauthsdk.api
 
+import androidx.annotation.IntDef
+
+@Retention(AnnotationRetention.SOURCE)
+@IntDef(DAuthStageEnum.STAGE_TEST, DAuthStageEnum.STAGE_LIVE)
+annotation class DAuthStageEnum {
+    companion object {
+        const val STAGE_TEST = 1
+        const val STAGE_LIVE = 2
+    }
+}
+
+@Retention(AnnotationRetention.SOURCE)
+@IntDef(DAuthChainEnum.CHAIN_ARBITRUM_GOERLI, DAuthChainEnum.CHAIN_ARBITRUM)
+annotation class DAuthChainEnum {
+    companion object {
+        const val CHAIN_ARBITRUM_GOERLI = 1
+        const val CHAIN_ARBITRUM = 2
+    }
+}
+
 class SdkConfig {
+
+    /**
+     * Stage 开发阶段
+     */
+    @DAuthStageEnum
+    var stage = DAuthStageEnum.STAGE_TEST
+
+    /**
+     * Chain 链枚举
+     */
+    @DAuthChainEnum
+    var chain = DAuthChainEnum.CHAIN_ARBITRUM_GOERLI
 
     /**
      * clientId 在DAuth后台注册得到的clientId
      */
     var clientId: String? = null
+
     /**
      * clientSecret 在DAuth后台注册得到的clientSecret
      */
     var clientSecret: String? = null
+
+    /**
+     * Google ClientID
+     */
+    var googleClientId: String? = null
 
     /**
      * Twitter key
@@ -52,10 +90,5 @@ class SdkConfig {
      * 【test】
      */
     var useDevRelayerServer = false
-
-    /**
-     * Google ClientID
-     */
-    var googleClientId: String? = null
 }
 

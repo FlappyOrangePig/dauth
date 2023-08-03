@@ -39,7 +39,7 @@ internal object Managers {
         connectManager = ConnectManager(context)
         requestApi = RequestApi()
         requestApiMpc = RequestApiMpc()
-        web3m = Web3Manager().also { it.reset(ConfigurationManager.urls().providerRpc) }
+        web3m = Web3Manager().also { it.reset(ConfigurationManager.chain().rpcUrl) }
         deviceId = DeviceUtil.getDeviceId(context)
         crashManager = CrashManager()
         logManager = DLogManager(context)

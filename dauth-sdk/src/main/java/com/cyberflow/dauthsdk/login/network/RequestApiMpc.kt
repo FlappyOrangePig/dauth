@@ -30,7 +30,7 @@ class RequestApiMpc internal constructor(): ApiClient() {
 
     suspend fun getParticipants(): GetParticipantsRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/wallet/v1/participants/get"))
-        return request<GetParticipantsRes>(localVariableConfig, GetParticipantsParam(), true)
+        return request<GetParticipantsRes>(localVariableConfig, GetParticipantsParam())
     }
 
     suspend fun setKey(url: String, key: String, mergeResult: String?): SetSecretKeyRes? {
@@ -39,7 +39,7 @@ class RequestApiMpc internal constructor(): ApiClient() {
             keyshare = key,
             keyresult = mergeResult
         )
-        return request<SetSecretKeyRes>(localVariableConfig, param, true)
+        return request<SetSecretKeyRes>(localVariableConfig, param)
     }
 
     suspend fun getKey(url: String, type: Int): GetSecretKeyRes? {
@@ -47,6 +47,6 @@ class RequestApiMpc internal constructor(): ApiClient() {
         val param = GetSecretKeyParam(
             type
         )
-        return request<GetSecretKeyRes>(localVariableConfig, param, true)
+        return request<GetSecretKeyRes>(localVariableConfig, param)
     }
 }
