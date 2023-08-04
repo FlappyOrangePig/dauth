@@ -17,7 +17,7 @@ object MoshiUtil {
             .build()
     }
 
-    inline fun <reified T> toJson(obj: T, throws: Boolean = true) = try {
+    internal inline fun <reified T> toJson(obj: T, throws: Boolean = true) = try {
         val adapter = moshi.adapter(T::class.java)
         adapter.toJson(obj)
     } catch (t: Throwable) {
@@ -27,7 +27,7 @@ object MoshiUtil {
         null
     }.orEmpty()
 
-    inline fun <reified T> fromJson(json: String, throws: Boolean = true): T? = try {
+    internal inline fun <reified T> fromJson(json: String, throws: Boolean = true): T? = try {
         val adapter = moshi.adapter(T::class.java)
         adapter.fromJson(json)
     } catch (t: Throwable) {

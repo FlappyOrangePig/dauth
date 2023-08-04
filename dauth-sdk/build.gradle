@@ -26,6 +26,11 @@ android {
             //version "3.26.4"
         }
     }
+
+    lintOptions {
+        disable 'TimberArgCount', 'TimberArgTypes', 'TimberTagLength', 'BinaryOperationInTimber',
+                'LogNotTimber', 'StringFormatInTimber', 'ThrowableNotAtBeginning'
+    }
 }
 
 dependencies {

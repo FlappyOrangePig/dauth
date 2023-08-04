@@ -6,21 +6,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.databinding.ActivityMainLayoutBinding
-import com.infras.dauth.BaseActivity
-import com.infras.dauthsdk.api.entity.DAuthResult
-import com.infras.dauthsdk.api.entity.TokenType
 import com.infras.dauth.ext.handleByToast
 import com.infras.dauth.ext.mount
 import com.infras.dauth.ext.myAddress
 import com.infras.dauth.ext.tokenIds
-import com.infras.dauthsdk.login.model.AccountRes
-import com.infras.dauthsdk.login.model.SetPasswordParam
-import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.DialogHelper
+import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.api.entity.DAuthResult
+import com.infras.dauthsdk.api.entity.TokenType
+import com.infras.dauthsdk.login.model.AccountRes
+import com.infras.dauthsdk.login.model.SetPasswordParam
 import kotlinx.coroutines.launch
 
 class MainActivity : BaseActivity() {
@@ -179,7 +178,7 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        DAuthLogger.d("MainActivity onDestroy")
+        LogUtil.d(logTag, "MainActivity onDestroy")
     }
 
     private fun showInputDialog() {

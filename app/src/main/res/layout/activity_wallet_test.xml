@@ -85,6 +85,12 @@
             android:layout_height="wrap_content"
             android:text="监听userOp事件" />
 
+        <Button
+            android:id="@+id/btn_mock_crash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="模拟crash" />
+
     </LinearLayout>
 
 </ScrollView>

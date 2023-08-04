@@ -1,6 +1,7 @@
 package com.infras.dauthsdk
 
 import android.content.Context
+import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.SdkConfig
 import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_KEY
 import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_MERGE_RESULT
@@ -111,9 +112,13 @@ class ExampleUnitTest {
         mock(WalletPrefsV2::class.java).apply {
             Managers.walletPrefsV2 = this
         }
-        Managers.walletManager = WalletManager()
+        Managers.walletManager = WalletManager(
+            walletPrefsV2 = Managers.walletPrefsV2,
+            mpcKeyStore = Managers.mpcKeyStore,
+            loginPrefs = Managers.loginPrefs,
+        )
 
-        (com.infras.dauthsdk.api.DAuthSDK.instance as com.infras.dauthsdk.api.DAuthSDK).initSDKForTest(context, config)
+        (DAuthSDK.instance as DAuthSDK).initSDKForTest(context, config)
     }
 
     @Test

@@ -1,12 +1,13 @@
 package com.infras.dauthsdk.wallet.impl.manager
 
-import com.infras.dauthsdk.login.utils.DAuthLogger
+import com.infras.dauthsdk.login.utils.LEVEL_F
 import com.infras.dauthsdk.wallet.util.ThreadUtil
 
 private const val TAG = "CrashManager"
 
-internal class CrashManager internal constructor() {
-
+internal class CrashManager internal constructor(
+    private val logManager: DLogManager
+) {
     private var initialized = false
 
     init {
@@ -28,15 +29,18 @@ internal class CrashManager internal constructor() {
 
     private fun initCrashInner() {
         val h = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler(DAuthExceptionHandler(h))
+        Thread.setDefaultUncaughtExceptionHandler(DAuthExceptionHandler(h, logManager))
     }
 }
 
 private class DAuthExceptionHandler(
-    private val h: Thread.UncaughtExceptionHandler?
+    private val h: Thread.UncaughtExceptionHandler?,
+    private val logManager: DLogManager
 ) : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(t: Thread, e: Throwable) {
-        DAuthLogger.e("----------CRASH----------", TAG)
+        logManager.log(LEVEL_F, TAG, "----------DAuth CRASH----------", false)
+        logManager.log(LEVEL_F, TAG, "thread=$t", false)
+        logManager.log(LEVEL_F, TAG, e.stackTraceToString(), false)
         h?.uncaughtException(t, e)
     }
 }

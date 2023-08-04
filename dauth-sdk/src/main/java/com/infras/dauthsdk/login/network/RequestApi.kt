@@ -53,8 +53,7 @@ private const val USER_TYPE_OF_EMAIL = 10
 private const val USER_TYPE_OF_PHONE = 60
 private const val AUTHORIZATION = "Authorization"
 
-
-class RequestApi internal constructor() : ApiClient() {
+internal class RequestApi internal constructor() : ApiClient() {
 
     /**
      * 自定义账号认证登录，返回临时 code

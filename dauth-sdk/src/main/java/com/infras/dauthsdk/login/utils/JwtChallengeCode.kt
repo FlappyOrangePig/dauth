@@ -1,11 +1,12 @@
 package com.infras.dauthsdk.login.utils
+
 import android.os.Build
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
-class JwtChallengeCode {
 
+class JwtChallengeCode {
 
     fun generateCodeVerifier(): String {
         val random = SecureRandom()
@@ -14,7 +15,7 @@ class JwtChallengeCode {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
         } else {
-            com.infras.dauthsdk.login.utils.Base64Utils.encode(bytes)
+            Base64Utils.encode(bytes)
         }
     }
 
@@ -25,9 +26,7 @@ class JwtChallengeCode {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
         } else {
-            com.infras.dauthsdk.login.utils.Base64Utils.encode(digest)
+            Base64Utils.encode(digest)
         }
     }
-
-
 }

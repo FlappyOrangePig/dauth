@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity
 
 open class BaseActivity : AppCompatActivity() {
 
+    protected val logTag: String = this::class.java.simpleName
+
     override fun onPause() {
         super.onPause()
         if (isFinishing) {

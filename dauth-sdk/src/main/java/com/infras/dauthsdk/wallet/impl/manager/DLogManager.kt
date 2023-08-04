@@ -34,26 +34,34 @@ internal class DLogManager internal constructor(private val context: Context) {
         fileWriter
     }
 
-    fun log(level: Int, tag: String, log: String) {
-        executor.run {
-            try {
-                val w = fileWriter ?: return@run
-                val timestamp =
-                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date())
-                val levelTag = when (level) {
-                    LEVEL_V -> "V"
-                    LEVEL_D -> "D"
-                    LEVEL_I -> "I"
-                    LEVEL_W -> "W"
-                    LEVEL_E -> "E"
-                    LEVEL_F -> "F"
-                    else -> "?"
-                }
-                w.appendLine("$timestamp $levelTag/$tag: $log")
-                w.flush()
-            } catch (t: Throwable) {
-                t.printStackTrace()
+    fun log(level: Int, tag: String, log: String, async: Boolean) {
+        if (async) {
+            executor.run {
+                logInner(level, tag, log)
             }
+        } else {
+            logInner(level, tag, log)
+        }
+    }
+
+    private fun logInner(level: Int, tag: String, log: String) {
+        try {
+            val w = fileWriter ?: return
+            val timestamp =
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date())
+            val levelTag = when (level) {
+                LEVEL_V -> "V"
+                LEVEL_D -> "D"
+                LEVEL_I -> "I"
+                LEVEL_W -> "W"
+                LEVEL_E -> "E"
+                LEVEL_F -> "F"
+                else -> "?"
+            }
+            w.appendLine("$timestamp $levelTag/$tag: $log")
+            w.flush()
+        } catch (t: Throwable) {
+            t.printStackTrace()
         }
     }
 

@@ -16,7 +16,6 @@ import com.twitter.sdk.android.core.TwitterException
 import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.launch
 
-
 private const val GOOGLE_REQUEST_CODE = 9004
 private const val GOOGLE_OPEN_SERVICE_REQUEST_CODE = 9005
 private const val TWITTER_REQUEST_CODE = 140

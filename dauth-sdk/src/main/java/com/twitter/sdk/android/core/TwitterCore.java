@@ -92,7 +92,7 @@ public class TwitterCore {
     }
 
     public String getVersion() {
-        return "3.3.0" + "." + "12";
+        return BuildConfig.VERSION_NAME + "." + BuildConfig.BUILD_NUMBER;
     }
 
     public TwitterAuthConfig getAuthConfig() {

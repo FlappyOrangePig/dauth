@@ -8,11 +8,14 @@ import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_MERGE_RESULT
 import com.infras.dauthsdk.login.network.MpcServiceConst
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.DAuthLogger
+import com.infras.dauthsdk.login.utils.LoginPrefs
 import com.infras.dauthsdk.mpc.MpcKeyIds
+import com.infras.dauthsdk.mpc.MpcKeyStore
 import com.infras.dauthsdk.mpc.MpcServers
 import com.infras.dauthsdk.mpc.ext.ElapsedContext
 import com.infras.dauthsdk.wallet.impl.manager.task.CreateWalletTask
 import com.infras.dauthsdk.wallet.impl.manager.task.RestoreWalletTask
+import com.infras.dauthsdk.wallet.util.WalletPrefsV2
 
 sealed class KeysToRestoreResult {
     class KeyInfo(
@@ -34,7 +37,11 @@ sealed class KeysToRestoreResult {
  * 6.拉取MPC服务节点 & 分发密钥
  * 7.移除本地的远端密钥（成功）
  */
-class WalletManager internal constructor() {
+class WalletManager internal constructor(
+    private val walletPrefsV2: WalletPrefsV2,
+    private val loginPrefs: LoginPrefs,
+    private val mpcKeyStore: MpcKeyStore,
+) {
     companion object {
         private const val TAG = "WalletManager"
 
@@ -42,10 +49,6 @@ class WalletManager internal constructor() {
         const val STATE_KEY_GENERATED = 1
         const val STATE_OK = 2
     }
-
-    private val walletPrefsV2 get() = Managers.walletPrefsV2
-    private val loginPrefs get() = Managers.loginPrefs
-    private val mpcKeyStore get() = Managers.mpcKeyStore
 
     fun getState(): Int {
         val state = walletPrefsV2.getWalletState()

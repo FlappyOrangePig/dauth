@@ -22,7 +22,7 @@ private const val TAG = "DAuthJniInvoker"
 object DAuthJniInvoker {
     private const val THRESHOLD = 2
     private const val PARTIES = 3
-    private val jni by lazy { com.infras.dauthsdk.mpc.DAuthJni.getInstance() }
+    private val jni by lazy { DAuthJni.getInstance() }
 
     fun initialize(){
         Thread {

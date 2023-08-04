@@ -7,11 +7,11 @@ import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.HideApiUtil
+import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.api.entity.ResponseCode
-import com.infras.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
 
 
@@ -53,14 +53,14 @@ class LoginActivity : BaseActivity() {
                             val idToken = loginResultData.accessToken
                             // 处理登录成功逻辑
                             MainActivity.launch(this@LoginActivity)
-                            DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                            LogUtil.d(logTag, "登录成功，返回的ID令牌：$idToken")
                         }
                     }
 
                     is LoginResultData.Failure -> {
                         val failureCode = loginResultData.code
                         // 处理登录失败逻辑
-                        DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
+                        LogUtil.d(logTag, "登录失败，返回的errorCode：$failureCode")
                     }
 
                     else -> {}
@@ -106,7 +106,7 @@ class LoginActivity : BaseActivity() {
                 val response = sdk.sendEmailVerifyCode(account)
                 if (response?.ret == 0) {
                     ToastUtil.show(applicationContext, "验证码发送成功")
-                    DAuthLogger.d("验证码发送成功")
+                    LogUtil.d(logTag, "验证码发送成功")
                 } else {
                     ToastUtil.show(applicationContext, "验证码发送失败")
                 }
@@ -138,18 +138,18 @@ class LoginActivity : BaseActivity() {
                     val idToken = loginResultData.accessToken
                     // 处理登录成功逻辑
                     MainActivity.launch(this@LoginActivity)
-                    DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                    LogUtil.d(logTag, "登录成功，返回的ID令牌：$idToken")
                 }
             }
 
             is LoginResultData.Failure -> {
                 val failureCode = loginResultData.code
                 // 处理登录失败逻辑
-                DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
+                LogUtil.d(logTag, "登录失败，返回的errorCode：$failureCode")
             }
 
             else -> {
-                DAuthLogger.e("用户取消授权")
+                LogUtil.e(logTag, "用户取消授权")
             }
         }
     }
@@ -162,7 +162,7 @@ class LoginActivity : BaseActivity() {
             loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address
-                DAuthLogger.d("创建的aa钱包地址：$address")
+                LogUtil.d(logTag, "创建的aa钱包地址：$address")
                 MainActivity.launch(this@LoginActivity)
             }
         }

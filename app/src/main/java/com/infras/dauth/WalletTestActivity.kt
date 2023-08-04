@@ -269,6 +269,10 @@ class WalletTestActivity : BaseActivity() {
                 //Web3Manager.userOpFlow(a.data.signerAddress)
             }
         }
+        btnMockCrash.setOnClickListener {
+            val a = 100 / 0
+            println(a)
+        }
     }
 
     override fun onResume() {

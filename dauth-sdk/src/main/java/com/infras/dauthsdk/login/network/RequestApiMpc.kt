@@ -37,7 +37,7 @@ object MpcServiceConst {
     const val MpcSecretAlreadyBoundError = 2000011
 }
 
-class RequestApiMpc internal constructor(): ApiClient() {
+internal class RequestApiMpc internal constructor(): ApiClient() {
 
     suspend fun getParticipants(): GetParticipantsRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/wallet/v1/participants/get"))

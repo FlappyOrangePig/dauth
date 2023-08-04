@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.databinding.ActivityMobileLoginLayoutBinding
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.LoginResultData
-import com.infras.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_MOBILE = 60  // 手机号登录
@@ -61,13 +61,13 @@ class LoginByMobileActivity: BaseActivity() {
                     val idToken = loginResultData.accessToken
                     // 处理登录成功逻辑
                     MainActivity.launch(this@LoginByMobileActivity)
-                    DAuthLogger.d("登录成功，返回的ID令牌：$idToken")
+                    LogUtil.d(logTag, "登录成功，返回的ID令牌：$idToken")
                 }
             }
             is LoginResultData.Failure -> {
                 val failureCode = loginResultData.code
                 // 处理登录失败逻辑
-                DAuthLogger.d("登录失败，返回的errorCode：$failureCode")
+                LogUtil.d(logTag, "登录失败，返回的errorCode：$failureCode")
             }
             else -> {}
         }
@@ -81,7 +81,7 @@ class LoginByMobileActivity: BaseActivity() {
             loadingDialog.dismiss()
             if (createWalletRes is DAuthResult.Success) {
                 val address = createWalletRes.data.address
-                DAuthLogger.d("创建的aa钱包地址：$address")
+                LogUtil.d(logTag, "创建的aa钱包地址：$address")
                 MainActivity.launch(this@LoginByMobileActivity)
             }
         }

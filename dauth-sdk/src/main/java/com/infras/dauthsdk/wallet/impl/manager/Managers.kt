@@ -2,12 +2,15 @@ package com.infras.dauthsdk.wallet.impl.manager
 
 import android.annotation.SuppressLint
 import android.content.Context
+import com.infras.dauthsdk.login.impl.DAuthLogin
 import com.infras.dauthsdk.login.network.RequestApi
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.LoginPrefs
 import com.infras.dauthsdk.mpc.MpcKeyStore
 import com.infras.dauthsdk.wallet.connect.ConnectManager
+import com.infras.dauthsdk.wallet.impl.AAWalletImpl
 import com.infras.dauthsdk.wallet.impl.ConfigurationManager
+import com.infras.dauthsdk.wallet.impl.EoaWalletImpl
 import com.infras.dauthsdk.wallet.impl.Web3Manager
 import com.infras.dauthsdk.wallet.util.DeviceUtil
 import com.infras.dauthsdk.wallet.util.WalletPrefsV2
@@ -30,18 +33,26 @@ internal object Managers {
     lateinit var deviceId: String
     lateinit var crashManager: CrashManager
     lateinit var logManager: DLogManager
+    lateinit var loginApi: DAuthLogin
+    lateinit var aaWalletApi: AAWalletImpl
+    lateinit var eoaWalletApi: EoaWalletImpl
 
     fun inject(context: Context) {
         loginPrefs = LoginPrefs(context)
         mpcKeyStore = MpcKeyStore(context)
         walletPrefsV2 = WalletPrefsV2(context)
-        walletManager = WalletManager()
+        walletManager = WalletManager(
+            walletPrefsV2 = walletPrefsV2,
+            loginPrefs = loginPrefs,
+            mpcKeyStore = mpcKeyStore
+        )
         connectManager = ConnectManager(context)
         requestApi = RequestApi()
         requestApiMpc = RequestApiMpc()
         web3m = Web3Manager().also { it.reset(ConfigurationManager.chain().rpcUrl) }
         deviceId = DeviceUtil.getDeviceId(context)
-        crashManager = CrashManager()
         logManager = DLogManager(context)
+        crashManager = CrashManager(logManager)
+
     }
 }

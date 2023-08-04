@@ -6,6 +6,7 @@ import com.infras.dauthsdk.login.model.IAccessTokenRequest
 import com.infras.dauthsdk.login.model.IAuthorizationRequest
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.login.utils.SignUtils
+import com.infras.dauthsdk.mpc.util.MoshiUtil
 import com.infras.dauthsdk.wallet.ext.runCatchingWithLogSuspend
 import com.infras.dauthsdk.wallet.impl.ConfigurationManager
 import com.infras.dauthsdk.wallet.impl.HttpClient
@@ -21,7 +22,7 @@ import java.util.regex.Pattern
 
 
 //账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter
-open class ApiClient {
+internal open class ApiClient {
     companion object {
         protected const val ContentType = "Content-Type"
         protected const val Accept = "Accept"
@@ -89,7 +90,7 @@ open class ApiClient {
 
             return requestBodyBuilder.build()
         } else if (mediaType == JsonMediaType) {
-            return Serializer.moshi.adapter(T::class.java).toJson(content)
+            return MoshiUtil.toJson(content)
                 .toRequestBody(mediaType.toMediaTypeOrNull())
         }
         return MultipartBody.Builder().setType(MultipartBody.FORM).build()
@@ -118,8 +119,7 @@ open class ApiClient {
         val r = try {
             if (isJsonMime(contentType)) {
                 //DAuthLogger.d("responseBody json=${rb.orEmpty()}")
-                val adapter = Serializer.moshi.adapter(T::class.java)
-                adapter.fromJson(rb.orEmpty())
+                MoshiUtil.fromJson(rb.orEmpty())
             } else if (contentType.equals(String.Companion::class.java)) {
                 response.body.toString() as T
             } else {

@@ -2,7 +2,6 @@ package com.infras.dauth.util
 
 import com.infras.dauth.manager.AccountManager.sdk
 import com.infras.dauthsdk.api.entity.DAuthResult
-import com.infras.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.web3j.crypto.Credentials
@@ -28,7 +27,7 @@ private suspend inline fun <S, T : Response<*>, D> Request<S, T>.await(crossinli
                 DAuthResult.Success(d)
             }
         } catch (t: Throwable) {
-            DAuthLogger.e(t.stackTraceToString(), TAG)
+            LogUtil.e(t.stackTraceToString(), TAG)
             DAuthResult.NetworkError(t)
         }
     }
@@ -82,7 +81,7 @@ object Web3jHelper {
             it.code
         } ?: return null
         val result = code != "0x"
-        DAuthLogger.d("getCodeByAddress $aaAddress -> $code result=$result", TAG)
+        LogUtil.d("getCodeByAddress $aaAddress -> $code result=$result", TAG)
         return result
     }
 }
