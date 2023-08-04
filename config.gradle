@@ -4,7 +4,7 @@ ext {
         version_name                 : '0.0.12',
         min_sdk                      : 23,
         target_sdk                   : 33,
-        compile_sdk                  : 33,
+        compile_sdk                  : 34,
         build_tools                  : '33.0.2',
 
         core_ktx                     : "1.9.0",

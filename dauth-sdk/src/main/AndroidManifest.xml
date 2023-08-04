@@ -25,6 +25,11 @@
             android:name=".login.view.ThirdPartyResultActivity"
             android:excludeFromRecents="true"
             android:exported="false"/>
+        <activity android:name="com.infras.dauthsdk.wallet.connect.metamask.MetaMaskActivity"
+            android:screenOrientation="portrait"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="false"
+            android:taskAffinity="com.infras.dauthsdk.metamask"/>
 
         <meta-data android:name="DAUTH_VERSION"  android:value="${sdkVersion}" />
 

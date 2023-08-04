@@ -155,7 +155,6 @@ internal class RequestApi internal constructor() : ApiClient() {
         return request<AuthorizeToken2Res>(localVariableConfig, body)
     }
 
-
     /**
      * (邮箱、自定义账号、手机号)账号登录验证，返回登录凭证SessionID
      *

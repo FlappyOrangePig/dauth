@@ -1,4 +1,4 @@
-package com.infras.dauth
+package com.infras.dauth.util
 
 import android.content.Context
 import android.widget.Toast

@@ -26,7 +26,6 @@ import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.impl.manager.WalletManager
 import kotlinx.coroutines.*
 
-private const val FIX_TWITTER_JS_ISSUE = false
 private const val TYPE_OF_WALLET_AUTH = 20
 private const val USER_TYPE_OF_EMAIL = 10
 private const val IS_REGISTER = 1       // 如果账号不存在则注册并登录
@@ -46,10 +45,8 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         DAuthLogger.i("DAuthLogin init sdk")
         // Twitter初始化
         TwitterLoginManager.instance.initTwitterSDK(context, config)
-        if (FIX_TWITTER_JS_ISSUE) {
-            val appContext = context.applicationContext as Application
-            appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
-        }
+        val appContext = context.applicationContext as Application
+        appContext.registerActivityLifecycleCallbacks(DAuthLifeCycle)
     }
 
     override suspend fun login(account: String, passWord: String): LoginResultData? {
@@ -77,7 +74,6 @@ internal class DAuthLogin internal constructor() : ILoginApi {
     /**
      * 自有账号授权登录获取token
      */
-
     private suspend fun getDAuthToken(
         codeVerifier: String,
         code: String,

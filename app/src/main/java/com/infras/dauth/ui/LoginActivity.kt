@@ -1,11 +1,15 @@
-package com.infras.dauth
+package com.infras.dauth.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
+import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.R
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.util.HideApiUtil
 import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.LoadingDialogFragment
@@ -14,27 +18,26 @@ import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.api.entity.ResponseCode
 import kotlinx.coroutines.launch
 
-
 private const val GOOGLE = "GOOGLE"
 private const val TWITTER = "TWITTER"
 private const val FACEBOOK = "FACEBOOK"
 private const val ACCOUNT_TYPE_OF_EMAIL = 10
 
 class LoginActivity : BaseActivity() {
-    private var loginBinding: ActivityLoginLayoutBinding? = null
-    private val binding: ActivityLoginLayoutBinding get() = loginBinding!!
+    private var _binding: ActivityLoginLayoutBinding? = null
+    private val binding: ActivityLoginLayoutBinding get() = _binding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
     private val sdk get() = sdk()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        loginBinding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
+        _binding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
-        initView()
+        binding.initView()
         initData()
     }
 
-    private fun initView() {
+    private fun ActivityLoginLayoutBinding.initView() {
         // 邮箱登录
         binding.btnDauthLogin.setOnClickListener {
             val account = binding.edtAccount.text.toString()
@@ -70,11 +73,11 @@ class LoginActivity : BaseActivity() {
         }
 
         binding.tvForgetPwd.setOnClickListener {
-            ResetPasswordActivity.launch(this)
+            ResetPasswordActivity.launch(this@LoginActivity)
         }
 
         binding.tvRegister.setOnClickListener {
-            RegisterActivity.launch(this)
+            RegisterActivity.launch(this@LoginActivity)
         }
 
         binding.ivGoogle.setOnClickListener {
@@ -114,7 +117,7 @@ class LoginActivity : BaseActivity() {
         }
 
         binding.btnMobileLogin.setOnClickListener {
-            LoginByMobileActivity.launch(this)
+            LoginByMobileActivity.launch(it.context)
         }
 
         binding.tvDauth.setOnClickListener {
@@ -122,12 +125,32 @@ class LoginActivity : BaseActivity() {
         }
 
         binding.ivMetamask.setOnClickListener {
+            val activity = this@LoginActivity
+            EoaBusinessActivity.launch(activity)
+            return@setOnClickListener
+
             lifecycleScope.launch {
-                // 待实现
+                when (val addressResult =
+                    HideApiUtil.getEoaApi().connectMetaMask()) {
+                    is DAuthResult.Success -> {
+                        ToastUtil.show(
+                            activity,
+                            "${getString(R.string.success)}，${addressResult.data}"
+                        )
+                        EoaBusinessActivity.launch(activity)
+                        finish()
+                    }
+
+                    else -> {
+                        ToastUtil.show(
+                            activity,
+                            "${getString(R.string.failure)}, ${addressResult.getError()}}"
+                        )
+                    }
+                }
             }
         }
     }
-
 
     private fun handleLoginResult(loginResultData: LoginResultData?) {
         when (loginResultData) {

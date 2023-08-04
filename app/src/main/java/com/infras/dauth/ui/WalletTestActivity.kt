@@ -1,22 +1,24 @@
-package com.infras.dauth
+package com.infras.dauth.ui
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
+import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityWalletTestBinding
-import com.infras.dauthsdk.api.entity.DAuthResult
-import com.infras.dauthsdk.api.entity.TokenType
 import com.infras.dauth.ext.mount
 import com.infras.dauth.manager.sdk
-import com.infras.dauthsdk.mpc.DAuthJniInvoker
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.LogUtil
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.util.Web3jHelper
-import com.infras.dauthsdk.wallet.sol.DAuthAccountFactory
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.api.entity.DAuthResult
+import com.infras.dauthsdk.api.entity.TokenType
+import com.infras.dauthsdk.mpc.DAuthJniInvoker
+import com.infras.dauthsdk.wallet.sol.DAuthAccountFactory
 import kotlinx.coroutines.launch
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.TypeReference
@@ -32,6 +34,12 @@ import org.web3j.utils.Numeric
 import java.math.BigInteger
 
 private const val TAG = "WalletTestActivity"
+
+private class ExecuteArgs(
+    val address: String,
+    val amound: BigInteger,
+    val byteArray: ByteArray
+)
 
 class WalletTestActivity : BaseActivity() {
 
@@ -152,7 +160,10 @@ class WalletTestActivity : BaseActivity() {
                         val data = result.data
                         val message = "计算成功\n认证费：${GasUtil.getReadableGas(data.verificationCost)}\n" +
                                 "执行费：${GasUtil.getReadableGas(data.callCost)}\n是否执行？"
-                        DialogHelper.show2ButtonsDialogMayHaveLeak(this@WalletTestActivity, message) {
+                        DialogHelper.show2ButtonsDialogMayHaveLeak(
+                            this@WalletTestActivity,
+                            message
+                        ) {
                             lifecycleScope.launch {
                                 loadingDialog.show(
                                     supportFragmentManager,
@@ -294,9 +305,3 @@ class WalletTestActivity : BaseActivity() {
         }
     }
 }
-
-private class ExecuteArgs(
-    val address: String,
-    val amound: BigInteger,
-    val byteArray: ByteArray
-)

@@ -1,13 +1,7 @@
-package com.infras.dauthsdk.wallet.connect
+package com.infras.dauthsdk.wallet.connect.wallectconnect
 
-import android.app.Application
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import androidx.core.net.toUri
 import com.infras.dauthsdk.login.utils.DAuthLogger
-import com.infras.dauthsdk.wallet.ext.runCatchingWithLog
 //import com.walletconnect.android.Core
 //import com.walletconnect.android.CoreClient
 //import com.walletconnect.android.internal.common.exception.WalletConnectException
@@ -19,19 +13,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
-import java.lang.RuntimeException
-import kotlin.coroutines.resume
-import kotlin.jvm.Throws
 
 private const val TAG = "ConnectManager"
 

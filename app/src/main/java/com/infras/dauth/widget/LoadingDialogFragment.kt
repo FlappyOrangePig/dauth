@@ -2,7 +2,6 @@ package com.infras.dauth.widget
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
@@ -12,11 +11,7 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-
-private fun Float.dp(context: Context): Int {
-    val scale = context.applicationContext.resources.displayMetrics.density
-    return (this * scale + 0.5f).toInt()
-}
+import com.infras.dauth.ext.dp
 
 class LoadingDialogFragment : DialogFragment() {
     companion object {
@@ -30,7 +25,7 @@ class LoadingDialogFragment : DialogFragment() {
         val a = requireActivity()
         val fl = FrameLayout(a).apply {
             setBackgroundColor(Color.parseColor("#88000000"))
-            val padding = 10F.dp(a)
+            val padding = 10F.dp()
             setPadding(padding, padding, padding, padding)
             addView(ProgressBar(a), ViewGroup.LayoutParams(-2, -2))
         }

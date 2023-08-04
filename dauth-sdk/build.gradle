@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
+    id 'org.jetbrains.kotlin.plugin.parcelize'
     id "org.jetbrains.dokka"
 }
 
@@ -31,6 +32,8 @@ android {
         disable 'TimberArgCount', 'TimberArgTypes', 'TimberTagLength', 'BinaryOperationInTimber',
                 'LogNotTimber', 'StringFormatInTimber', 'ThrowableNotAtBeginning'
     }
+
+    buildFeatures { viewBinding = true }
 }
 
 dependencies {
@@ -76,7 +79,7 @@ dependencies {
     api libraries.web3j_abi
 
     // WalletConnect sign-sdk
-    implementation(platform("com.walletconnect:android-bom:1.12.0"))
+    //implementation(platform("com.walletconnect:android-bom:1.12.0"))
     /*implementation("com.walletconnect:android-core") {
         // 与web3j重复
         exclude group: 'org.bouncycastle'

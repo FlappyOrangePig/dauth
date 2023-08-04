@@ -8,7 +8,7 @@ import android.content.pm.PackageManager.ApplicationInfoFlags
 import android.os.Build
 import com.infras.dauthsdk.api.DAuthSDK
 
-internal fun safeApp() = com.infras.dauthsdk.api.DAuthSDK.impl.context.applicationContext as? Application
+internal fun safeApp() = DAuthSDK.impl.context.applicationContext as? Application
 @Deprecated("使用依赖注入方便单元测试", ReplaceWith("Managers"))
 internal fun app() = safeApp()!!
 
@@ -39,3 +39,11 @@ internal fun PackageInfo.getVersionCode() = if (Build.VERSION.SDK_INT >= Build.V
 } else {
     this.versionCode
 }
+
+internal fun Float.dp(): Int {
+    val context = app()
+    val scale = context.applicationContext.resources.displayMetrics.density
+    return (this * scale + 0.5f).toInt()
+}
+
+internal fun Int.dp() = this.toFloat().dp()

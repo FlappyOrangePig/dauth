@@ -1,10 +1,13 @@
-package com.infras.dauth
+package com.infras.dauth.ui
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
+import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.util.Web3Const
 import com.infras.dauth.databinding.ActivityMainLayoutBinding
 import com.infras.dauth.ext.handleByToast
 import com.infras.dauth.ext.mount

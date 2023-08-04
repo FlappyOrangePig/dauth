@@ -1,5 +1,6 @@
 package com.infras.dauthsdk.api.entity
 
+import androidx.annotation.IntDef
 import com.infras.dauthsdk.login.utils.DAuthLogger
 
 sealed class DAuthResult<T> {
@@ -36,9 +37,9 @@ sealed class DAuthResult<T> {
 
     }
 
-    class SdkError<T>(val code: Int) : DAuthResult<T>() {
+    class SdkError<T>(@DAuthSdkErrorEnum val code: Int) : DAuthResult<T>() {
         override fun getError(): String {
-            return "sdk error:$code"
+            return "sdk error:${getSdkErrorDescription(code)}"
         }
 
         override fun toString(): String {
@@ -63,8 +64,52 @@ sealed class DAuthResult<T> {
         const val SDK_ERROR_BALANCE_TYPE = 13
         const val SDK_ERROR_SIGN = 14
         const val SDK_ERROR_GET_SIGNER_BY_SIGNATURE = 15
+        const val SDK_ERROR_USER_CANCELED = 16
+
+        fun getSdkErrorDescription(@DAuthSdkErrorEnum code: Int) = when (code) {
+            SDK_ERROR_UNKNOWN -> "unknown error"
+            SDK_ERROR_AA_ADDRESS_INVALID -> "aa address invalid"
+            SDK_ERROR_BALANCE_TYPE -> "balance type"
+            SDK_ERROR_BIND_WALLET -> "bind wallet"
+            SDK_ERROR_CANNOT_GENERATE_ADDRESS -> "cannot generate address"
+            SDK_ERROR_CANNOT_GET_ADDRESS -> "cannot get address"
+            SDK_ERROR_CANNOT_GET_NONCE -> "cannot get nonce"
+            SDK_ERROR_ESTIMATE_SIMULATE -> "estimate_simulate"
+            SDK_ERROR_ESTIMATE_SIMULATE_DECODE -> "estimate simulate decode"
+            SDK_ERROR_GET_SIGNER_BY_SIGNATURE -> "get signer by signature"
+            SDK_ERROR_LOGGED_OUT -> "logged out"
+            SDK_ERROR_MERGE_RESULT -> "merge result"
+            SDK_ERROR_NO_BALANCE -> "no balance"
+            SDK_ERROR_RESTORE_KEY_BY_MERGE_RESULT -> "restore key by merge result"
+            SDK_ERROR_SET_KEY -> "set key"
+            SDK_ERROR_SIGN -> "sign"
+            SDK_ERROR_USER_CANCELED -> "user canceled"
+            else -> "?"
+        }
     }
 }
+
+@Retention(AnnotationRetention.SOURCE)
+@IntDef(
+    DAuthResult.SDK_ERROR_UNKNOWN,
+    DAuthResult.SDK_ERROR_CANNOT_GET_NONCE,
+    DAuthResult.SDK_ERROR_CANNOT_GET_ADDRESS,
+    DAuthResult.SDK_ERROR_BIND_WALLET,
+    DAuthResult.SDK_ERROR_LOGGED_OUT,
+    DAuthResult.SDK_ERROR_MERGE_RESULT,
+    DAuthResult.SDK_ERROR_RESTORE_KEY_BY_MERGE_RESULT,
+    DAuthResult.SDK_ERROR_CANNOT_GENERATE_ADDRESS,
+    DAuthResult.SDK_ERROR_SET_KEY,
+    DAuthResult.SDK_ERROR_AA_ADDRESS_INVALID,
+    DAuthResult.SDK_ERROR_NO_BALANCE,
+    DAuthResult.SDK_ERROR_ESTIMATE_SIMULATE,
+    DAuthResult.SDK_ERROR_ESTIMATE_SIMULATE_DECODE,
+    DAuthResult.SDK_ERROR_BALANCE_TYPE,
+    DAuthResult.SDK_ERROR_SIGN,
+    DAuthResult.SDK_ERROR_GET_SIGNER_BY_SIGNATURE,
+    DAuthResult.SDK_ERROR_USER_CANCELED,
+)
+annotation class DAuthSdkErrorEnum
 
 internal fun <T> DAuthResult<T>.traceResult(
     tag: String,

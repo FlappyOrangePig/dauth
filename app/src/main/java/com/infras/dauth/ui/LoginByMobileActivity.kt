@@ -1,10 +1,11 @@
-package com.infras.dauth
+package com.infras.dauth.ui
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
+import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityMobileLoginLayoutBinding
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.LogUtil
@@ -14,6 +15,7 @@ import com.infras.dauthsdk.api.entity.LoginResultData
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_MOBILE = 60  // 手机号登录
+
 class LoginByMobileActivity: BaseActivity() {
     private var _binding: ActivityMobileLoginLayoutBinding?  = null
     private val binding: ActivityMobileLoginLayoutBinding get() = _binding!!

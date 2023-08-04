@@ -3,13 +3,13 @@ package com.infras.dauthsdk.login.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.login.callback.ThirdPartyCallback
 import com.infras.dauthsdk.login.google.GoogleLoginManager
 import com.infras.dauthsdk.login.twitter.TwitterLoginManager
 import com.infras.dauthsdk.login.utils.DAuthLogger
+import com.infras.dauthsdk.wallet.base.BaseActivity
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
@@ -20,7 +20,7 @@ private const val GOOGLE_REQUEST_CODE = 9004
 private const val GOOGLE_OPEN_SERVICE_REQUEST_CODE = 9005
 private const val TWITTER_REQUEST_CODE = 140
 
-class ThirdPartyResultActivity : AppCompatActivity() {
+class ThirdPartyResultActivity : BaseActivity() {
     companion object {
         private var callback: ThirdPartyCallback? = null
         private const val LAUNCH_TYPE = "LAUNCH_TYPE"
@@ -52,11 +52,11 @@ class ThirdPartyResultActivity : AppCompatActivity() {
                     this,
                     object : Callback<TwitterSession>() {
                         override fun success(result: Result<TwitterSession>?) {
-                            DAuthLogger.e("twitter授权成功")
+                            DAuthLogger.e("twitter authorize success")
                         }
 
                         override fun failure(exception: TwitterException?) {
-                            DAuthLogger.e("twitter授权失败：$exception")
+                            DAuthLogger.e("twitter authorize failure:${exception?.stackTraceToString()}")
                             finish()
                         }
                     })

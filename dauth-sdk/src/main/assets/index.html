@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simple dapp</title>
+    <script type="module" src="./dist/main.js"></script> 
+  </head>
+  <body>
+    <!-- Display a connect button and the current account -->
+    <button class="enableEthereumButton" hidden>Connect MetaMask</button>
+    <button class="sendEthButton" hidden>Send Transaction</button>
+    <button class="personalSignButton" hidden>Personal Sign</button>
+    <p><span class="showAccount"></span></p>
+    <p hidden>Personal sign: <span class="personalSign"></span></p>
+    <p hidden>Send transaction: <span class="sendTransaction"></span></p>
+    <script>
+      let cur = 0;
+      function switchButton() {
+        console.log(window.showButton);
+        window.showButton(cur++ % 3);
+      }
+    </script>
+    <button onclick="switchButton()" hidden>switch button</button>
+  </body>
+</html>

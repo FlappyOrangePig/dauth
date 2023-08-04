@@ -18,7 +18,7 @@ import com.infras.dauthsdk.wallet.util.KeystoreUtil
 class DAuthSDK private constructor(
     internal val loginApi: DAuthLogin,
     private val aaWalletApi: AAWalletImpl,
-    private val eoaWalletApi: EoaWalletImpl,
+    internal val eoaWalletApi: EoaWalletImpl,
 ) : com.infras.dauthsdk.api.IDAuthApi, com.infras.dauthsdk.api.ILoginApi by loginApi, com.infras.dauthsdk.api.IAAWalletApi by aaWalletApi {
 
     companion object {

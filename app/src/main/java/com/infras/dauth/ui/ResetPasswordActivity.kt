@@ -1,16 +1,19 @@
-package com.infras.dauth
+package com.infras.dauth.ui
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
+import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityResetPwdLayoutBinding
-import com.infras.dauthsdk.login.model.ResetByPasswordParam
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.util.ToastUtil
+import com.infras.dauthsdk.login.model.ResetByPasswordParam
 import kotlinx.coroutines.launch
 
 private const val USER_TYPE_OF_EMAIL = 10
+
 class ResetPasswordActivity : BaseActivity() {
 
     private var _binding: ActivityResetPwdLayoutBinding? = null
@@ -51,11 +54,13 @@ class ResetPasswordActivity : BaseActivity() {
                     val setPasswordData = sdk.setRecoverPassword(params)
                     if (setPasswordData.code == 0) {
                         ToastUtil.show(
-                            this@ResetPasswordActivity, "重置密码成功")
+                            this@ResetPasswordActivity, "重置密码成功"
+                        )
                         this@ResetPasswordActivity.finish()
                     } else {
                         ToastUtil.show(
-                            this@ResetPasswordActivity, "${setPasswordData.msg}")
+                            this@ResetPasswordActivity, "${setPasswordData.msg}"
+                        )
                     }
                 }
             }

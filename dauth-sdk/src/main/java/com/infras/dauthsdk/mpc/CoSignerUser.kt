@@ -14,11 +14,11 @@ class CoSignerUser(
     private val remote: String
 ) {
     private var contextHandler: Long? = null
-    private val jni get() = com.infras.dauthsdk.mpc.DAuthJni.getInstance()
+    private val jni get() = DAuthJni.getInstance()
 
     fun startRemoveSign(): ByteArray {
         DAuthLogger.d("$logTag startRemoveSign", TAG)
-        val outBuffer = ArrayList<com.infras.dauthsdk.mpc.entity.JniOutBuffer>()
+        val outBuffer = ArrayList<JniOutBuffer>()
         contextHandler = jni.remoteSignMsg(msgHash, key, local, arrayOf(remote), outBuffer)
         return outBuffer.first().bytes
     }
@@ -27,7 +27,7 @@ class CoSignerUser(
     fun signRound(input: ByteArray): Pair<Boolean, ByteArray> {
         DAuthLogger.d("$logTag signRound", TAG)
         val handle = contextHandler ?: throw IllegalStateException("please call startRemoveSign first")
-        val outBuffer = ArrayList<com.infras.dauthsdk.mpc.entity.JniOutBuffer>()
+        val outBuffer = ArrayList<JniOutBuffer>()
         return when (jni.remoteSignRound(handle, remote, input, outBuffer)) {
             1 -> true to jni.getSignature(handle).toByteArray()
             0 -> false to outBuffer.first().bytes

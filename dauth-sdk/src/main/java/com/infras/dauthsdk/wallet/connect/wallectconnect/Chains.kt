@@ -1,4 +1,4 @@
-//package com.infras.dauthsdk.wallet.connect
+package com.infras.dauthsdk.wallet.connect.wallectconnect//package com.infras.dauthsdk.wallet.connect
 //
 //import androidx.annotation.DrawableRes
 //import com.infras.dauthsdk.R

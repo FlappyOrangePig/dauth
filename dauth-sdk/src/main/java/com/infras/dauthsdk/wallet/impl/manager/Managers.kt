@@ -7,7 +7,7 @@ import com.infras.dauthsdk.login.network.RequestApi
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.LoginPrefs
 import com.infras.dauthsdk.mpc.MpcKeyStore
-import com.infras.dauthsdk.wallet.connect.ConnectManager
+import com.infras.dauthsdk.wallet.connect.wallectconnect.ConnectManager
 import com.infras.dauthsdk.wallet.impl.AAWalletImpl
 import com.infras.dauthsdk.wallet.impl.ConfigurationManager
 import com.infras.dauthsdk.wallet.impl.EoaWalletImpl

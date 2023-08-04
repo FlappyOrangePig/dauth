@@ -2,7 +2,7 @@ package com.infras.dauth.ext
 
 import com.infras.dauth.R
 import com.infras.dauth.MyApplication
-import com.infras.dauth.ToastUtil
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.WalletBalanceData
 import com.infras.dauthsdk.login.network.BaseResponse

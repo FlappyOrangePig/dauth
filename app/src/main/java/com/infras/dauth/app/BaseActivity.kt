@@ -1,4 +1,4 @@
-package com.infras.dauth
+package com.infras.dauth.app
 
 import androidx.appcompat.app.AppCompatActivity
 
