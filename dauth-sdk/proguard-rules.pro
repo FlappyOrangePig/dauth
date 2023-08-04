@@ -20,10 +20,12 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class com.infras.dauthsdk.login.model.** { *; }
+-keep class com.infras.dauthsdk.login.** { *; }
 -keep class com.infras.dauthsdk.wallet.sol.** { *; }
 -keep class com.infras.dauthsdk.mpc.entity.** { *; }
 -keep class com.infras.dauthsdk.api.** { *; }
+
+-keep class com.twitter.** { *; }
 
 # Keep all JNI classes and their methods and fields
 -keepclasseswithmembers class * {

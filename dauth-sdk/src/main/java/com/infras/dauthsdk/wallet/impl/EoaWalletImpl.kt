@@ -18,7 +18,7 @@ internal class EoaWalletImpl internal constructor() : IEoaWalletApi {
     private val connectManager get() = Managers.connectManager
 
     override suspend fun connectWallet(): Boolean {
-        return runCatchingWithLogSuspend { connectManager.connect() } ?: false
+        return /*runCatchingWithLogSuspend { connectManager.connect() } ?:*/ false
     }
 
     override suspend fun getEoaWalletAddress(): DAuthResult<String> {
