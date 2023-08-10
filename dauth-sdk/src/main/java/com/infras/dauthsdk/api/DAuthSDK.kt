@@ -19,21 +19,21 @@ class DAuthSDK private constructor(
     internal val loginApi: DAuthLogin,
     private val aaWalletApi: AAWalletImpl,
     internal val eoaWalletApi: EoaWalletImpl,
-) : com.infras.dauthsdk.api.IDAuthApi, com.infras.dauthsdk.api.ILoginApi by loginApi, com.infras.dauthsdk.api.IAAWalletApi by aaWalletApi {
+) : IDAuthApi, ILoginApi by loginApi, IAAWalletApi by aaWalletApi {
 
     companion object {
-        val instance: com.infras.dauthsdk.api.IDAuthApi get() = com.infras.dauthsdk.api.DAuthSDK.Companion.impl
-        internal val impl: com.infras.dauthsdk.api.DAuthSDK by lazy {
-            com.infras.dauthsdk.api.DAuthSDK(DAuthLogin(), AAWalletImpl(), EoaWalletImpl())
+        val instance: IDAuthApi get() = impl
+        internal val impl: DAuthSDK by lazy {
+            DAuthSDK(DAuthLogin(), AAWalletImpl(), EoaWalletImpl())
         }
     }
 
     private var _context: Context? = null
     internal val context get() = _context ?: throw RuntimeException("please call initSDK() first")
-    private var _config: com.infras.dauthsdk.api.SdkConfig? = null
+    private var _config: SdkConfig? = null
     internal val config get() = _config ?: throw RuntimeException("please call initSDK() first")
 
-    override fun initSDK(context: Context, config: com.infras.dauthsdk.api.SdkConfig) {
+    override fun initSDK(context: Context, config: SdkConfig) {
         val appContext = context.applicationContext as Application
         this._context = appContext
         this._config = config
@@ -51,7 +51,7 @@ class DAuthSDK private constructor(
     }
 
     @VisibleForTesting
-    fun initSDKForTest(context: Context, config: com.infras.dauthsdk.api.SdkConfig) {
+    fun initSDKForTest(context: Context, config: SdkConfig) {
         this._context = context
         this._config = config
     }

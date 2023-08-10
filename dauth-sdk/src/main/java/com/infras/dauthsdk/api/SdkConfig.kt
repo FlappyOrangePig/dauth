@@ -65,11 +65,18 @@ class SdkConfig {
     var isLogOpen = false
 
     /**
-     * File log level
+     * 日志输出到文件的级别
      * 1=v 2=d 3=i 4=w 5=e 6=f
      */
     var fileLogLevel = 3
+    /**
+     * 日志输出到控制台的级别
+     */
     var consoleLogLevel = 1
+    /**
+     * 日志回调。优先级最高，打开后忽略所有[isLogOpen]、[fileLogLevel]、[consoleLogLevel]
+     */
+    var logCallback: ((level: Int, tag: String, log: String) -> Unit)? = null
 
     /**
      * 【test】不使用分布式签名，直接本地签名。（测试期本地会保存所有密钥分片，上线时移除）

@@ -20,6 +20,7 @@ internal object DAuthLogger {
     private val isOpenLog: Boolean get() = DAuthSDK.impl.config.isLogOpen
     private val consoleLogLevel: Int get() = DAuthSDK.impl.config.consoleLogLevel
     private val fileLogLevel: Int get() = DAuthSDK.impl.config.fileLogLevel
+    private val logCallback get() = DAuthSDK.impl.config.logCallback
 
     /**
      * 处理公共逻辑：
@@ -39,6 +40,12 @@ internal object DAuthLogger {
 
         // 使用统一的前缀，方便过滤所有的SDK日志
         val finalTag = logTagTransform(tag)
+
+        // 优先级最高
+        logCallback?.let {
+            it.invoke(level, tag, log)
+            return
+        }
 
         if (isOpenLog) {
             if (level >= consoleLogLevel) {

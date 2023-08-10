@@ -29,7 +29,6 @@ private const val URL = "file:///android_asset/index.html"
 internal class MetaMaskFragment : BaseFragment() {
 
     private val jsInvoker = JsInvoker { webView }
-    private val eoaWallet get() = DAuthSDK.impl.eoaWalletApi
     private lateinit var webView: WebView
     private val jsObjectHandlers = mutableListOf<JSHandler>()
     private val builtInOnAuthorizeHandler = listOf(
