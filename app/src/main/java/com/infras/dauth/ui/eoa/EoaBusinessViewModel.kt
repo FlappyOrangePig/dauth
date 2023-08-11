@@ -37,10 +37,10 @@ class EoaBusinessViewModel : ViewModel() {
         }
     }
 
-    fun connect() {
+    fun connect(activity: EoaBusinessActivity) {
         viewModelScope.launch {
             LogUtil.d(TAG, "connect >>")
-            val result = api.connectMetaMask()
+            val result = api.connectMetaMask(activity)
             LogUtil.d(TAG, "connect << $result")
             when (result) {
                 is DAuthResult.Success -> {
@@ -72,11 +72,11 @@ class EoaBusinessViewModel : ViewModel() {
         }
     }
 
-    fun personalSign() {
+    fun personalSign(activity: EoaBusinessActivity) {
         viewModelScope.launch {
             LogUtil.d(TAG, "personalSign >>")
             val message = "我是你大爷"
-            val result = api.personalSign(message)
+            val result = api.personalSign(activity, message)
             LogUtil.d(TAG, "personalSign << $result")
             when (result) {
                 is DAuthResult.Success -> {
@@ -90,7 +90,7 @@ class EoaBusinessViewModel : ViewModel() {
         }
     }
 
-    fun sendTransaction() {
+    fun sendTransaction(activity: EoaBusinessActivity) {
         viewModelScope.launch {
             LogUtil.d(TAG, "sendTransaction >>")
             val tx = Transaction1559(
@@ -102,7 +102,7 @@ class EoaBusinessViewModel : ViewModel() {
                 maxFeePerGas = "0x2540be400",*/
                 data = "0x",
             )
-            val result = api.sendTransaction(tx)
+            val result = api.sendTransaction(activity, tx)
             LogUtil.d(TAG, "sendTransaction << $result")
             when (result) {
                 is DAuthResult.Success -> {

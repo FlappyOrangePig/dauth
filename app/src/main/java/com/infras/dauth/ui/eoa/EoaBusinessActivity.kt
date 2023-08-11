@@ -57,16 +57,16 @@ class EoaBusinessActivity : BaseActivity() {
             Column(verticalArrangement = Arrangement.Top) {
                 EoaAccountAddress(viewModel.textState.value)
                 SubmitButton("connect") {
-                    viewModel.connect()
+                    viewModel.connect(this@EoaBusinessActivity)
                 }
                 SubmitButton("getAddress") {
                     viewModel.getAddress()
                 }
                 SubmitButton("personalSign") {
-                    viewModel.personalSign()
+                    viewModel.personalSign(this@EoaBusinessActivity)
                 }
                 SubmitButton("sendTransaction") {
-                    viewModel.sendTransaction()
+                    viewModel.sendTransaction(this@EoaBusinessActivity)
                 }
             }
         }

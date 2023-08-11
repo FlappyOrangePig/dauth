@@ -1,69 +1,37 @@
 package com.infras.dauthsdk.wallet.connect.metamask
 
-import android.content.Context
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.app.Dialog
+import android.content.DialogInterface
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.os.Parcelable
+import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauthsdk.R
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.entity.DAuthResult
-import com.infras.dauthsdk.databinding.DauthActivityMetamaskConnectorBinding
-import com.infras.dauthsdk.login.impl.TopActivityCallback
 import com.infras.dauthsdk.login.utils.DAuthLogger
-import com.infras.dauthsdk.wallet.base.BaseActivity
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
-import com.infras.dauthsdk.wallet.ext.runCatchingWithLog
-import com.infras.dauthsdk.wallet.util.SystemUIUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.parcelize.Parcelize
-import java.lang.ref.WeakReference
 
-internal typealias MetaMaskCallback = (DAuthResult<String>) -> Unit
+class MetaMaskDialog : DialogFragment() {
 
-@Parcelize
-internal sealed class MetaMaskInput : Parcelable {
-    @Parcelize
-    object Connect : MetaMaskInput()
-
-    @Parcelize
-    class PersonalSign(val message: String) : MetaMaskInput() {
-        override fun toString(): String {
-            return "PersonalSign(message='$message')"
+    companion object {
+        private const val TAG = "MetaMaskDialog"
+        private const val EXTRA_INPUT = "EXTRA_INPUT"
+        internal fun newInstance(input: MetaMaskInput) = MetaMaskDialog().apply {
+            arguments = Bundle().also { it.putParcelable(EXTRA_INPUT, input) }
         }
     }
 
-    @Parcelize
-    class SendTransaction(val transactionJson: String) : MetaMaskInput() {
-        override fun toString(): String {
-            return "SendTransaction(transactionJson='$transactionJson')"
-        }
-    }
-}
-
-internal class MetaMaskActivity : BaseActivity() {
-
-    companion object : MetaMaskWidgetApi {
-        private const val TAG = "MetaMaskActivity"
-        private const val EXTRA_INPUT = "MetaMaskInput"
-
-        override fun launch(context: Context, input: MetaMaskInput) {
-            context.startActivity(
-                Intent(
-                    context,
-                    MetaMaskActivity::class.java
-                ).addFlags(FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra(EXTRA_INPUT, input)
-            )
-        }
-    }
-
-    private var _binding: DauthActivityMetamaskConnectorBinding? = null
-    private val binding: DauthActivityMetamaskConnectorBinding get() = _binding!!
-    private val metaMask get() = supportFragmentManager.findFragmentByTag(getString(R.string.meta_mask_fragment_tag)) as? MetaMaskFragment
+    private val input get() = arguments.getParcelableExtraCompat<MetaMaskInput>(EXTRA_INPUT)!!
+    private val metaMask get() = childFragmentManager.findFragmentByTag(getString(R.string.meta_mask_fragment_tag)) as MetaMaskFragment
     private val eoaWallet get() = DAuthSDK.impl.eoaWalletApi
     private val onAuthorizeHandler = object : JSHandler("OnAuthorize") {
         override fun onHandle(arguments: Map<String, String>) {
@@ -116,52 +84,44 @@ internal class MetaMaskActivity : BaseActivity() {
         }
     }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val r = super.onCreateDialog(savedInstanceState)
+        r.window?.requestFeature(Window.FEATURE_NO_TITLE)
+        return r
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        DAuthLogger.d("onCreate $savedInstanceState", TAG)
-
-        SystemUIUtil.show(window, SystemUIUtil.ThemeDrawByDeveloper(true))
-        _binding = DauthActivityMetamaskConnectorBinding.inflate(LayoutInflater.from(this))
-        setContentView(binding.root)
-
-        binding.ivLogo.setOnLongClickListener {
-            metaMask?.loadUrl()
-            false
-        }
-        binding.ivLogo.setOnClickListener {
-        }
-        if (!handleInputIntent(intent)) {
-            finish()
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.apply {
+            setGravity(Gravity.BOTTOM)
+            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
 
-    private fun getInput(intent: Intent?): MetaMaskInput? {
-        return intent.getParcelableExtraCompat(EXTRA_INPUT)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.dauth_fragment_metamask_dialog, container, false)
     }
 
-    private fun handleInputIntent(intent: Intent?): Boolean {
-        DAuthLogger.d("handleInputIntent", TAG)
-        val input: MetaMaskInput = getInput(intent) ?: run {
-            finish()
-            DAuthLogger.e("input error", TAG)
-            return false
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        handleInput()
+    }
 
-        setIntent(intent)
-        val f = supportFragmentManager.findFragmentByTag(getString(R.string.meta_mask_fragment_tag))
-        if (f == null){
-            DAuthLogger.e("metaMask fragment is null", TAG)
-            return false
-        }
-        val metaMask = f as MetaMaskFragment
+    private fun handleInput() {
         metaMask.setMetaMaskInput(input)
         when (input) {
             MetaMaskInput.Connect -> {
                 lifecycleScope.launch {
                     DAuthLogger.d("setJsHandlers:Connect", TAG)
                     metaMask.setJsHandlers(listOf(onAuthorizeHandler))
-                    if (metaMask.isConnected() == true) {
+                    val isConnected = metaMask.isConnected()
+                    DAuthLogger.d("isConnected=$isConnected", TAG)
+                    if (isConnected == true) {
                         val account = metaMask.getCurrentEoaAddress().orEmpty()
                         if (account.isNotEmpty()) {
                             delay(250L)
@@ -185,29 +145,18 @@ internal class MetaMaskActivity : BaseActivity() {
                 }
             }
         }
-        return true
     }
 
-    override fun finish() {
-        DAuthLogger.d("finish", TAG)
-        //super.finish()
-        finishWithResult(DAuthResult.SdkError(DAuthResult.SDK_ERROR_USER_CANCELED))
+    override fun onDestroy() {
+        super.onDestroy()
+        DAuthLogger.d("onDestroy", TAG)
     }
 
-    private fun fakeFinish() {
-        TopActivityCallback.getTopActivityNotSingleInstance()?.let { clazz ->
-            runCatchingWithLog {
-                startActivity(Intent(this, clazz).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP))
-            }
-        }
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        DAuthLogger.d("onNewIntent", TAG)
-        if (!handleInputIntent(intent)) {
-            finish()
-        }
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        DAuthLogger.d("onDismiss", TAG)
+        // 可能会产生重复，作为兜底逻辑。而finishWithResult方法只会分发一次结果
+        finishWithResult(DAuthResult.SdkError(DAuthResult.SDK_ERROR_USER_CANCELED), false)
     }
 
     /**
@@ -215,11 +164,15 @@ internal class MetaMaskActivity : BaseActivity() {
      *
      * @param result
      */
-    private fun finishWithResult(result: DAuthResult<String>) {
+    private fun finishWithResult(result: DAuthResult<String>, dismiss: Boolean = true) {
+        DAuthLogger.d("finishWithResult=$result", TAG)
         eoaWallet.metamaskCallback?.let {
+            DAuthLogger.d("finishWithResult dispatch", TAG)
             it.invoke(result)
             eoaWallet.metamaskCallback = null
         }
-        fakeFinish()
+        if (dismiss) {
+            dismiss()
+        }
     }
 }

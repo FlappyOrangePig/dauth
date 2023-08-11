@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fl_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/green"
+    android:padding="0dp">
+
+    <fragment
+        android:id="@+id/f_meta_mask"
+        android:tag="@string/meta_mask_fragment_tag"
+        android:name="com.infras.dauthsdk.wallet.connect.metamask.MetaMaskFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</FrameLayout>

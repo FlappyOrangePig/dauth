@@ -20,13 +20,14 @@
         app:layout_constraintTop_toBottomOf="@id/v_immersive">
 
         <fragment
-            android:id="@+id/f_webView"
+            android:id="@+id/f_meta_mask"
             android:name="com.infras.dauthsdk.wallet.connect.metamask.MetaMaskFragment"
+            android:tag="@string/meta_mask_fragment_tag"
             android:layout_width="0dp"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <ImageView
             android:id="@+id/iv_logo"
@@ -36,7 +37,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/f_webView"
+            app:layout_constraintBottom_toTopOf="@+id/f_meta_mask"
             android:contentDescription="@null"/>
 
         <TextView

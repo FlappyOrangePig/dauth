@@ -1,6 +1,6 @@
 package com.infras.dauthsdk.wallet.impl.manager
 
-import com.infras.dauthsdk.login.utils.LEVEL_F
+import com.infras.dauthsdk.api.DAuthLogLevel
 import com.infras.dauthsdk.wallet.util.ThreadUtil
 
 private const val TAG = "CrashManager"
@@ -38,9 +38,9 @@ private class DAuthExceptionHandler(
     private val logManager: DLogManager
 ) : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(t: Thread, e: Throwable) {
-        logManager.log(LEVEL_F, TAG, "----------DAuth CRASH----------", false)
-        logManager.log(LEVEL_F, TAG, "thread=$t", false)
-        logManager.log(LEVEL_F, TAG, e.stackTraceToString(), false)
+        logManager.log(DAuthLogLevel.LEVEL_FATAL, TAG, "----------DAuth CRASH----------", false)
+        logManager.log(DAuthLogLevel.LEVEL_FATAL, TAG, "thread=$t", false)
+        logManager.log(DAuthLogLevel.LEVEL_FATAL, TAG, e.stackTraceToString(), false)
         h?.uncaughtException(t, e)
     }
 }

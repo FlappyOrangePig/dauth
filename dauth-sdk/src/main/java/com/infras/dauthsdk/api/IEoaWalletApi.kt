@@ -1,5 +1,6 @@
 package com.infras.dauthsdk.api
 
+import android.content.Context
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.EstimateGasData
 import com.infras.dauthsdk.api.entity.SendTransactionData
@@ -10,13 +11,13 @@ interface IEoaWalletApi {
 
     suspend fun connectWallet(): Boolean
 
-    suspend fun connectMetaMask(): DAuthResult<String>
+    suspend fun connectMetaMask(context: Context): DAuthResult<String>
 
     suspend fun getEoaWalletAddress(): DAuthResult<String>
 
     suspend fun estimateGas(toUserId: String, amount: BigInteger): DAuthResult<EstimateGasData>
 
-    suspend fun sendTransaction(transaction1559: Transaction1559): DAuthResult<SendTransactionData>
+    suspend fun sendTransaction(context: Context, transaction1559: Transaction1559): DAuthResult<SendTransactionData>
 
-    suspend fun personalSign(message: String): DAuthResult<String>
+    suspend fun personalSign(context: Context, message: String): DAuthResult<String>
 }

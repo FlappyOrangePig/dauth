@@ -2,12 +2,7 @@ package com.infras.dauthsdk.wallet.impl.manager
 
 import android.content.Context
 import android.os.Environment
-import com.infras.dauthsdk.login.utils.LEVEL_D
-import com.infras.dauthsdk.login.utils.LEVEL_E
-import com.infras.dauthsdk.login.utils.LEVEL_F
-import com.infras.dauthsdk.login.utils.LEVEL_I
-import com.infras.dauthsdk.login.utils.LEVEL_V
-import com.infras.dauthsdk.login.utils.LEVEL_W
+import com.infras.dauthsdk.api.DAuthLogLevel
 import com.infras.dauthsdk.wallet.util.ExecutorUtl
 import java.io.File
 import java.io.FileWriter
@@ -50,12 +45,12 @@ internal class DLogManager internal constructor(private val context: Context) {
             val timestamp =
                 SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date())
             val levelTag = when (level) {
-                LEVEL_V -> "V"
-                LEVEL_D -> "D"
-                LEVEL_I -> "I"
-                LEVEL_W -> "W"
-                LEVEL_E -> "E"
-                LEVEL_F -> "F"
+                DAuthLogLevel.LEVEL_VERBOSE -> "V"
+                DAuthLogLevel.LEVEL_DEBUG -> "D"
+                DAuthLogLevel.LEVEL_INFO -> "I"
+                DAuthLogLevel.LEVEL_WARN -> "W"
+                DAuthLogLevel.LEVEL_ERROR -> "E"
+                DAuthLogLevel.LEVEL_FATAL -> "F"
                 else -> "?"
             }
             w.appendLine("$timestamp $levelTag/$tag: $log")

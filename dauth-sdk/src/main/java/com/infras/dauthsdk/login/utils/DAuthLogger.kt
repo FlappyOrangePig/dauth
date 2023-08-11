@@ -1,16 +1,11 @@
 package com.infras.dauthsdk.login.utils
 
 import android.util.Log
+import com.infras.dauthsdk.api.DAuthLogLevel
+import com.infras.dauthsdk.api.DAuthLogLevelEnum
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.wallet.ext.safeApp
 import com.infras.dauthsdk.wallet.impl.manager.Managers
-
-internal const val LEVEL_V = 1
-internal const val LEVEL_D = 2
-internal const val LEVEL_I = 3
-internal const val LEVEL_W = 4
-internal const val LEVEL_E = 5
-internal const val LEVEL_F = 6
 
 private fun logTagTransform(tag: String): String {
     return "DAuth-$tag"
@@ -30,7 +25,7 @@ internal object DAuthLogger {
     private fun log(
         tag: String,
         log: String,
-        level: Int
+        @DAuthLogLevelEnum level: Int
     ) {
         // 单元测试
         if (safeApp() == null) {
@@ -58,27 +53,27 @@ internal object DAuthLogger {
     }
 
     fun v(msg: String, tag: String = "") {
-        log(tag, msg, LEVEL_V)
+        log(tag, msg, DAuthLogLevel.LEVEL_VERBOSE)
     }
 
     fun d(msg: String, tag: String = "") {
-        log(tag, msg, LEVEL_D)
+        log(tag, msg, DAuthLogLevel.LEVEL_DEBUG)
     }
 
     fun i(msg: String, tag: String = "") {
-        log(tag, msg, LEVEL_I)
+        log(tag, msg, DAuthLogLevel.LEVEL_INFO)
     }
 
     fun w(msg: String, tag: String = "") {
-        log(tag, msg, LEVEL_W)
+        log(tag, msg, DAuthLogLevel.LEVEL_WARN)
     }
 
     fun e(msg: String, tag: String = "") {
-        log(tag, msg, LEVEL_E)
+        log(tag, msg, DAuthLogLevel.LEVEL_ERROR)
     }
 
     fun f(msg: String, tag: String = "") {
-        log(tag, msg, LEVEL_F)
+        log(tag, msg, DAuthLogLevel.LEVEL_FATAL)
     }
 }
 
@@ -124,12 +119,12 @@ private object Logcat : ILogger {
 
     private fun logcatLog(level: Int, t: String, l: String) {
         when (level) {
-            LEVEL_V -> Log.v(t, l)
-            LEVEL_D -> Log.d(t, l)
-            LEVEL_I -> Log.i(t, l)
-            LEVEL_E -> Log.e(t, l)
-            LEVEL_W -> Log.w(t, l)
-            LEVEL_F -> Log.wtf(t, l)
+            DAuthLogLevel.LEVEL_VERBOSE -> Log.v(t, l)
+            DAuthLogLevel.LEVEL_DEBUG -> Log.d(t, l)
+            DAuthLogLevel.LEVEL_INFO -> Log.i(t, l)
+            DAuthLogLevel.LEVEL_ERROR -> Log.e(t, l)
+            DAuthLogLevel.LEVEL_WARN -> Log.w(t, l)
+            DAuthLogLevel.LEVEL_FATAL -> Log.wtf(t, l)
             else -> {}
         }
     }

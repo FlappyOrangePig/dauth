@@ -3,15 +3,15 @@ package com.infras.dauth.ui
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
-import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.R
-import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.util.HideApiUtil
 import com.infras.dauth.util.LogUtil
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.LoginResultData
@@ -39,9 +39,9 @@ class LoginActivity : BaseActivity() {
 
     private fun ActivityLoginLayoutBinding.initView() {
         // 邮箱登录
-        binding.btnDauthLogin.setOnClickListener {
-            val account = binding.edtAccount.text.toString()
-            val password = binding.edtPassword.text.toString()
+        btnDauthLogin.setOnClickListener {
+            val account = edtAccount.text.toString()
+            val password = edtPassword.text.toString()
             lifecycleScope.launch {
                 val loginResultData = sdk.loginByMobileOrEmail(
                     account,
@@ -72,29 +72,29 @@ class LoginActivity : BaseActivity() {
 
         }
 
-        binding.tvForgetPwd.setOnClickListener {
+        tvForgetPwd.setOnClickListener {
             ResetPasswordActivity.launch(this@LoginActivity)
         }
 
-        binding.tvRegister.setOnClickListener {
+        tvRegister.setOnClickListener {
             RegisterActivity.launch(this@LoginActivity)
         }
 
-        binding.ivGoogle.setOnClickListener {
+        ivGoogle.setOnClickListener {
             lifecycleScope.launch {
                 val loginResultData = sdk.loginWithType(GOOGLE, this@LoginActivity)
                 handleLoginResult(loginResultData)
             }
         }
 
-        binding.ivTwitter.setOnClickListener {
+        ivTwitter.setOnClickListener {
             lifecycleScope.launch {
                 val loginResultData = sdk.loginWithType(TWITTER, this@LoginActivity)
                 handleLoginResult(loginResultData)
             }
         }
 
-        binding.ivWalletConnect.setOnClickListener {
+        ivWalletConnect.setOnClickListener {
             lifecycleScope.launch {
                 kotlin.runCatching {
                     val connectResult =  HideApiUtil.getEoaApi().connectWallet()
@@ -103,8 +103,8 @@ class LoginActivity : BaseActivity() {
             }
         }
 
-        binding.tvSendCode.setOnClickListener {
-            val account = binding.edtAccount.text.toString()
+        tvSendCode.setOnClickListener {
+            val account = edtAccount.text.toString()
             lifecycleScope.launch {
                 val response = sdk.sendEmailVerifyCode(account)
                 if (response?.ret == 0) {
@@ -116,22 +116,26 @@ class LoginActivity : BaseActivity() {
             }
         }
 
-        binding.btnMobileLogin.setOnClickListener {
+        btnMobileLogin.setOnClickListener {
             LoginByMobileActivity.launch(it.context)
         }
 
-        binding.tvDauth.setOnClickListener {
+        tvDauth.setOnClickListener {
             WalletTestActivity.launch(it.context)
         }
 
-        binding.ivMetamask.setOnClickListener {
+        ivFacebook.setOnClickListener {
+
+        }
+
+        ivMetamask.setOnClickListener {
             val activity = this@LoginActivity
             EoaBusinessActivity.launch(activity)
             return@setOnClickListener
 
             lifecycleScope.launch {
                 when (val addressResult =
-                    HideApiUtil.getEoaApi().connectMetaMask()) {
+                    HideApiUtil.getEoaApi().connectMetaMask(this@LoginActivity)) {
                     is DAuthResult.Success -> {
                         ToastUtil.show(
                             activity,

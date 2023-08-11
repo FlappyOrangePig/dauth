@@ -3,14 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <title>Simple dapp</title>
-    <script type="module" src="./dist/main.js"></script> 
+    <script type="module" src="./dist/main.js"></script>
+    <!-- width: 设置布局视口的宽度 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style type="text/css">
+      body {
+        background: #ffffff;
+      }
+      .blueButton {
+        width: 100vw;
+        height: auto;
+        display: inline-block;
+        padding: 10px;
+        font-size: 16px;
+        background-color: #F69220;
+        color: #fff;
+        border-radius: 5px;
+        border: none;
+        box-shadow: none;
+        transition: background-color 0.3s;
+        max-width:100%;
+      }
+      .blueButton.active {
+        background-color: #F69220;
+      }
+      .blueButton[hidden] {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <!-- Display a connect button and the current account -->
-    <button class="enableEthereumButton" hidden>Connect MetaMask</button>
-    <button class="sendEthButton" hidden>Send Transaction</button>
-    <button class="personalSignButton" hidden>Personal Sign</button>
-    <p><span class="showAccount"></span></p>
+    <button id="btn_connect_metamask" class="blueButton" hidden>Connect MetaMask</button>
+    <button id="btn_send_transaction" class="blueButton" hidden>Send Transaction</button>
+    <button id="btn_personal_sign" class="blueButton" hidden>Personal Sign</button>
+    <p><span class="showAccount" hidden></span></p>
     <p hidden>Personal sign: <span class="personalSign"></span></p>
     <p hidden>Send transaction: <span class="sendTransaction"></span></p>
     <script>

@@ -5,62 +5,39 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
-import androidx.annotation.Keep
-import androidx.annotation.VisibleForTesting
+import android.widget.FrameLayout
 import androidx.lifecycle.lifecycleScope
-import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.wallet.base.BaseFragment
+import com.infras.dauthsdk.wallet.connect.metamask.util.JsConvertUtil
 import com.infras.dauthsdk.wallet.connect.metamask.util.JsInvoker
-import com.infras.dauthsdk.wallet.connect.metamask.util.MetaMaskWebChromeClient
-import com.infras.dauthsdk.wallet.connect.metamask.util.MetaMaskWebViewClient
-import com.infras.dauthsdk.wallet.ext.dp
-import com.infras.dauthsdk.wallet.ext.runCatchingWithLog
-import com.squareup.moshi.Moshi
+import com.infras.dauthsdk.wallet.connect.metamask.util.MetaMaskH5Holder
+import com.infras.dauthsdk.wallet.connect.metamask.widget.MetaMaskWebView
 import kotlinx.coroutines.launch
 
-private const val JS_OBJECT_NAME = "android"
-private const val TAG = "MetaMaskFragment"
-//private const val URL = "http://172.16.12.186:5500/index.html"
-private const val URL = "file:///android_asset/index.html"
-
+/**
+ * 对MetaMask的WebView进行包装，封装基本逻辑。
+ * 而使用不同UI组件的封装参见[MetaMaskActivity]或[MetaMaskDialog]
+ */
 internal class MetaMaskFragment : BaseFragment() {
 
-    private val jsInvoker = JsInvoker { webView }
-    private lateinit var webView: WebView
-    private val jsObjectHandlers = mutableListOf<JSHandler>()
+    companion object {
+        private const val TAG = "MetaMaskFragment"
+        fun newInstance(): MetaMaskFragment {
+            return MetaMaskFragment()
+        }
+    }
+
+    private val jsInvoker = JsInvoker { webView!! }
+    private var webView: MetaMaskWebView? = null
     private val builtInOnAuthorizeHandler = listOf(
         object : JSHandler("OnAuthorize") {
             override fun onHandle(arguments: Map<String, String>) {
                 val account = arguments["message"]
                 DAuthLogger.d("OnAuthorize $account", TAG)
                 if (!account.isNullOrEmpty()) {
-                    // 保管地址
-                    currentEoaAddress = account
                     refreshH5Ui()
                 }
-            }
-        },
-        object : JSHandler("OnConnected") {
-            override fun onHandle(arguments: Map<String, String>) {
-                DAuthLogger.d("onConnected", TAG)
-            }
-        },
-        object : JSHandler("OnDisconnect") {
-            override fun onHandle(arguments: Map<String, String>) {
-                DAuthLogger.d("OnDisconnected", TAG)
-            }
-        },
-        object : JSHandler("OnMessage") {
-            override fun onHandle(arguments: Map<String, String>) {
-                DAuthLogger.d("OnMessage", TAG)
-            }
-        },
-        object : JSHandler("OnChainChanged") {
-            override fun onHandle(arguments: Map<String, String>) {
-                DAuthLogger.d("OnChainChanged", TAG)
             }
         }
     )
@@ -68,43 +45,28 @@ internal class MetaMaskFragment : BaseFragment() {
     private var metaMaskInput: MetaMaskInput? = null
     @Volatile
     private var jsToBeExecutedOnPageRefresh: String? = null
-    @Volatile
-    private var currentEoaAddress: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val context = requireContext()
-        WebView(context).apply {
-            settings.apply {
-                javaScriptEnabled = true
-                setSupportZoom(false)
-                databaseEnabled = false
-                domStorageEnabled = true
-                allowFileAccessFromFileURLs = true
-                allowUniversalAccessFromFileURLs = true
-            }
-            webViewClient = MetaMaskWebViewClient {
-                if (it == URL) {
+        FrameLayout(requireContext()).apply {
+            addView(MetaMaskH5Holder.getGlobalWebView().also {wv ->
+                wv.setOnPageFinished {
                     // 刷新页面后更新按钮状态
                     refreshH5Ui()
                 }
-            }
-            webChromeClient = MetaMaskWebChromeClient
-
-            val jso = MetaMaskJsObject(jsObjectHandlers)
-            addJavascriptInterface(jso, JS_OBJECT_NAME)
-            layoutParams = MarginLayoutParams(-1, 100.dp())
-            webView = this
-            return webView
+                webView = wv
+            }, -1, -2)
+            layoutParams = MarginLayoutParams(-1, -2)
+            return this
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadUrl()
+        //loadUrl()
     }
 
     override fun onResume() {
@@ -152,73 +114,50 @@ internal class MetaMaskFragment : BaseFragment() {
     }
 
     fun loadUrl() {
-        webView.loadUrl(URL)
+        webView?.refresh()
     }
 
     fun setMetaMaskInput(input: MetaMaskInput) {
         metaMaskInput = input
+        when (input) {
+            MetaMaskInput.Connect -> {
+            }
+
+            is MetaMaskInput.PersonalSign -> {
+                lifecycleScope.launch {
+                    setJsToBeExecutedOnPageRefresh(JsConvertUtil.personalSignMessage(input.message))
+                }
+            }
+
+            is MetaMaskInput.SendTransaction -> {
+                lifecycleScope.launch {
+                    setJsToBeExecutedOnPageRefresh(JsConvertUtil.sendTransaction(input.transactionJson))
+                }
+            }
+        }
     }
 
     fun setJsHandlers(handler: List<JSHandler>) {
         DAuthLogger.d("setJsHandlers $handler", TAG)
-        jsObjectHandlers.apply {
-            clear()
-            addAll(builtInOnAuthorizeHandler)
-            addAll(handler)
+        webView?.let {
+            it.setHandlers(
+                mutableListOf<JSHandler>().apply {
+                    addAll(handler)
+                    addAll(builtInOnAuthorizeHandler)
+                }
+            )
         }
     }
 
-    suspend fun setJsToBeExecutedOnPageRefresh(js: String) {
+    private suspend fun setJsToBeExecutedOnPageRefresh(js: String) {
         this.jsToBeExecutedOnPageRefresh = js
         this.jsInvoker.evaluateJavascript(js)
     }
 
-    suspend fun isConnected() = jsInvoker.isConnected()
+    suspend fun isConnected() = kotlin.runCatching { jsInvoker.isConnected() }.getOrNull()
 
     fun getCurrentEoaAddress(): String? {
-        return currentEoaAddress
-    }
-}
-
-@VisibleForTesting
-@Keep
-class MetaMaskJsObject internal constructor(
-    private val handlers: List<JSHandler>
-) {
-    companion object {
-        @VisibleForTesting
-        fun toStringMap(jsonStr: String): Map<String, String>? {
-            return try {
-                val moshi = Moshi.Builder().build()
-                val jsonAdapter = moshi.adapter<Map<String, String>>(
-                    MutableMap::class.java
-                )
-                jsonAdapter.fromJson(jsonStr)
-            } catch (t: Throwable) {
-                DAuthLogger.e(t.stackTraceToString(), TAG)
-                null
-            }
-        }
-    }
-
-    @JavascriptInterface
-    fun invoke(message: String) {
-        DAuthLogger.i("invoke $message", TAG)
-        val map = toStringMap(message)
-        if (map == null) {
-            DAuthLogger.e("invoke json error", TAG)
-            return
-        }
-        val type = map["type"]
-        handlers.filter {
-            it.type == type
-        }.also {
-            DAuthLogger.i("invoke count ${it.size}", TAG)
-        }.forEach {
-            runCatchingWithLog {
-                it.onHandle(map)
-            }
-        }
+        return webView?.getAccount()
     }
 }
 
