@@ -43,7 +43,7 @@ internal object DAuthLogger {
 
         // 优先级最高
         logCallback?.let {
-            it.invoke(level, tag, log)
+            it.invoke(level, finalTag, log)
             return
         }
 

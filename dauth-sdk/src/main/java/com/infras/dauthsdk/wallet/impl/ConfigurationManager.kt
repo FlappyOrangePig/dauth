@@ -77,8 +77,8 @@ internal sealed class DAuthStage {
         override val stage: Int
             get() = DAuthStageEnum.STAGE_LIVE
         override val baseUrlHost: String
-            //get() = "api.infras.online"
-            get() = "openapi.infras.online"
+            get() = "api.infras.online"
+            //get() = "openapi.infras.online"
         override val signSecurityKey: String
             get() = "v8FzBppykcOPQhrfGJaNb386tQKGq2zS"
     }

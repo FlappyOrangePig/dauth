@@ -20,6 +20,12 @@ import java.lang.ref.WeakReference
 import java.lang.reflect.Field
 
 private const val TAG = "DAuthLifeCycle"
+private const val DEBUG = false
+private fun log(log: String) {
+    if (DEBUG) {
+        DAuthLogger.v(log, TAG)
+    }
+}
 
 object DAuthLifeCycle : ActivityLifecycleCallbacks {
     private val callbacks = arrayListOf(
@@ -29,42 +35,49 @@ object DAuthLifeCycle : ActivityLifecycleCallbacks {
     )
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        log("onActivityCreated ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivityCreated(activity, savedInstanceState)
         }
     }
 
     override fun onActivityStarted(activity: Activity) {
+        log("onActivityStarted ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivityStarted(activity)
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
+        log("onActivityResumed ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivityResumed(activity)
         }
     }
 
     override fun onActivityPaused(activity: Activity) {
+        log("onActivityPaused ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivityPaused(activity)
         }
     }
 
     override fun onActivityStopped(activity: Activity) {
+        log("onActivityStopped ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivityStopped(activity)
         }
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+        log("onActivitySaveInstanceState ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivitySaveInstanceState(activity, outState)
         }
     }
 
     override fun onActivityDestroyed(activity: Activity) {
+        log("onActivityDestroyed ${activity.javaClass.simpleName}")
         callbacks.forEach {
             it.onActivityDestroyed(activity)
         }
@@ -174,7 +187,6 @@ private object GoogleCallback : ActivityLifecycleCallbacksAdapter() {
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        DAuthLogger.d("onCreate ${activity.javaClass.simpleName}")
         if (FIX_GOOGLE_STATUS_BAR) {
             activity.fixGoogleSignInStatusBar()
         }
@@ -188,7 +200,6 @@ internal object TopActivityCallback : ActivityLifecycleCallbacksAdapter() {
     private val foregroundLiveData = MutableLiveData(false)
 
     override fun onActivityStarted(activity: Activity) {
-        DAuthLogger.v("onActivityStarted: ${activity.javaClass.simpleName}", TAG)
         setStartCount(startedCount + 1)
         topActivity = WeakReference(activity)
         if (activity.javaClass != MetaMaskActivity::class.java) {
@@ -197,18 +208,16 @@ internal object TopActivityCallback : ActivityLifecycleCallbacksAdapter() {
     }
 
     private fun setStartCount(count: Int) {
-        DAuthLogger.v("setStartCount $count", TAG)
         startedCount = count
         val newForeground = startedCount > 0
         val oldForeground = foregroundLiveData.value
+        log("setStartCount $count $oldForeground->$newForeground")
         if (newForeground != oldForeground) {
-            DAuthLogger.v("foreground $newForeground", TAG)
             foregroundLiveData.value = newForeground
         }
     }
 
     override fun onActivityStopped(activity: Activity) {
-        DAuthLogger.v("onActivityStopped: ${activity.javaClass.simpleName}", TAG)
         setStartCount(startedCount - 1)
     }
 

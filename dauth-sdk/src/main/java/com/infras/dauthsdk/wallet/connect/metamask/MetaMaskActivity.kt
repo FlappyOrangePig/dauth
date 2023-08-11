@@ -26,7 +26,7 @@ import java.lang.ref.WeakReference
 internal typealias MetaMaskCallback = (DAuthResult<String>) -> Unit
 
 @Parcelize
-sealed class MetaMaskInput : Parcelable {
+internal sealed class MetaMaskInput : Parcelable {
     @Parcelize
     object Connect : MetaMaskInput()
 
@@ -45,7 +45,7 @@ sealed class MetaMaskInput : Parcelable {
     }
 }
 
-class MetaMaskActivity : BaseActivity() {
+internal class MetaMaskActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "MetaMaskActivity"
