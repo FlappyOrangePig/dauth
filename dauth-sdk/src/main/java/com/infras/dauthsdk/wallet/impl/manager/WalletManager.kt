@@ -38,9 +38,7 @@ sealed class KeysToRestoreResult {
  * 7.移除本地的远端密钥（成功）
  */
 class WalletManager internal constructor(
-    private val walletPrefsV2: WalletPrefsV2,
     private val loginPrefs: LoginPrefs,
-    private val mpcKeyStore: MpcKeyStore,
 ) {
     companion object {
         private const val TAG = "WalletManager"
@@ -49,6 +47,9 @@ class WalletManager internal constructor(
         const val STATE_KEY_GENERATED = 1
         const val STATE_OK = 2
     }
+
+    private val mpcKeyStore get() = Managers.mpcKeyStore
+    private val walletPrefsV2: WalletPrefsV2 get() = Managers.walletPrefsV2
 
     fun getState(): Int {
         val state = walletPrefsV2.getWalletState()
@@ -65,7 +66,7 @@ class WalletManager internal constructor(
         DAuthLogger.d("createWallet", TAG)
         val mpcApi = Managers.requestApiMpc
 
-        val context = ElapsedContext(TAG)
+        val context = ElapsedContext(TAG, "createWallet")
 
         val state = getState()
         DAuthLogger.d("state=$state", TAG)

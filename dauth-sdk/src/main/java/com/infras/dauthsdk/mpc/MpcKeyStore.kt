@@ -8,6 +8,7 @@ private const val TAG = "MpcKeyStore"
 private const val FILE = "mpc_keystore"
 private const val KEY_MERGE_RESULT = "key_merge_result"
 
+@Deprecated("use [KeyStoreManager] instead")
 class MpcKeyStore internal constructor(private val context: Context) {
     private val file get() = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
@@ -47,18 +48,6 @@ class MpcKeyStore internal constructor(private val context: Context) {
     fun clear() {
         DAuthLogger.d("clear" , TAG)
         file.edit().clear().commit()
-    }
-
-    @SuppressLint("ApplySharedPref")
-    fun setMergeResult(mr: String) {
-        DAuthLogger.d("setMergeResult ${mr.length}" , TAG)
-        val editor = file.edit()
-        editor.putString(KEY_MERGE_RESULT, mr)
-        editor.commit()
-    }
-
-    fun getMergeResult(): String {
-        return file.getString(KEY_MERGE_RESULT, null).orEmpty()
     }
 
     @SuppressLint("ApplySharedPref")

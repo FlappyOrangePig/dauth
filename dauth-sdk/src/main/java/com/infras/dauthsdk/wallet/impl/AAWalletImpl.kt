@@ -49,7 +49,7 @@ class AAWalletImpl internal constructor(): IAAWalletApi {
     override suspend fun queryWalletAddress(): DAuthResult<WalletAddressData> {
         val aaAddress = walletPrefsV2.getAaAddress()
         val signerAddress = walletPrefsV2.getEoaAddress()
-        DAuthLogger.i("queryWalletAddress $aaAddress/$signerAddress", TAG)
+        DAuthLogger.d("queryWalletAddress $aaAddress/$signerAddress", TAG)
         return if (aaAddress.isNotEmpty() && signerAddress.isNotEmpty()) {
             DAuthResult.Success(
                 WalletAddressData(

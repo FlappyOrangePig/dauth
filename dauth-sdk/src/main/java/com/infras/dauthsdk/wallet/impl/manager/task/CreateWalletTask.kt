@@ -9,6 +9,7 @@ import com.infras.dauthsdk.api.entity.traceResult
 import com.infras.dauthsdk.api.entity.transformError
 import com.infras.dauthsdk.login.model.BindWalletParam
 import com.infras.dauthsdk.login.model.GetParticipantsRes
+import com.infras.dauthsdk.login.model.LogReportParam
 import com.infras.dauthsdk.login.network.MpcServiceConst.MpcSecretAlreadyBoundError
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.DAuthLogger
@@ -28,7 +29,7 @@ private const val TAG = "CreateWalletTask"
 internal class CreateWalletTask(
     private val context: ElapsedContext,
     private val loginPrefs: LoginPrefs,
-    private val participants: List<GetParticipantsRes.Participant>
+    private val participants: List<GetParticipantsRes.Participant>,
 ) {
     private val mpcApi: RequestApiMpc = Managers.requestApiMpc
     private val keystore get() = Managers.mpcKeyStore
@@ -43,11 +44,24 @@ internal class CreateWalletTask(
         val allKeys = context.runSpending("getAllKeys") { keystore.getAllKeys() }
         val keySize = allKeys.size
         val keys = when (keySize) {
-            0 -> {
+            MpcKeyIds.getKeyIds().size -> {
+                // 使用未提交的密钥
+                DAuthLogger.e("keys to be submit", TAG)
+                allKeys
+            }
+            else -> {
                 // 创建三片
                 val generated = context.runSpending("generate keys") {
-                    DAuthJniInvoker.generateSignKeys()
-                }.toList()
+                    val preGenerateKeyManager = Managers.preGenerateKeyManager
+                    val popped = preGenerateKeyManager.popKeys()
+                    if (popped.size == MpcKeyIds.getKeyIds().size) {
+                        DAuthLogger.d("use pre-generated", TAG)
+                        popped
+                    } else {
+                        DAuthLogger.d("generate now", TAG)
+                        DAuthJniInvoker.generateSignKeys().toList()
+                    }
+                }
 
                 context.runSpending("save keys") {
                     DAuthLogger.d("save keys:${generated.map { it.length }}", TAG)
@@ -56,17 +70,6 @@ internal class CreateWalletTask(
                 }
 
                 generated
-            }
-
-            MpcKeyIds.getKeyIds().size -> {
-                // 使用未提交的密钥
-                DAuthLogger.e("keys to be submit", TAG)
-                allKeys
-            }
-
-            else -> {
-                AssertUtil.assert(false)
-                return DAuthResult.SdkError(DAuthResult.SDK_ERROR_UNKNOWN)
             }
         }.toTypedArray()
 
@@ -83,10 +86,6 @@ internal class CreateWalletTask(
         DAuthLogger.d("key merge len=$mergeResultLen", TAG)
         if (mergeResultLen == 0) {
             return DAuthResult.SdkError(DAuthResult.SDK_ERROR_MERGE_RESULT)
-        }
-
-        context.runSpending("setMergeResult") {
-            keystore.setMergeResult(mergeResult)
         }
 
         // 生成账号
@@ -116,6 +115,7 @@ internal class CreateWalletTask(
             signerAddress,
             aaAddress,
             context,
+            mergeResult,
         )
 
         context.traceElapsedList()
@@ -127,13 +127,13 @@ internal class CreateWalletTask(
         eoaAddress: String,
         aaAddress: String,
         context: ElapsedContext,
+        mergeResult: String,
     ): DAuthResult<CreateWalletData> {
         // 绑定钱包地址
         val accessToken = loginPrefs.getAccessToken()
         val authId = loginPrefs.getAuthId()
-        DAuthLogger.d("auth id=$authId")
+        DAuthLogger.d("auth id=${authId}")
         val dauthKey = keys[MpcKeyIds.KEY_INDEX_DAUTH_SERVER]
-        val mergeResult = Managers.mpcKeyStore.getMergeResult()
         val bindWalletParam = BindWalletParam(
             accessToken, authId, aaAddress, BindWalletParam.WALLET_TYPE_AA,
             dauthKey,

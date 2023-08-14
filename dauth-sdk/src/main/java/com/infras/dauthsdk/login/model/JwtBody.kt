@@ -3,13 +3,22 @@ package com.infras.dauthsdk.login.model
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-class JwtDecodeResponse {
-    val account: String? = null
-    val nickname: String? = null
-    val head_img_url: String? = null
-    val iss: String? = null
+class JwtDecodeResponse(
+    val account: String?,
+    val nickname: String?,
+    val head_img_url: String?,
+    val iss: String?,
+
     //用户id
-    val sub: String? = null
-    val aud: List<String>? = null
-    val exp: Long = 0
+    var sub: String,
+    val aud: List<String>?,
+    val exp: Long = 0,
+) {
+    companion object {
+        fun createInstance(): JwtDecodeResponse {
+            return JwtDecodeResponse(
+                "", "", "", "", "", null, 0
+            )
+        }
+    }
 }

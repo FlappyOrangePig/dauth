@@ -175,7 +175,7 @@ private object MetaMaskWebChromeClient : WebChromeClient()
 
 @VisibleForTesting
 @Keep
-class MetaMaskJsObject internal constructor(
+private class MetaMaskJsObject(
     private val handlers: List<JSHandler>
 ) {
     companion object {

@@ -2,16 +2,16 @@ package com.infras.dauthsdk.wallet.impl.manager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.infras.dauthsdk.login.impl.DAuthLogin
+import com.infras.dauthsdk.api.IEoaWalletApi
 import com.infras.dauthsdk.login.network.RequestApi
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.LoginPrefs
 import com.infras.dauthsdk.mpc.MpcKeyStore
 import com.infras.dauthsdk.wallet.connect.wallectconnect.ConnectManager
-import com.infras.dauthsdk.wallet.impl.AAWalletImpl
 import com.infras.dauthsdk.wallet.impl.ConfigurationManager
 import com.infras.dauthsdk.wallet.impl.EoaWalletImpl
 import com.infras.dauthsdk.wallet.impl.Web3Manager
+import com.infras.dauthsdk.wallet.impl.manager.api.IKeyStore
 import com.infras.dauthsdk.wallet.util.DeviceUtil
 import com.infras.dauthsdk.wallet.util.WalletPrefsV2
 
@@ -22,9 +22,8 @@ import com.infras.dauthsdk.wallet.util.WalletPrefsV2
  */
 @SuppressLint("StaticFieldLeak")
 internal object Managers {
+    lateinit var context: Context
     lateinit var loginPrefs: LoginPrefs
-    lateinit var mpcKeyStore: MpcKeyStore
-    lateinit var walletPrefsV2: WalletPrefsV2
     lateinit var walletManager: WalletManager
     lateinit var connectManager: ConnectManager
     lateinit var requestApi: RequestApi
@@ -33,26 +32,31 @@ internal object Managers {
     lateinit var deviceId: String
     lateinit var crashManager: CrashManager
     lateinit var logManager: DLogManager
-    lateinit var loginApi: DAuthLogin
-    lateinit var aaWalletApi: AAWalletImpl
+    lateinit var fileManager: FileManager
     lateinit var eoaWalletApi: EoaWalletImpl
+    lateinit var preGenerateKeyManager: PreGenerateKeyManager
+    lateinit var globalPrefsManager: GlobalPrefsManager
+    lateinit var statsManager: StatsManager
+    val mpcKeyStore get() = KeyStoreManager.getInstance(loginPrefs.getAuthId())
+    val walletPrefsV2 get() = WalletPrefsV2(context, loginPrefs.getAuthId())
 
     fun inject(context: Context) {
+        this.context = context
         loginPrefs = LoginPrefs(context)
-        mpcKeyStore = MpcKeyStore(context)
-        walletPrefsV2 = WalletPrefsV2(context)
+        globalPrefsManager = GlobalPrefsManager(context)
+        fileManager = FileManager(context)
         walletManager = WalletManager(
-            walletPrefsV2 = walletPrefsV2,
             loginPrefs = loginPrefs,
-            mpcKeyStore = mpcKeyStore
         )
         connectManager = ConnectManager(context)
         requestApi = RequestApi()
         requestApiMpc = RequestApiMpc()
         web3m = Web3Manager().also { it.reset(ConfigurationManager.chain().rpcUrl) }
         deviceId = DeviceUtil.getDeviceId(context)
-        logManager = DLogManager(context)
+        logManager = DLogManager(fileManager)
         crashManager = CrashManager(logManager)
-
+        eoaWalletApi = EoaWalletImpl()
+        preGenerateKeyManager = PreGenerateKeyManager(fileManager, globalPrefsManager)
+        statsManager = StatsManager(requestApi)
     }
 }

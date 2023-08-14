@@ -55,12 +55,12 @@ object DeviceUtil {
             val r = if (id.isNotEmpty()) {
                 UUID.fromString(id)
             } else {
-                val str = getFromDevice(context)
-                if (TextUtils.isEmpty(str)) UUID.randomUUID() else UUID.nameUUIDFromBytes(
-                    str!!.toByteArray(StandardCharsets.UTF_8)
+                val str = getFromDevice(context).orEmpty()
+                if (str.isEmpty()) UUID.randomUUID() else UUID.nameUUIDFromBytes(
+                    str.toByteArray(StandardCharsets.UTF_8)
                 ).also {
                     // 保存到SP
-                    DeviceIdPreference.setDeviceId(context, deviceUuid.toString())
+                    DeviceIdPreference.setDeviceId(context, it.toString())
                 }
             }
             return r

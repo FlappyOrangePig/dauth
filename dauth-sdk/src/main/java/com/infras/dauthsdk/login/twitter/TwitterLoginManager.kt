@@ -78,12 +78,12 @@ class TwitterLoginManager private constructor() {
                     userData.head_img_url = twitterUserInfo?.profileImageUrl
                     userData.nickname = twitterUserInfo?.screenName
                     val twitterUser = MoshiUtil.toJson(userData)
-                    DAuthLogger.e("twitter verifyCredentials success, twitterUser=${twitterUser}")
+                    DAuthLogger.d("twitter verifyCredentials success, twitterUser=${twitterUser}")
                     it.resume(twitterUser)
                 }
 
                 override fun failure(exception: TwitterException?) {
-                    DAuthLogger.e("twitter verifyCredentials failure:${exception?.stackTraceToString()}")
+                    DAuthLogger.d("twitter verifyCredentials failure:${exception?.stackTraceToString()}")
                     it.resume(null)
                 }
             })

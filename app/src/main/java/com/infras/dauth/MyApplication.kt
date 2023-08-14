@@ -8,6 +8,7 @@ import com.infras.dauthsdk.api.DAuthStageEnum
 import com.infras.dauthsdk.api.SdkConfig
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.util.LogUtil
+import com.infras.dauthsdk.api.DAuthLogLevel
 
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
@@ -39,6 +40,7 @@ class MyApplication : Application() {
                 clientSecret = BuildConfig.CLIENT_SECRET
                 twitterConsumerKey = CONSUMER_KEY
                 twitterConsumerSecret = CONSUMER_SECRET
+                consoleLogLevel = DAuthLogLevel.LEVEL_DEBUG
                 isLogOpen = true
                 localSign = false
                 useLocalRelayer = false

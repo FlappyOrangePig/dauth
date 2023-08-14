@@ -83,7 +83,7 @@ internal class LoginPrefs internal constructor(private val context: Context) {
             DAuthLogger.d("set authId $lastAuthId -> $authId", TAG)
             if (lastAuthId != authId) {
                 DAuthLogger.d("authId changed", TAG)
-                com.infras.dauthsdk.api.DAuthSDK.impl.loginApi.clearAccountInfo()
+                DAuthSDK.impl.loginApi.clearAccountInfo()
             }
         }
 
@@ -91,7 +91,7 @@ internal class LoginPrefs internal constructor(private val context: Context) {
         put(values, async)
     }
 
-    fun put(kvs: Collection<Pair<String, Any>>, async: Boolean = defaultAsync) {
+    private fun put(kvs: Collection<Pair<String, Any>>, async: Boolean = defaultAsync) {
         modify(async) { editor ->
             kvs.forEach { pair ->
                 putX(editor, pair.first, pair.second)
@@ -132,9 +132,8 @@ internal class LoginPrefs internal constructor(private val context: Context) {
 
     internal fun clearLoginStateInfo() {
         DAuthLogger.d("clear login state info!", TAG)
-        val prefsEditor = getPrefs().edit()
-        prefsEditor.clear()
-        prefsEditor.commit()
+        modify {
+            it.clear()
+        }
     }
-
 }

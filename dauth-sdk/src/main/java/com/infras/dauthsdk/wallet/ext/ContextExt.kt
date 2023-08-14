@@ -6,9 +6,9 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ApplicationInfoFlags
 import android.os.Build
-import com.infras.dauthsdk.api.DAuthSDK
+import com.infras.dauthsdk.wallet.impl.manager.Managers
 
-internal fun safeApp() = DAuthSDK.impl.context.applicationContext as? Application
+internal fun safeApp() = Managers.context.applicationContext as? Application
 @Deprecated("使用依赖注入方便单元测试", ReplaceWith("Managers"))
 internal fun app() = safeApp()!!
 

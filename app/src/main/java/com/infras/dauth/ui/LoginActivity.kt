@@ -43,11 +43,13 @@ class LoginActivity : BaseActivity() {
             val account = edtAccount.text.toString()
             val password = edtPassword.text.toString()
             lifecycleScope.launch {
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                 val loginResultData = sdk.loginByMobileOrEmail(
                     account,
                     password,
                     ACCOUNT_TYPE_OF_EMAIL
                 )
+                loadingDialog.dismiss()
                 when (loginResultData) {
                     is LoginResultData.Success -> {
                         if (loginResultData.needCreateWallet) {
@@ -106,7 +108,9 @@ class LoginActivity : BaseActivity() {
         tvSendCode.setOnClickListener {
             val account = edtAccount.text.toString()
             lifecycleScope.launch {
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                 val response = sdk.sendEmailVerifyCode(account)
+                loadingDialog.dismiss()
                 if (response?.ret == 0) {
                     ToastUtil.show(applicationContext, "验证码发送成功")
                     LogUtil.d(logTag, "验证码发送成功")
@@ -241,7 +245,7 @@ class LoginActivity : BaseActivity() {
 
             val ret = accountResult.ret
             when {
-                ret == ResponseCode.RESPONSE_CORRECT_CODE -> {
+                accountResult.isSuccess() -> {
                     finish()
                     MainActivity.launch(this@LoginActivity)
                 }

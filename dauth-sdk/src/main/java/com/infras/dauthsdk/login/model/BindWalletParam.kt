@@ -1,5 +1,7 @@
 package com.infras.dauthsdk.login.model
 
+import com.squareup.moshi.Json
+
 class BindWalletParam(
     var access_token: String,
     val authid: String,
@@ -11,6 +13,7 @@ class BindWalletParam(
     // 用mpc三个独立密钥生成的字符串
     val mpc_result: String
 ) {
+    @Json(ignore = true)
     companion object {
         const val WALLET_TYPE_AA = 10
         const val WALLET_TYPE_EOA = 11

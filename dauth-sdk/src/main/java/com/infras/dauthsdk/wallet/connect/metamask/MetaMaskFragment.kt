@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  * 对MetaMask的WebView进行包装，封装基本逻辑。
  * 而使用不同UI组件的封装参见[MetaMaskActivity]或[MetaMaskDialog]
  */
-internal class MetaMaskFragment : BaseFragment() {
+class MetaMaskFragment : BaseFragment() {
 
     companion object {
         private const val TAG = "MetaMaskFragment"
@@ -117,7 +117,7 @@ internal class MetaMaskFragment : BaseFragment() {
         webView?.refresh()
     }
 
-    fun setMetaMaskInput(input: MetaMaskInput) {
+    internal fun setMetaMaskInput(input: MetaMaskInput) {
         metaMaskInput = input
         when (input) {
             MetaMaskInput.Connect -> {
@@ -137,7 +137,7 @@ internal class MetaMaskFragment : BaseFragment() {
         }
     }
 
-    fun setJsHandlers(handler: List<JSHandler>) {
+    internal fun setJsHandlers(handler: List<JSHandler>) {
         DAuthLogger.d("setJsHandlers $handler", TAG)
         webView?.let {
             it.setHandlers(

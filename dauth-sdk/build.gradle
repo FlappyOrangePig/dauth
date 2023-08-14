@@ -68,7 +68,7 @@ dependencies {
 
     // moshi
     implementation libraries.moshi
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:1.14.0"
+    kapt libraries.moshi_kotlin_code_gen
 
     // jwt
     //implementation libraries.jwt

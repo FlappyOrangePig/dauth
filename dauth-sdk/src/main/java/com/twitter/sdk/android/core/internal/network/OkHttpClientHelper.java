@@ -68,7 +68,7 @@ public class OkHttpClientHelper {
     static OkHttpClient.Builder addGuestAuth(OkHttpClient.Builder builder,
                                              GuestSessionProvider guestSessionProvider) {
         return builder
-                .certificatePinner(getCertificatePinner())
+                //.certificatePinner(getCertificatePinner())
                 .authenticator(new GuestAuthenticator(guestSessionProvider))
                 .addInterceptor(new GuestAuthInterceptor(guestSessionProvider))
                 .addNetworkInterceptor(new GuestAuthNetworkInterceptor());
@@ -78,7 +78,7 @@ public class OkHttpClientHelper {
                                                Session<? extends TwitterAuthToken> session,
                                                TwitterAuthConfig authConfig) {
         return builder
-                .certificatePinner(getCertificatePinner())
+                //.certificatePinner(getCertificatePinner())
                 .addInterceptor(new OAuth1aInterceptor(session, authConfig));
     }
 

@@ -17,6 +17,7 @@ import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
+import com.infras.dauthsdk.wallet.impl.manager.Managers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -32,7 +33,7 @@ class MetaMaskDialog : DialogFragment() {
 
     private val input get() = arguments.getParcelableExtraCompat<MetaMaskInput>(EXTRA_INPUT)!!
     private val metaMask get() = childFragmentManager.findFragmentByTag(getString(R.string.meta_mask_fragment_tag)) as MetaMaskFragment
-    private val eoaWallet get() = DAuthSDK.impl.eoaWalletApi
+    private val eoaWallet get() = Managers.eoaWalletApi
     private val onAuthorizeHandler = object : JSHandler("OnAuthorize") {
         override fun onHandle(arguments: Map<String, String>) {
             val account = arguments["message"]

@@ -17,6 +17,7 @@ import com.infras.dauthsdk.api.entity.SendTransactionData
 import com.infras.dauthsdk.api.entity.WalletBalanceData
 import com.infras.dauthsdk.api.entity.traceResult
 import com.infras.dauthsdk.api.entity.transformError
+import com.infras.dauthsdk.login.model.LogReportParam
 import com.infras.dauthsdk.login.network.traceResult
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.mpc.DAuthJniInvoker
@@ -384,7 +385,7 @@ internal class Web3Manager {
         val faAddress = chain.factoryAddress
         val entryPointAddress = chain.entryPointAddress
 
-        val context = ElapsedContext(TAG)
+        val context = ElapsedContext(TAG, "createUserOpAndEstimateGas")
 
         val gasPriceResult = context.runSpending("getGasPrice") {
             web3j.ethGasPrice()
@@ -413,7 +414,7 @@ internal class Web3Manager {
         val nonce = nonceResult.data
 
         val noTransactions = nonce.noTransactions()
-        DAuthLogger.i("noTransactions=$noTransactions")
+        DAuthLogger.i("noTransactions=$noTransactions", TAG)
 
         val isDeployedResult = context.runSpending("isDeployed") {
             isCodeDeployed(aaAddress)
@@ -517,7 +518,7 @@ internal class Web3Manager {
     ): DAuthResult<CommitTransactionData> {
         DAuthLogger.i("executeUserOperation useOp=$userOperation", TAG)
 
-        val context = ElapsedContext(TAG)
+        val context = ElapsedContext(TAG, "executeUserOperation")
 
         val balanceResult = context.runSpending("getBalance") {
             getBalance(aaAddress).also {

@@ -1,7 +1,6 @@
 package com.infras.dauthsdk.wallet.util
 
 import com.twitter.sdk.android.core.Twitter
-import com.twitter.sdk.android.core.internal.ExecutorUtils
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -12,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
-object ExecutorUtl {
+object ExecutorUtil {
 
     private val CPU_COUNT = Runtime.getRuntime().availableProcessors()
     private val CORE_POOL_SIZE = CPU_COUNT + 1

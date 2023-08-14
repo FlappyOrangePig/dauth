@@ -6,7 +6,7 @@ import android.os.Looper
 internal object ThreadUtil {
 
     private val handle by lazy { Handler(Looper.getMainLooper()) }
-    private val ioExecutorService by lazy { ExecutorUtl.buildThreadPoolExecutorService("ioExecutorService") }
+    private val ioExecutorService by lazy { ExecutorUtil.buildThreadPoolExecutorService("ioExecutorService") }
 
     fun isMainThread(): Boolean {
         return Looper.getMainLooper().thread == Thread.currentThread()

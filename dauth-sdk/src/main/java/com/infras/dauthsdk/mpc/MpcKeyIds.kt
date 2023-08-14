@@ -4,7 +4,7 @@ package com.infras.dauthsdk.mpc
  * MPC角色标识映射
  * sdk内部使用index来标记签名节点是什么角色，而服务端和so使用id来标记角色
  */
-object MpcKeyIds {
+internal object MpcKeyIds {
     const val KEY_INDEX_LOCAL = 0
     const val KEY_INDEX_DAUTH_SERVER = 1
     const val KEY_INDEX_APP_SERVER = 2
@@ -26,6 +26,14 @@ object MpcKeyIds {
 
     fun getLocalId(): String {
         return getKeyId(KEY_INDEX_LOCAL)
+    }
+
+    fun getDAuthId(): String {
+        return getKeyId(KEY_INDEX_DAUTH_SERVER)
+    }
+
+    fun getAppId(): String {
+        return getKeyId(KEY_INDEX_APP_SERVER)
     }
 
     fun getRemoteIdsToSign(): String {

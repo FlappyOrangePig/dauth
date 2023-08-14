@@ -1,5 +1,6 @@
 package com.infras.dauthsdk.api
 
+import com.infras.dauthsdk.api.annotation.DAuthExperimentalApi
 import com.infras.dauthsdk.api.entity.CommitTransactionData
 import com.infras.dauthsdk.api.entity.CreateWalletData
 import com.infras.dauthsdk.api.entity.DAuthResult
@@ -63,11 +64,15 @@ interface IAAWalletApi {
      */
     suspend fun execute(userOperation: UserOperation): DAuthResult<CommitTransactionData>
 
+    @DAuthExperimentalApi
     fun getWeb3j(): Web3j
 
+    @DAuthExperimentalApi
     fun deleteWallet()
 
+    @DAuthExperimentalApi
     suspend fun mpcSign(msgHash: String): Sign.SignatureData?
 
+    @DAuthExperimentalApi
     suspend fun restoreKeys(keys: List<String>): DAuthResult<CreateWalletData>
 }

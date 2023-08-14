@@ -27,6 +27,7 @@ import com.infras.dauthsdk.login.model.BindWalletParam
 import com.infras.dauthsdk.login.model.CheckEmailParam
 import com.infras.dauthsdk.login.model.CreateAccountParam
 import com.infras.dauthsdk.login.model.CreateAccountRes
+import com.infras.dauthsdk.login.model.LogReportParam
 import com.infras.dauthsdk.login.model.LoginParam
 import com.infras.dauthsdk.login.model.LoginRes
 import com.infras.dauthsdk.login.model.LogoutParam
@@ -363,5 +364,9 @@ internal class RequestApi internal constructor() : ApiClient() {
             ReqUrl.PathUrl("/account/v1/email/check")
         )
         return request<BaseResponse>(headers, body)
+    }
+
+    suspend fun sendLogReport(body: LogReportParam): BaseResponse? {
+        return request(RequestConfig(ReqUrl.PathUrl("/account/v1/log/report")), body)
     }
 }

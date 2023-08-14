@@ -19,9 +19,8 @@ dependencyResolutionManagement {
             allowInsecureProtocol true
             url 'http://maven.aliyun.com/nexus/content/groups/public/'
         }
-//        maven {
-//            url new File("~/.m2/repository")
-//        }
+        // ~/.m2/repository
+        mavenLocal()
 //        maven {
 //            allowInsecureProtocol true
 //            url MAVEN_RELEASE_URL

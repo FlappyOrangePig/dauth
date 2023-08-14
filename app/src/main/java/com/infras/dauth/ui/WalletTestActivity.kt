@@ -13,11 +13,11 @@ import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.LogUtil
 import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.util.WalletUtil
 import com.infras.dauth.util.Web3jHelper
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.TokenType
-import com.infras.dauthsdk.mpc.DAuthJniInvoker
 import com.infras.dauthsdk.wallet.sol.DAuthAccountFactory
 import kotlinx.coroutines.launch
 import org.web3j.abi.FunctionEncoder
@@ -97,7 +97,7 @@ class WalletTestActivity : BaseActivity() {
                 if (r == null) {
                     ToastUtil.show(context, "签名失败")
                 } else {
-                    val eoaAddress = DAuthJniInvoker.getWalletAddress(msg, r)
+                    val eoaAddress = WalletUtil.getWalletAddress(msg, r)
                     if (eoaAddress == null) {
                         ToastUtil.show(context, "签名成功，获取签名者失败")
                     } else {

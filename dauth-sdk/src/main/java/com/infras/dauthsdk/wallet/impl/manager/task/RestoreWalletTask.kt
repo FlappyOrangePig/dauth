@@ -4,6 +4,7 @@ import com.infras.dauthsdk.api.entity.CreateWalletData
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.traceResult
 import com.infras.dauthsdk.api.entity.transformError
+import com.infras.dauthsdk.login.model.LogReportParam
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.mpc.DAuthJniInvoker
 import com.infras.dauthsdk.mpc.ext.ElapsedContext

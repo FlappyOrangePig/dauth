@@ -16,6 +16,7 @@ import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.wallet.base.BaseActivity
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 import com.infras.dauthsdk.wallet.ext.runCatchingWithLog
+import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.util.SystemUIUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -64,7 +65,7 @@ internal class MetaMaskActivity : BaseActivity() {
     private var _binding: DauthActivityMetamaskConnectorBinding? = null
     private val binding: DauthActivityMetamaskConnectorBinding get() = _binding!!
     private val metaMask get() = supportFragmentManager.findFragmentByTag(getString(R.string.meta_mask_fragment_tag)) as? MetaMaskFragment
-    private val eoaWallet get() = DAuthSDK.impl.eoaWalletApi
+    private val eoaWallet get() = Managers.eoaWalletApi
     private val onAuthorizeHandler = object : JSHandler("OnAuthorize") {
         override fun onHandle(arguments: Map<String, String>) {
             val account = arguments["message"]

@@ -4,12 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import androidx.core.app.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import com.infras.dauthsdk.api.DAuthSDK
-import com.infras.dauthsdk.api.entity.LoginResultData
-import com.infras.dauthsdk.login.impl.ThirdPlatformLogin
-import com.infras.dauthsdk.login.model.AuthorizeToken2Param
-import com.infras.dauthsdk.login.utils.DAuthLogger
-import com.infras.dauthsdk.wallet.ext.app
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -17,6 +11,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
+import com.infras.dauthsdk.api.DAuthSDK
+import com.infras.dauthsdk.api.entity.LoginResultData
+import com.infras.dauthsdk.login.impl.ThirdPlatformLogin
+import com.infras.dauthsdk.login.model.AuthorizeToken2Param
+import com.infras.dauthsdk.login.utils.DAuthLogger
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -25,7 +24,6 @@ private const val AUTH_TYPE_OF_GOOGLE = 30
 private const val TAG = "GoogleLoginManager"
 
 class GoogleLoginManager {
-    val context get() = app()
     companion object {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             GoogleLoginManager()
@@ -33,7 +31,7 @@ class GoogleLoginManager {
     }
 
     private fun signInClient(activity: Activity): GoogleSignInClient {
-        val googleClientId = com.infras.dauthsdk.api.DAuthSDK.impl.config.googleClientId.orEmpty()
+        val googleClientId = DAuthSDK.impl.config.googleClientId.orEmpty()
         return GoogleSignIn.getClient(
             activity,
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

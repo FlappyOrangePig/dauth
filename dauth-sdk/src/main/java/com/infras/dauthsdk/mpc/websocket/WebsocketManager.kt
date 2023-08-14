@@ -31,7 +31,7 @@ private const val MPC_REQUEST_HEADER = "WebSocket-Mpc-Request"
 internal class WebsocketManager private constructor() {
     companion object {
         internal val instance by lazy { WebsocketManager() }
-        private val useDevServer get() = com.infras.dauthsdk.api.DAuthSDK.impl.config.useDevWebSocketServer
+        private val useDevServer get() = DAuthSDK.impl.config.useDevWebSocketServer
         private val serverUrl = if (useDevServer) {
             "ws://172.16.12.117:9001/"
         } else {
@@ -135,12 +135,6 @@ class DAuthWsSession(
             }
         }
 
-        /*override fun onMessage(webSocket: WebSocket, text: String) {
-            super.onMessage(webSocket, text)
-            stopCloseTimer()
-            DAuthLogger.d("received message: $text", TAG)
-        }*/
-
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
             super.onMessage(webSocket, bytes)
             val byteArray = bytes.toByteArray()
@@ -148,7 +142,7 @@ class DAuthWsSession(
 
             ThreadUtil.runOnMainThread {
                 stopCloseTimer()
-                DAuthLogger.d("received binary data: $bytes", TAG)
+                DAuthLogger.d("received binary size=${bytes.size}", TAG)
 
                 val (result, outBuffer) = try {
                     user.signRound(decompressed)
@@ -234,7 +228,7 @@ class DAuthWsSession(
     }
 
     private fun restartCloseTimer() {
-        DAuthLogger.d("restart timer", TAG)
+        DAuthLogger.v("restart timer", TAG)
         timer?.cancel()
         timer = object : CountDownTimer(SEND_TIMEOUT, 1000) {
             override fun onTick(millisUntilFinished: Long) {

@@ -17,9 +17,9 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.*
+import java.lang.StringBuilder
 import java.util.*
 import java.util.regex.Pattern
-
 
 //账号类型:10邮箱注册,20钱包注册,30谷歌,40facebook,50苹果,60手机号,70自定义帐号,80一键注册,100Discord,110Twitter
 internal open class ApiClient {
@@ -51,14 +51,14 @@ internal open class ApiClient {
 
     protected inline fun <reified T: Any> requestBody(
         content: T,
-        mediaType: String = FormDataMediaType
+        mediaType: String = FormDataMediaType,
     ): RequestBody {
 
         if (content is File) {
             return content
                 .asRequestBody(mediaType.toMediaTypeOrNull())
         } else if (mediaType == FormDataMediaType) {
-            val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
+
 
             // content's type *must* be Map<String, Any>
             @Suppress("UNCHECKED_CAST")
@@ -75,20 +75,30 @@ internal open class ApiClient {
             }
 
             map["sign"] = SignUtils.sign(map)
-            map.forEach { (key, value) ->
-                if (value::class == File::class) {
-                    val file = value as File
-                    requestBodyBuilder.addFormDataPart(
-                        key, file.name,
-                        file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
-                    )
-                } else {
-                    val stringValue = value as String
-                    requestBodyBuilder.addFormDataPart(key, stringValue)
+            traceMap(map)
+            // sign参数校验需要MultipartBody，虽然MultipartBody的日志比较冗余，但是没办法
+            val useFormBody = false
+            if (useFormBody) {
+                val formBodyBuilder = FormBody.Builder()
+                map.forEach {
+                    formBodyBuilder.add(it.key, it.value)
                 }
+                return formBodyBuilder.build()
+            } else {
+                val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
+                map.forEach { (key, value) ->
+                    if (value::class == File::class) {
+                        val file = value as File
+                        requestBodyBuilder.addFormDataPart(
+                            key, file.name,
+                            file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
+                        )
+                    } else {
+                        requestBodyBuilder.addFormDataPart(key, value)
+                    }
+                }
+                return requestBodyBuilder.build()
             }
-
-            return requestBodyBuilder.build()
         } else if (mediaType == JsonMediaType) {
             return MoshiUtil.toJson(content)
                 .toRequestBody(mediaType.toMediaTypeOrNull())
@@ -101,7 +111,8 @@ internal open class ApiClient {
         return mime != null && (mime.matches(jsonMime.toRegex()) || mime == "*/*")
     }
 
-    protected inline fun <reified T : Any> responseBody(response: Response, accept: String): T? {
+    @Throws(IOException::class)
+    protected inline fun <reified T : Any> responseBody(response: Response): T? {
         if (response.body == null) return null
         val body = response.body
         val rb = body?.string()
@@ -118,7 +129,6 @@ internal open class ApiClient {
         }
         val r = try {
             if (isJsonMime(contentType)) {
-                //DAuthLogger.d("responseBody json=${rb.orEmpty()}")
                 MoshiUtil.fromJson(rb.orEmpty())
             } else if (contentType.equals(String.Companion::class.java)) {
                 response.body.toString() as T
@@ -130,7 +140,7 @@ internal open class ApiClient {
             DAuthLogger.e("responseBody Serializer exception: ${e.stackTraceToString()}")
             null
         }
-        DAuthLogger.d("responseBody result=$r")
+        //DAuthLogger.d("responseBody result=$r")
         return r
     }
 
@@ -187,7 +197,7 @@ internal open class ApiClient {
             val realRequest = requestBuilder.build()
             response = HttpClient.client.newCall(realRequest).execute()
             if (response.isSuccessful) {
-                result = responseBody(response, accept)
+                result = responseBody(response)
             }
         } catch (e: Exception) {
             DAuthLogger.e("request exception: ${e.stackTraceToString()}")
@@ -258,5 +268,27 @@ internal open class ApiClient {
         }
         return false
     }
-}
 
+    private val requestFieldBlackList =
+        arrayOf("access_token", "sign", "authid", "keyshare", "keyresult", "private_key", "mpc_result")
+
+    private fun traceMap(map: Map<String, String>) {
+        val sb = StringBuilder()
+        sb.append("{")
+        map.entries.forEachIndexed { index, entry ->
+            val k = entry.key
+            val v = entry.value
+
+            if (index > 0) {
+                sb.append(",")
+            }
+            if (requestFieldBlackList.contains(k)) {
+                sb.append("$k:*")
+            } else {
+                sb.append("$k:$v")
+            }
+        }
+        sb.append("}")
+        DAuthLogger.d("--> $sb", HttpClient.TAG)
+    }
+}

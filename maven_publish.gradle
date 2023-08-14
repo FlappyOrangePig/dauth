@@ -3,12 +3,13 @@ apply plugin: 'maven-publish'
 afterEvaluate { project ->
     tasks.all { task ->
         def taskName = task.name
-        if (taskName.startsWith("publish") && taskName.endsWith("Repository")) {
+        if (taskName.startsWith("publish") && taskName.endsWith("Repository")
+                || taskName == "publishToMavenLocal"
+        ) {
             def dependent = "assembleRelease"
             task.dependsOn tasks.getByName(dependent)
             println(taskName + " depends on " + dependent)
         }
-
     }
 }
 
@@ -25,7 +26,7 @@ afterEvaluate {
                 artifactId = project.getName()
                 version = android.defaultConfig.versionName
                 from components.release
-                //artifact sourceJar
+                artifact sourceJar
             }
         }
         /*repositories {

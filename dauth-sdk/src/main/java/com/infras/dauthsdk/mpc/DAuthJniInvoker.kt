@@ -18,31 +18,12 @@ private const val TAG = "DAuthJniInvoker"
 
 /**
  * 使用kotlin进行调用，方便使用内联函数
+ * 本地模拟多签参见[LocalMpcSign.mpcSign]
  */
 object DAuthJniInvoker {
     private const val THRESHOLD = 2
     private const val PARTIES = 3
     private val jni by lazy { DAuthJni.getInstance() }
-
-    fun initialize(){
-        Thread {
-            DAuthLogger.d(">>> thread", TAG)
-            initializeInner()
-            DAuthLogger.d("<<< thread", TAG)
-        }.let {
-            it.name = "DAuthJniInvoker"
-            it.start()
-        }
-    }
-
-    private fun initializeInner() {
-        jni.init()
-
-        val msg = genRandomMsg()
-
-        // 模拟多轮签名
-        LocalMpcSign.mpcSign(msg)
-    }
 
     fun localSignMsg(msgHash: String, keys: Array<String>): SignResult? {
         val keyIds = MpcKeyIds.getKeyIds()
@@ -100,11 +81,11 @@ object DAuthJniInvoker {
 
     fun generateSignKeys(): Array<String> {
         // 3签2
-        val authId = Managers.loginPrefs.getAuthId()
+        /*val authId = Managers.loginPrefs.getAuthId()
         if (authId.isEmpty()) {
             DAuthLogger.e("auth id empty", TAG)
             return emptyArray()
-        }
+        }*/
 
         val ids = MpcKeyIds.getKeyIds()
         val r = jni.generateSignKeys(THRESHOLD, PARTIES, ids)

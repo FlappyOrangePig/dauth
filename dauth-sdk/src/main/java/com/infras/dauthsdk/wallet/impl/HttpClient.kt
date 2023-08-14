@@ -1,6 +1,7 @@
 package com.infras.dauthsdk.wallet.impl
 
 import com.infras.dauthsdk.login.utils.DAuthLogger
+import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -11,14 +12,15 @@ import okio.Buffer
 import okio.GzipSource
 import java.io.EOFException
 import java.io.IOException
+import java.lang.StringBuilder
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.TreeSet
 import java.util.concurrent.TimeUnit
 
-private const val TAG = "HttpClient"
-
 object HttpClient {
+
+    const val TAG = "HttpClient"
 
     val client by lazy {
         getOkhttpClient()
@@ -34,10 +36,10 @@ object HttpClient {
         connectTimeout(10, TimeUnit.SECONDS)
         readTimeout(10, TimeUnit.SECONDS)
         writeTimeout(10, TimeUnit.SECONDS)
-        addInterceptor(okhttp3.logging.HttpLoggingInterceptor { message ->
+        addInterceptor(HttpLoggingInterceptor { message ->
             DAuthLogger.d(message, TAG)
         }.apply {
-            level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
+            level = HttpLoggingInterceptor.Level.BODY
             redactHeader.forEach {
                 redactHeader(it)
             }
@@ -177,27 +179,6 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
         logger.log(requestStartMessage)
 
         if (logHeaders) {
-            /*val headers = request.headers
-
-            if (requestBody != null) {
-                // Request body headers are only present when installed as a network interceptor. When not
-                // already present, force them to be included (if available) so their values are known.
-                requestBody.contentType()?.let {
-                    if (headers["Content-Type"] == null) {
-                        logger.log("Content-Type: $it")
-                    }
-                }
-                if (requestBody.contentLength() != -1L) {
-                    if (headers["Content-Length"] == null) {
-                        logger.log("Content-Length: ${requestBody.contentLength()}")
-                    }
-                }
-            }
-
-            for (i in 0 until headers.size) {
-                logHeader(headers, i)
-            }*/
-
             if (!logBody || requestBody == null) {
                 logger.log("--> END ${request.method}")
             } else if (bodyHasUnknownEncoding(request.headers)) {
@@ -207,20 +188,38 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
             } else if (requestBody.isOneShot()) {
                 logger.log("--> END ${request.method} (one-shot body omitted)")
             } else {
-                val buffer = Buffer()
-                requestBody.writeTo(buffer)
-
-                val contentType = requestBody.contentType()
-                val charset: Charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
-
-                //logger.log("")
-                if (buffer.isProbablyUtf8()) {
-                    logger.log(buffer.readString(charset))
-                    logger.log("--> END ${request.method} (${requestBody.contentLength()}-byte body)")
+                /*if (requestBody is FormBody) {
+                    val sb = StringBuilder()
+                    sb.append("{")
+                    for (i in 0 until requestBody.size) {
+                        val k = requestBody.name(i)
+                        val v = requestBody.value(i)
+                        if (requestFieldBlackList.contains(k)){
+                            continue
+                        }
+                        if (i > 0) {
+                            sb.append(",")
+                        }
+                        sb.append("$k:$v")
+                    }
+                    sb.append("}")
+                    logger.log(sb.toString())
+                    //logger.log("--> END ${request.method} (${requestBody.contentLength()}-byte body)")
                 } else {
-                    logger.log(
-                        "--> END ${request.method} (binary ${requestBody.contentLength()}-byte body omitted)")
-                }
+                    val buffer = Buffer()
+                    requestBody.writeTo(buffer)
+
+                    val contentType = requestBody.contentType()
+                    val charset: Charset =
+                        contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+
+                    if (buffer.isProbablyUtf8()) {
+                        logger.log(buffer.readString(charset))
+                        //logger.log("--> END ${request.method} (${requestBody.contentLength()}-byte body)")
+                    } else {
+                        //logger.log("--> END ${request.method} (binary ${requestBody.contentLength()}-byte body omitted)")
+                    }
+                }*/
             }
         }
 
@@ -243,10 +242,6 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
 
         if (logHeaders) {
             val headers = response.headers
-            /*for (i in 0 until headers.size) {
-                logHeader(headers, i)
-            }*/
-
             if (!logBody || !response.promisesBody()) {
                 logger.log("<-- END HTTP")
             } else if (bodyHasUnknownEncoding(response.headers)) {
@@ -270,20 +265,21 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
 
                 if (!buffer.isProbablyUtf8()) {
                     //logger.log("")
-                    logger.log("<-- END HTTP (binary ${buffer.size}-byte body omitted)")
+                    //logger.log("<-- END HTTP (binary ${buffer.size}-byte body omitted)")
                     return response
                 }
 
                 if (contentLength != 0L) {
-                    //logger.log("")
-                    logger.log(buffer.clone().readString(charset))
+                    if (!request.url.toString().isInResponseBlackList()) {
+                        logger.log(buffer.clone().readString(charset))
+                    }
                 }
 
-                if (gzippedLength != null) {
+                /*if (gzippedLength != null) {
                     logger.log("<-- END HTTP (${buffer.size}-byte, $gzippedLength-gzipped-byte body)")
                 } else {
                     logger.log("<-- END HTTP (${buffer.size}-byte body)")
-                }
+                }*/
             }
         }
 
@@ -320,4 +316,13 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
             return false // Truncated UTF-8 sequence.
         }
     }
+
+    private fun String.isInResponseBlackList() = when {
+        this.endsWith("mpc/secret/get") -> true
+        this.endsWith("secret/open/auth/get") -> true
+        this.endsWith("account/v1/sociallogin/exchangedtoken") -> true
+        else -> false
+    }
+
+    private val requestFieldBlackList = arrayOf("access_token", "sign", "authid")
 }

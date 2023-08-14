@@ -3,9 +3,9 @@ package com.infras.dauthsdk.login.impl
 import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.api.entity.ResponseCode
 import com.infras.dauthsdk.login.model.AuthorizeToken2Param
-import com.infras.dauthsdk.login.network.RequestApi
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.login.utils.JwtDecoder
+import com.infras.dauthsdk.login.utils.maskSensitiveData
 import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.impl.manager.WalletManager
 
@@ -23,14 +23,19 @@ class ThirdPlatformLogin private constructor() {
     suspend fun thirdPlatFormLogin(body: AuthorizeToken2Param) : LoginResultData {
         var loginResultData: LoginResultData? = null
         val authorizeToken2Res = requestApi.authorizeExchangedToken(body)
-        if (authorizeToken2Res?.ret == ResponseCode.RESPONSE_CORRECT_CODE) {
+        if (authorizeToken2Res == null){
+            DAuthLogger.e("exchange token network error")
+            return LoginResultData.Failure(null)
+        }
+
+        if (authorizeToken2Res.isSuccess()) {
             val didToken = authorizeToken2Res.data?.didToken.orEmpty()
-            DAuthLogger.d("第三方登录后的didToken:  $didToken")
+            DAuthLogger.d("didToken:$didToken")
             val googleUserInfo = JwtDecoder().decoded(didToken)
             val accessToken = authorizeToken2Res.data?.accessToken.orEmpty()
-            DAuthLogger.d("第三方登录后获取的accessToken：$accessToken")
+            DAuthLogger.d("accessToken:${accessToken.maskSensitiveData()}")
             val refreshToken = authorizeToken2Res.data?.refreshToken.orEmpty()
-            val authId = googleUserInfo.sub.orEmpty()
+            val authId = googleUserInfo.sub
             val expireTime = authorizeToken2Res.data?.expireIn
             val userType = body.user_type
             Managers.loginPrefs.putLoginInfo(
@@ -51,11 +56,11 @@ class ThirdPlatformLogin private constructor() {
                 openId = authId,
                 needCreateWallet = needCreateWallet
             )
-            DAuthLogger.d("第三方账号已绑定钱包，直接进入主页")
+            DAuthLogger.d("exchange token success")
         } else {
-            val loginResCode = authorizeToken2Res?.ret
+            val loginResCode = authorizeToken2Res.ret
             loginResultData = LoginResultData.Failure(loginResCode)
-            DAuthLogger.e("第三方认证登录失败 errCode == $loginResCode")
+            DAuthLogger.e("exchange token failure:$loginResCode")
         }
         return loginResultData
     }

@@ -1,9 +1,7 @@
 package com.infras.dauthsdk.wallet.impl.manager
 
-import android.content.Context
-import android.os.Environment
 import com.infras.dauthsdk.api.DAuthLogLevel
-import com.infras.dauthsdk.wallet.util.ExecutorUtl
+import com.infras.dauthsdk.wallet.util.ExecutorUtil
 import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
@@ -12,16 +10,17 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 
 private const val TAG = "DLogManager"
-private const val FOLDER_NAME = "dauth_log"
 
-internal class DLogManager internal constructor(private val context: Context) {
+internal class DLogManager internal constructor(
+    private val fileManager: FileManager,
+) {
 
     private val executor: ExecutorService by lazy {
-        ExecutorUtl.buildSingleThreadScheduledExecutorService(TAG)
+        ExecutorUtil.buildSingleThreadScheduledExecutorService(TAG)
     }
 
     private val fileWriter by lazy {
-        val folder = getLogFileFolder() ?: return@lazy null
+        val folder = getLogFileFolder()
         folder.mkdirs()
         val file = File(folder, getFileName())
         val fileWriter = FileWriter(file, true)
@@ -60,17 +59,7 @@ internal class DLogManager internal constructor(private val context: Context) {
         }
     }
 
-    private fun isExternalStorageWritable(): Boolean {
-        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
-    }
-
-    private fun getLogFileFolder(): File? = kotlin.runCatching {
-        if (!isExternalStorageWritable()) {
-            null
-        } else {
-            File(context.getExternalFilesDir(null), FOLDER_NAME)
-        }
-    }.getOrNull()
+    private fun getLogFileFolder(): File = fileManager.getFolder(FileManager.FOLDER_NAME_LOG, false)
 
     private fun getFileName(): String {
         return "${SimpleDateFormat("yyyy_MM_d", Locale.getDefault()).format(Date())}.txt"

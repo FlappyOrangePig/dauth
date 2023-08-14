@@ -10,7 +10,6 @@ import com.infras.dauthsdk.wallet.ext.getPackageInfo
 import com.infras.dauthsdk.wallet.ext.getVersionCode
 import com.infras.dauthsdk.wallet.ext.runCatchingWithLog
 import com.infras.dauthsdk.wallet.impl.AAWalletImpl
-import com.infras.dauthsdk.wallet.impl.EoaWalletImpl
 import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.util.DebugUtil
 import com.infras.dauthsdk.wallet.util.KeystoreUtil
@@ -18,45 +17,41 @@ import com.infras.dauthsdk.wallet.util.KeystoreUtil
 class DAuthSDK private constructor(
     internal val loginApi: DAuthLogin,
     private val aaWalletApi: AAWalletImpl,
-    internal val eoaWalletApi: EoaWalletImpl,
 ) : IDAuthApi, ILoginApi by loginApi, IAAWalletApi by aaWalletApi {
 
     companion object {
         val instance: IDAuthApi get() = impl
         internal val impl: DAuthSDK by lazy {
-            DAuthSDK(DAuthLogin(), AAWalletImpl(), EoaWalletImpl())
+            DAuthSDK(DAuthLogin(), AAWalletImpl())
         }
     }
 
-    private var _context: Context? = null
-    internal val context get() = _context ?: throw RuntimeException("please call initSDK() first")
     private var _config: SdkConfig? = null
     internal val config get() = _config ?: throw RuntimeException("please call initSDK() first")
 
     override fun initSDK(context: Context, config: SdkConfig) {
         val appContext = context.applicationContext as Application
-        this._context = appContext
         this._config = config
-        initializeCheck()
         Managers.inject(appContext)
         loginApi.initSDK(context, config)
         KeystoreUtil.setupBouncyCastle()
+        Managers.preGenerateKeyManager.initialize()
+        Managers.statsManager.initialize()
         DAuthLogger.i("init sdk ok")
-        printSdkVersion()
-        printDebugInfo()
+        printSdkVersion(appContext)
+        printDebugInfo(appContext)
     }
 
-    private fun initializeCheck() {
-        context
+    override fun getEoaApi(): IEoaWalletApi {
+        return Managers.eoaWalletApi
     }
 
     @VisibleForTesting
     fun initSDKForTest(context: Context, config: SdkConfig) {
-        this._context = context
         this._config = config
     }
 
-    private fun printSdkVersion() {
+    private fun printSdkVersion(context: Context) {
         runCatchingWithLog {
             val ai = context.getPackageInfo()
             DAuthLogger.i(
@@ -68,7 +63,7 @@ class DAuthSDK private constructor(
         }
     }
 
-    private fun printDebugInfo() {
+    private fun printDebugInfo(context: Context) {
         if (DebugUtil.isAppDebuggable(context)) {
             val loginPrefs = Managers.loginPrefs
             val trace = StringBuilder()

@@ -14,7 +14,7 @@ import java.math.BigInteger
 class CreateUserOpAndEstimateGasData(
     val verificationCost: BigInteger,
     val callCost: BigInteger,
-    val userOp: com.infras.dauthsdk.wallet.sol.EntryPoint.UserOperation
+    val userOp: EntryPoint.UserOperation
 ) {
     override fun toString(): String {
         return "EstimateUserOpGasData(verificationCost=$verificationCost, callCost=$callCost, userOp=$userOp)"

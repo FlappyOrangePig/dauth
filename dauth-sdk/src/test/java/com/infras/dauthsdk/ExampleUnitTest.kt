@@ -3,7 +3,6 @@ package com.infras.dauthsdk
 import android.content.Context
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.SdkConfig
-import com.infras.dauthsdk.wallet.connect.metamask.MetaMaskJsObject
 import com.infras.dauthsdk.login.model.CommitTransRes
 import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_KEY
 import com.infras.dauthsdk.login.model.GetSecretKeyParamConst.TYPE_MERGE_RESULT
@@ -16,17 +15,21 @@ import com.infras.dauthsdk.mpc.MpcKeyStore
 import com.infras.dauthsdk.mpc.SignResult
 import com.infras.dauthsdk.mpc.util.MergeResultUtil
 import com.infras.dauthsdk.mpc.util.MoshiUtil
-import com.infras.dauthsdk.mpc.util.ZipUtil
 import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.impl.manager.WalletManager
 import com.infras.dauthsdk.wallet.util.SignUtil
 import com.infras.dauthsdk.wallet.util.WalletPrefsV2
-import com.infras.dauthsdk.wallet.util.cleanHexPrefix
 import com.infras.dauthsdk.wallet.util.sha3
 import com.infras.dauthsdk.wallet.util.sha3String
-import com.infras.dauthsdk.wallet.util.toHexString
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.runBlocking
-import org.bouncycastle.jcajce.provider.digest.SHA3
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.anyList
@@ -46,9 +49,7 @@ import org.web3j.abi.datatypes.generated.Uint256
 import org.web3j.crypto.Credentials
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.nio.charset.StandardCharsets
 import kotlin.random.Random
-
 
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
@@ -93,10 +94,9 @@ class ExampleUnitTest {
             `when`(getDidToken()).thenReturn(didToken)
             Managers.loginPrefs = this
         }
-        mock(MpcKeyStore::class.java).apply {
+        /*mock(MpcKeyStore::class.java).apply {
             `when`(getAllKeys()).thenReturn(listOf())
             `when`(getLocalKey()).thenReturn("")
-            `when`(getMergeResult()).thenReturn("")
             `when`(this.setAllKeys(anyList())).then {
                 println("setAllKeys")
                 allKeys = (it.arguments[0] as List<String>).toMutableList()
@@ -108,19 +108,12 @@ class ExampleUnitTest {
                 allKeys.add(it.arguments[0] as String)
                 Unit
             }
-            `when`(this.setMergeResult(anyString())).then {
-                println("setMergeResult")
-                mergeResult = it.arguments[0] as String
-                Unit
-            }
             Managers.mpcKeyStore = this
         }
         mock(WalletPrefsV2::class.java).apply {
             Managers.walletPrefsV2 = this
-        }
+        }*/
         Managers.walletManager = WalletManager(
-            walletPrefsV2 = Managers.walletPrefsV2,
-            mpcKeyStore = Managers.mpcKeyStore,
             loginPrefs = Managers.loginPrefs,
         )
 
@@ -336,11 +329,5 @@ class ExampleUnitTest {
             "{\"ret\":2000101,\"info\":\"call estimateGas err:execution reverted: balance not enough\"}"
         val r = MoshiUtil.fromJson<CommitTransRes>(response)
         println(MoshiUtil.toJson(r))
-    }
-
-    @Test
-    fun testToStringMap() {
-        val jsonStr = "{\"name\":\"Alice\",\"age\":25,\"email\":\"alice@example.com\"}"
-        println(MetaMaskJsObject.toStringMap(jsonStr))
     }
 }
