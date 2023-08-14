@@ -67,13 +67,13 @@ class SdkConfig {
     /**
      * 日志输出到文件的级别
      */
-    @DAuthLogLevelEnum
+    @DAuthLogLevel
     var fileLogLevel = DAuthLogLevel.LEVEL_INFO
 
     /**
      * 日志输出到控制台的级别
      */
-    @DAuthLogLevelEnum
+    @DAuthLogLevel
     var consoleLogLevel = DAuthLogLevel.LEVEL_VERBOSE
 
     /**

@@ -2,7 +2,6 @@ package com.infras.dauthsdk.login.utils
 
 import android.util.Log
 import com.infras.dauthsdk.api.DAuthLogLevel
-import com.infras.dauthsdk.api.DAuthLogLevelEnum
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.wallet.ext.safeApp
 import com.infras.dauthsdk.wallet.impl.manager.Managers
@@ -25,7 +24,7 @@ internal object DAuthLogger {
     private fun log(
         tag: String,
         log: String,
-        @DAuthLogLevelEnum level: Int
+        @DAuthLogLevel level: Int
     ) {
         // 单元测试
         if (safeApp() == null) {
