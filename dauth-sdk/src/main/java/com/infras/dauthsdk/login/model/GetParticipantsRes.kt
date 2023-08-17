@@ -1,6 +1,5 @@
 package com.infras.dauthsdk.login.model
 
-import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.login.network.BaseResponse
 
 class GetParticipantsRes(

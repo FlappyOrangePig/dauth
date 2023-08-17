@@ -1,6 +1,6 @@
 package com.infras.dauthsdk.wallet.impl.manager
 
-import com.infras.dauthsdk.api.DAuthLogLevel
+import com.infras.dauthsdk.api.annotation.DAuthLogLevel
 import com.infras.dauthsdk.wallet.util.ExecutorUtil
 import java.io.File
 import java.io.FileWriter

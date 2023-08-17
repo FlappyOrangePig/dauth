@@ -1,4 +1,4 @@
-package com.infras.dauth.ui
+package com.infras.dauth.ui.login
 
 import android.content.Context
 import android.content.Intent
@@ -8,13 +8,13 @@ import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityMobileLoginLayoutBinding
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.api.annotation.DAuthAccountType
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.LoginResultData
 import kotlinx.coroutines.launch
-
-private const val USER_TYPE_OF_MOBILE = 60  // 手机号登录
 
 class LoginByMobileActivity: BaseActivity() {
     private var _binding: ActivityMobileLoginLayoutBinding?  = null
@@ -48,7 +48,7 @@ class LoginByMobileActivity: BaseActivity() {
             val phone = binding.edtAccount.text.toString()
             val verifyCode = binding.edtVerifyCode.text.toString()
             lifecycleScope.launch {
-                val result = sdk.loginByMobileOrEmail(phone, verifyCode, USER_TYPE_OF_MOBILE)
+                val result = sdk.loginByMobileOrEmail(phone, verifyCode, DAuthAccountType.ACCOUNT_TYPE_OF_MOBILE)
                 handleLoginResult(result)
             }
         }

@@ -37,8 +37,16 @@ internal suspend fun <T> suspendRunSpending(
 
 private class Elapsed(
     val log: String,
-    val elapsedMs: Long
+    val elapsedMs: Long,
+    val result: Boolean,
 )
+
+internal class StatsResultHolder {
+    /**
+     * Result 如果没有返回结果说明是没有成功或失败这一说，直接返回成功
+     */
+    var result: Boolean = true
+}
 
 internal class ElapsedContext(
     val tag: String,
@@ -50,37 +58,50 @@ internal class ElapsedContext(
     private val contextId = "${Managers.loginPrefs.getAuthId()}-${UUID.randomUUID()}"
     internal suspend fun <T> runSpending(
         log: String,
-        block: suspend () -> T,
+        block: suspend (rh: StatsResultHolder) -> T,
     ): T {
         if (logWhenHappened) {
             DAuthLogger.d("$log >>>", logTag)
         }
+        val rh = StatsResultHolder()
         val start = System.currentTimeMillis()
-        val r = block.invoke()
+        val r = block.invoke(rh)
         val spent = System.currentTimeMillis() - start
         if (logWhenHappened) {
             DAuthLogger.d("$log <<< spent $spent", logTag)
         }
+        val result = rh.result
+        this.elapsedList.add(Elapsed(log, spent, result))
         Managers.statsManager.sendStats(
             LogReportParam.Event(
                 contextId = contextId,
                 contextName = contextName,
                 eventName = log,
-                duration = spent
+                duration = spent,
+                result = result.toResultString()
             )
         )
-        this.elapsedList.add(Elapsed(log, spent))
         return r
     }
 
-    internal fun traceElapsedList() {
+    internal fun finish() {
+        traceElapsedList()
+    }
+
+    private fun traceElapsedList() {
+        val totalResult = if (elapsedList.isEmpty()) {
+            false
+        } else {
+            elapsedList.last().result
+        }
+
         val sb = StringBuilder()
         sb.appendLine()
         sb.appendLine("**** trace elapsed list **** >>>")
         val totalSpent = this.elapsedList.sumOf { it.elapsedMs }
-        sb.appendLine("total ${totalSpent}ms ")
+        sb.appendLine("$contextName total ${totalSpent}ms $totalResult")
         this.elapsedList.forEachIndexed { i, e ->
-            sb.appendLine("$i)${e.log}:${e.elapsedMs}ms ")
+            sb.appendLine("$i)${e.log}:${e.elapsedMs}ms ${e.result}")
         }
         sb.appendLine("**** trace elapsed list **** <<<")
         DAuthLogger.i(sb.toString(), logTag)
@@ -90,8 +111,14 @@ internal class ElapsedContext(
                 contextId = contextId,
                 contextName = contextName,
                 eventName = "TotalSpent",
-                duration = totalSpent
+                duration = totalSpent,
+                result = totalResult.toResultString()
             )
         )
+    }
+
+    private fun Boolean.toResultString() = when (this) {
+        true -> "success"
+        false -> "failure"
     }
 }

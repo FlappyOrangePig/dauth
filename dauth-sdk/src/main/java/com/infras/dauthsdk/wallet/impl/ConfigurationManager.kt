@@ -17,6 +17,8 @@ internal object ConfigurationManager {
         DAuthChainEnum.CHAIN_ARBITRUM -> DAuthChain.Arbitrum
         else -> throw RuntimeException()
     }
+
+    val innerConfig: InnerConfig = DefaultInnerConfig
 }
 
 internal sealed class DAuthChain {
@@ -48,7 +50,7 @@ internal sealed class DAuthChain {
      */
     internal object Arbitrum : DAuthChain() {
         override val chain: Int
-            get() = DAuthChainEnum.CHAIN_ARBITRUM_GOERLI
+            get() = DAuthChainEnum.CHAIN_ARBITRUM
         override val rpcUrl: String
             get() = "https://arbitrum.blockpi.network/v1/rpc/ca5a9ed3d8ae6312c8e9d88b6097bb1e99e1b70c"
         override val factoryAddress: String
@@ -82,4 +84,31 @@ internal sealed class DAuthStage {
         override val signSecurityKey: String
             get() = "v8FzBppykcOPQhrfGJaNb386tQKGq2zS"
     }
+}
+
+internal interface InnerConfig {
+    val serverGenerateKey: Boolean
+    val localSign: Boolean
+    val useLocalRelayer: Boolean
+    val useDevWebSocketServer: Boolean
+    val useDevRelayerServer: Boolean
+    val useDevKeyGenServer: Boolean
+    val doNotRestore: Boolean
+}
+
+private object DefaultInnerConfig : InnerConfig {
+    override val serverGenerateKey: Boolean
+        get() = true
+    override val localSign: Boolean
+        get() = false
+    override val useLocalRelayer: Boolean
+        get() = false
+    override val useDevWebSocketServer: Boolean
+        get() = false
+    override val useDevRelayerServer: Boolean
+        get() = false
+    override val useDevKeyGenServer: Boolean
+        get() = false
+    override val doNotRestore: Boolean
+        get() = false
 }

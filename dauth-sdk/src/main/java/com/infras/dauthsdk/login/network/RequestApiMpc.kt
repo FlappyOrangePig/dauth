@@ -6,6 +6,8 @@ import com.infras.dauthsdk.login.infrastructure.ReqUrl
 import com.infras.dauthsdk.login.infrastructure.RequestConfig
 import com.infras.dauthsdk.login.model.CommitTransParam
 import com.infras.dauthsdk.login.model.CommitTransRes
+import com.infras.dauthsdk.login.model.GenerateKeyParam
+import com.infras.dauthsdk.login.model.GenerateKeyRes
 import com.infras.dauthsdk.login.model.GetParticipantsParam
 import com.infras.dauthsdk.login.model.GetParticipantsRes
 import com.infras.dauthsdk.login.model.GetSecretKeyParam
@@ -18,8 +20,6 @@ import com.infras.dauthsdk.mpc.util.MoshiUtil
 import com.infras.dauthsdk.wallet.impl.ConfigurationManager
 import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.sol.EntryPoint
-
-private const val TAG = "MpcServiceConst"
 
 object MpcServiceConst {
     const val NotAllowedError = 2000000
@@ -39,6 +39,10 @@ object MpcServiceConst {
 
 internal class RequestApiMpc internal constructor(): ApiClient() {
 
+    companion object {
+        private const val TAG = "RequestApiMpc"
+    }
+
     suspend fun getParticipants(): GetParticipantsRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/wallet/v1/participants/get"))
         return request(localVariableConfig, GetParticipantsParam())
@@ -54,11 +58,21 @@ internal class RequestApiMpc internal constructor(): ApiClient() {
     }
 
     suspend fun getKey(url: String, type: Int): GetSecretKeyRes? {
+        if (ConfigurationManager.innerConfig.doNotRestore) {
+            return GetSecretKeyRes("").apply { ret = 0 }
+        }
+
         val localVariableConfig = RequestConfig(reqUrl = ReqUrl.WholePathUrl(url))
         val param = GetSecretKeyParam(
             type
         )
         return request(localVariableConfig, param)
+    }
+
+    private fun getHost(useDev: Boolean) = if (useDev) {
+        "http://172.16.12.170" // Tyler-local
+    } else {
+        "https://${ConfigurationManager.stage().baseUrlHost}"
     }
 
     suspend fun commitOp(userOperation: EntryPoint.UserOperation): CommitTransRes? {
@@ -85,12 +99,16 @@ internal class RequestApiMpc internal constructor(): ApiClient() {
             transdata = transData,
             client_id = config.clientId.orEmpty()
         )
-        val useDevServer = config.useDevRelayerServer
-        val url = if (useDevServer) {
-            "http://172.16.12.170:8888/relayer/committrans"
-        } else {
-            "https://${ConfigurationManager.stage().baseUrlHost}/relayer/committrans"
-        }
+        val host = getHost(ConfigurationManager.innerConfig.useDevRelayerServer)
+        val url = "${host}/relayer/committrans"
+        val localVariableConfig = RequestConfig(reqUrl = ReqUrl.WholePathUrl(url))
+        return request(localVariableConfig, param)
+    }
+
+    suspend fun generateKeys(signbm: String): GenerateKeyRes? {
+        val param = GenerateKeyParam(signbm)
+        val host = getHost(ConfigurationManager.innerConfig.useDevKeyGenServer)
+        val url = "${host}/mpc/genkey"
         val localVariableConfig = RequestConfig(reqUrl = ReqUrl.WholePathUrl(url))
         return request(localVariableConfig, param)
     }

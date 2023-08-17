@@ -37,7 +37,7 @@ sealed class KeysToRestoreResult {
  * 6.拉取MPC服务节点 & 分发密钥
  * 7.移除本地的远端密钥（成功）
  */
-class WalletManager internal constructor(
+internal class WalletManager internal constructor(
     private val loginPrefs: LoginPrefs,
 ) {
     companion object {
@@ -62,11 +62,9 @@ class WalletManager internal constructor(
         mpcKeyStore.clear()
     }
 
-    suspend fun initWallet(forceCreate: Boolean): DAuthResult<CreateWalletData> {
+    suspend fun initWallet(context: ElapsedContext, forceCreate: Boolean): DAuthResult<CreateWalletData> {
         DAuthLogger.d("createWallet", TAG)
         val mpcApi = Managers.requestApiMpc
-
-        val context = ElapsedContext(TAG, "createWallet")
 
         val state = getState()
         DAuthLogger.d("state=$state", TAG)
@@ -77,7 +75,11 @@ class WalletManager internal constructor(
         }
 
         // 拉取MPC服务器信息
-        val participantsResult = context.runSpending("getParticipants") { MpcServers.getServers() }
+        val participantsResult = context.runSpending("getParticipants") { rh ->
+            MpcServers.getServers().also {
+                rh.result = (it != null)
+            }
+        }
         if (participantsResult == null) {
             DAuthLogger.d("participantsResult error", TAG)
             return DAuthResult.NetworkError()
@@ -94,8 +96,10 @@ class WalletManager internal constructor(
                 }
 
                 STATE_INIT -> {
-                    val keysResult = context.runSpending("getRestoreKeyInfo") {
-                        getKeysToRestore(mpcApi, participants)
+                    val keysResult = context.runSpending("getRestoreKeyInfo") { rh ->
+                        getKeysToRestore(mpcApi, participants).also {
+                            rh.result = it is KeysToRestoreResult.KeyInfo
+                        }
                     }
                     when (keysResult) {
                         is KeysToRestoreResult.NetworkError -> {

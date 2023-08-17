@@ -31,7 +31,7 @@ private const val MPC_REQUEST_HEADER = "WebSocket-Mpc-Request"
 internal class WebsocketManager private constructor() {
     companion object {
         internal val instance by lazy { WebsocketManager() }
-        private val useDevServer get() = DAuthSDK.impl.config.useDevWebSocketServer
+        private val useDevServer get() = ConfigurationManager.innerConfig.useDevWebSocketServer
         private val serverUrl = if (useDevServer) {
             "ws://172.16.12.117:9001/"
         } else {

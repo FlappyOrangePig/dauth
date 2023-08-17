@@ -5,15 +5,12 @@ import android.app.Application
 import android.content.Context
 import com.infras.dauthsdk.api.ILoginApi
 import com.infras.dauthsdk.api.SdkConfig
+import com.infras.dauthsdk.api.annotation.DAuthAccountType
+import com.infras.dauthsdk.api.annotation.SignType3rd
 import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.api.entity.ResponseCode
 import com.infras.dauthsdk.api.entity.SetPasswordData
 import com.infras.dauthsdk.login.callback.ThirdPartyCallback
-import com.infras.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_EMAIL
-import com.infras.dauthsdk.login.constant.LoginConst.ACCOUNT_TYPE_OF_OWN
-import com.infras.dauthsdk.login.constant.LoginConst.GOOGLE
-import com.infras.dauthsdk.login.constant.LoginConst.SIGN_METHOD
-import com.infras.dauthsdk.login.constant.LoginConst.TWITTER
 import com.infras.dauthsdk.login.model.*
 import com.infras.dauthsdk.login.network.BaseResponse
 import com.infras.dauthsdk.login.twitter.TwitterLoginManager
@@ -51,7 +48,7 @@ internal class DAuthLogin internal constructor() : ILoginApi {
 
     override suspend fun login(account: String, passWord: String): LoginResultData? {
         val loginParam = LoginParam(
-            ACCOUNT_TYPE_OF_EMAIL.toInt(),
+            DAuthAccountType.ACCOUNT_TYPE_OF_EMAIL,
             account = account,
             password = passWord,
             is_register = IS_REGISTER
@@ -64,7 +61,8 @@ internal class DAuthLogin internal constructor() : ILoginApi {
      * @return 服务端返回临时code
      */
     private suspend fun loginAuth(codeChallengeCode: String, didToken: String): String {
-        val body = AuthorizeParam(USER_TYPE_OF_EMAIL, codeChallengeCode, SIGN_METHOD)
+        val signMethod = "SHA-256"
+        val body = AuthorizeParam(USER_TYPE_OF_EMAIL, codeChallengeCode, signMethod)
         val authorizeParam = requestApi.ownAuthorize(body, didToken)
         val code = authorizeParam?.data?.code.orEmpty()  //获取临时code
         DAuthLogger.i("ownAuthorize temp code=$code")
@@ -83,17 +81,12 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         return requestApi.ownOauth2Token(body, didToken)
     }
 
-    /**
-     * @param type 第三方账号类型 GOOGLE TWITTER FACEBOOK
-     * @param activity
-     */
-
     override suspend fun loginWithType(
-        type: String,
+        @SignType3rd type: String,
         activity: Activity
     ): LoginResultData? = suspendCancellableCoroutine {
         when (type) {
-            GOOGLE -> {
+            SignType3rd.GOOGLE -> {
                 ThirdPartyResultActivity.launch(
                     ThirdPartyResultActivity.LAUNCH_TYPE_GOOGLE,
                     activity,
@@ -103,7 +96,7 @@ internal class DAuthLogin internal constructor() : ILoginApi {
                         }
                     })
             }
-            TWITTER -> {
+            SignType3rd.TWITTER -> {
                 ThirdPartyResultActivity.launch(
                     ThirdPartyResultActivity.LAUNCH_TYPE_TWITTER,
                     activity,
@@ -121,20 +114,20 @@ internal class DAuthLogin internal constructor() : ILoginApi {
 
     /**
      * @param account 自有账号（字母和数字组合）
-     * @param passWord 密码
+     * @param password 密码
      * @param confirmPwd 确认密码
      */
     override suspend fun createDAuthAccount(
         account: String,
-        passWord: String,
+        password: String,
         confirmPwd: String
     ): Int? {
         val code: Int?
         val createAccountParam = CreateAccountParam(
-            ACCOUNT_TYPE_OF_OWN,
+            DAuthAccountType.ACCOUNT_TYPE_OF_OWN,
             this.deviceId,
             is_login = 1,
-            password = passWord,
+            password = password,
             confirm_password = confirmPwd,
             sex = 0,
             account = account
@@ -155,7 +148,7 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         verifyCode: String,
         type: Int
     ): LoginResultData {
-        val loginResultData: LoginResultData = if (type == ACCOUNT_TYPE_OF_EMAIL.toInt()) {
+        val loginResultData: LoginResultData = if (type == DAuthAccountType.ACCOUNT_TYPE_OF_EMAIL) {
             val loginParam: LoginParam = if(verifyCode.length == VERIFY_CODE_LENGTH) {
                 LoginParam(
                     type,
@@ -239,12 +232,6 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         //walletManager.clearData()
     }
 
-    /**
-     * 重置密码
-     * @param resetPwdParams
-     * @return SetPasswordData(code: Int?, msg: String?)
-     */
-
     override suspend fun setRecoverPassword(resetPwdParams: ResetByPasswordParam): SetPasswordData {
         val response = requestApi.resetByPassword(resetPwdParams)
         if(response?.isSuccess() == true) {
@@ -253,38 +240,20 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         return SetPasswordData(response?.ret, response?.info)
     }
 
-    /**
-     * @param phone 手机号
-     * @param areaCode  区号
-     */
     override suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): BaseResponse? {
         val body = SendPhoneVerifyCodeParam(openudid = null, phone, areaCode)
         return requestApi.sendPhoneVerifyCode(body)
     }
 
-    /**
-     * @param email 邮箱
-     */
     override suspend fun sendEmailVerifyCode(email: String): BaseResponse? {
         val body = SendEmailVerifyCodeParam(email)
         return requestApi.sendEmailVerifyCode(body)
     }
 
-    /**
-     * @param bindParams 对象
-     *  包含 openudid(用户id)
-     *  phone(手机号)
-     *  phone_area_code(区号)
-     *  verify_code(验证码)
-     */
-    override suspend fun bindPhone(bindParams: BindPhoneParam) {
-        requestApi.bindPhone(bindParams)
+    override suspend fun bindPhone(param: BindPhoneParam) {
+        requestApi.bindPhone(param)
     }
 
-    /**
-     * @param email 邮箱
-     * @param verifyCode 邮箱验证码
-     */
     override suspend fun bindEmail(email: String, verifyCode: String): BaseResponse? {
         val authId = prefs.getAuthId()
         val accessToken = prefs.getAccessToken()
@@ -292,19 +261,10 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         return requestApi.bindEmail(body)
     }
 
-    /**
-     * @param passwordParam 密码
-     * 设置登录密码
-     */
-    override suspend fun setPassword(passwordParam: SetPasswordParam): BaseResponse? {
-        return requestApi.setPassword(passwordParam)
+    override suspend fun setPassword(param: SetPasswordParam): BaseResponse? {
+        return requestApi.setPassword(param)
     }
 
-    /**
-     * @param email
-     * @return accountRes
-     * 根据邮箱查询用户信息
-     */
     override suspend fun queryAccountByEmail(email: String): AccountRes? {
         val authId = prefs.getAuthId()
         val requestApi = requestApi
@@ -314,10 +274,6 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         return requestApi.queryByEMail(body)
     }
 
-    /**
-     * @return accountRes
-     * 根据邮箱查询用户信息
-     */
     override suspend fun queryAccountByAuthid(): AccountRes? {
         val authId = prefs.getAuthId()
         val accessToken = prefs.getAccessToken()

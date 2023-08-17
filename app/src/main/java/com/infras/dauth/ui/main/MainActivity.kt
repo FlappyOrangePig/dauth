@@ -1,4 +1,4 @@
-package com.infras.dauth.ui
+package com.infras.dauth.ui.main
 
 import android.content.Context
 import android.content.Intent
@@ -207,7 +207,7 @@ class MainActivity : BaseActivity() {
 
             else -> {}
         }
-        sb.appendLine("eth余额：$result")
+        sb.appendLine("ETH: $result")
     }
 
     private suspend fun showUsdt(sb: StringBuilder) {
@@ -223,7 +223,7 @@ class MainActivity : BaseActivity() {
 
             else -> {}
         }
-        sb.appendLine("usdt余额：$result")
+        sb.appendLine(result?.let { "USDT: $it" }.orEmpty())
     }
 
     private suspend fun showNfts(sb: StringBuilder) {
@@ -239,7 +239,7 @@ class MainActivity : BaseActivity() {
 
             else -> {}
         }
-        sb.append("NFT余额：$result")
+        sb.append(result?.let { "NFT: $it" }.orEmpty())
     }
 
     private fun initData() {
@@ -257,42 +257,52 @@ class MainActivity : BaseActivity() {
                 return@launch
             }
 
-            binding.tvUserInfo.text = StringBuilder()
-                .appendLine("昵称：${data.nickname}")
-                .appendLine("邮箱：${data.email}")
-                .appendLine("电话：${data.phone}")
-
-
-
+            binding.tvUserInfo.text = StringBuilder().apply {
+                data.nickname.takeUnless { it.isNullOrEmpty() }?.let {
+                    appendLine("昵称：${it}")
+                }
+                data.email.takeUnless { it.isNullOrEmpty() }?.let {
+                    appendLine("邮箱：${it}")
+                }
+                data.phone.takeUnless { it.isNullOrEmpty() }?.let {
+                    appendLine("电话：${it}")
+                }
+            }
             if (showDetail) {
                 showAccountInfoDialog(data)
             }
         }
     }
 
-    private fun showAccountInfoDialog(data: AccountRes.Data) {
-        val accountInfo = StringBuilder()
-            .appendLine("account=${data.account}")
-            .appendLine("nickname=${data.nickname}")
-            .appendLine("birthday=${data.birthday}")
-            .appendLine("sex=${data.sex}")
-            .appendLine("email=${data.email}")
-            .appendLine("phone=${data.phone}")
-            .appendLine("phone_area_code=${data.phone_area_code}")
-            .appendLine("real_name=${data.real_name}")
-            .appendLine("identity=${data.identity}")
-            .appendLine("identity_Status=${data.identity_Status}")
-            .appendLine("head_img_url=${data.head_img_url}")
-            .appendLine("country=${data.country}")
-            .appendLine("province=${data.province}")
-            .appendLine("city=${data.city}")
-            .appendLine("district=${data.district}")
-            .appendLine("address=${data.address}")
-            .appendLine("user_type=${data.user_type}")
-            .appendLine("user_state=${data.user_state}")
-            .appendLine("create_time=${data.create_time}")
-            .appendLine("has_password=${data.has_password}")
+    private fun runIfNotNull(input: Any?, block:()->Unit){
+        if (input != null){
+            block.invoke()
+        }
+    }
 
-        DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, accountInfo.toString())
+    private fun showAccountInfoDialog(data: AccountRes.Data) {
+        val sb = StringBuilder().apply {
+            data.account?.let { appendLine("account=$it") }
+            data.nickname?.let { appendLine("nickname=$it") }
+            data.birthday?.let { appendLine("birthday=$it") }
+            data.sex?.let { appendLine("sex=$it") }
+            data.email?.let { appendLine("email=$it") }
+            data.phone?.let { appendLine("phone=$it") }
+            data.phone_area_code?.let { appendLine("phone_area_code=$it") }
+            data.real_name?.let { appendLine("real_name=$it") }
+            data.identity?.let { appendLine("identity=$it") }
+            data.identity_Status?.let { appendLine("identity_Status=$it") }
+            data.head_img_url?.let { appendLine("head_img_url=$it") }
+            data.country?.let { appendLine("country=$it") }
+            data.province?.let { appendLine("province=$it") }
+            data.city?.let { appendLine("city=$it") }
+            data.district?.let { appendLine("district=$it") }
+            data.address?.let { appendLine("address=$it") }
+            data.user_type?.let { appendLine("user_type=$it") }
+            data.user_state?.let { appendLine("user_state=$it") }
+            data.create_time?.let { appendLine("create_time=$it") }
+            data.has_password?.let { appendLine("has_password=$it") }
+        }
+        DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, sb.toString())
     }
 }

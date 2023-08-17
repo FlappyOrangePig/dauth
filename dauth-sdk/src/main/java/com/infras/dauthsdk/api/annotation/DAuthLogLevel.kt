@@ -1,4 +1,4 @@
-package com.infras.dauthsdk.api
+package com.infras.dauthsdk.api.annotation
 
 import androidx.annotation.IntDef
 

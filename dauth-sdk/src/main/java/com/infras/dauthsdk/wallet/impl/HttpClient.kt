@@ -8,6 +8,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.internal.http.promisesBody
 import okhttp3.internal.platform.Platform
+import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.logging.HttpLoggingInterceptor.Level
 import okio.Buffer
 import okio.GzipSource
 import java.io.EOFException
@@ -27,27 +29,39 @@ object HttpClient {
     }
 
     private val redactHeader
-        get() = arrayListOf(
-            "client_id",
-            "client_secret"
-        )
+        get() = listOf<String>()
 
     private fun getOkhttpClient() = OkHttpClient().newBuilder().apply {
         connectTimeout(10, TimeUnit.SECONDS)
         readTimeout(10, TimeUnit.SECONDS)
         writeTimeout(10, TimeUnit.SECONDS)
-        addInterceptor(HttpLoggingInterceptor { message ->
-            DAuthLogger.d(message, TAG)
-        }.apply {
-            level = HttpLoggingInterceptor.Level.BODY
-            redactHeader.forEach {
-                redactHeader(it)
-            }
-        })
+        addInterceptor(getInterceptor())
     }.build()
+
+    private fun getInterceptor(): Interceptor {
+        return if (true) {
+            HttpLoggingInterceptor2 { message ->
+                DAuthLogger.d(message, TAG)
+            }.apply {
+                level = Level.BODY
+                redactHeader.forEach {
+                    redactHeader(it)
+                }
+            }
+        } else {
+            HttpLoggingInterceptor { message ->
+                DAuthLogger.d(message, TAG)
+            }.apply {
+                level = Level.BODY
+                redactHeader.forEach {
+                    redactHeader(it)
+                }
+            }
+        }
+    }
 }
 
-class HttpLoggingInterceptor @JvmOverloads constructor(
+class HttpLoggingInterceptor2 @JvmOverloads constructor(
     private val logger: Logger = Logger.DEFAULT
 ) : Interceptor {
 
@@ -55,65 +69,6 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
 
     @set:JvmName("level")
     @Volatile var level = Level.NONE
-
-    enum class Level {
-        /** No logs. */
-        NONE,
-
-        /**
-         * Logs request and response lines.
-         *
-         * Example:
-         * ```
-         * --> POST /greeting http/1.1 (3-byte body)
-         *
-         * <-- 200 OK (22ms, 6-byte body)
-         * ```
-         */
-        BASIC,
-
-        /**
-         * Logs request and response lines and their respective headers.
-         *
-         * Example:
-         * ```
-         * --> POST /greeting http/1.1
-         * Host: example.com
-         * Content-Type: plain/text
-         * Content-Length: 3
-         * --> END POST
-         *
-         * <-- 200 OK (22ms)
-         * Content-Type: plain/text
-         * Content-Length: 6
-         * <-- END HTTP
-         * ```
-         */
-        HEADERS,
-
-        /**
-         * Logs request and response lines and their respective headers and bodies (if present).
-         *
-         * Example:
-         * ```
-         * --> POST /greeting http/1.1
-         * Host: example.com
-         * Content-Type: plain/text
-         * Content-Length: 3
-         *
-         * Hi?
-         * --> END POST
-         *
-         * <-- 200 OK (22ms)
-         * Content-Type: plain/text
-         * Content-Length: 6
-         *
-         * Hello!
-         * <-- END HTTP
-         * ```
-         */
-        BODY
-    }
 
     fun interface Logger {
         fun log(message: String)
@@ -319,10 +274,9 @@ class HttpLoggingInterceptor @JvmOverloads constructor(
 
     private fun String.isInResponseBlackList() = when {
         this.endsWith("mpc/secret/get") -> true
+        this.endsWith("mpc/genkey") -> true
         this.endsWith("secret/open/auth/get") -> true
         this.endsWith("account/v1/sociallogin/exchangedtoken") -> true
         else -> false
     }
-
-    private val requestFieldBlackList = arrayOf("access_token", "sign", "authid")
 }

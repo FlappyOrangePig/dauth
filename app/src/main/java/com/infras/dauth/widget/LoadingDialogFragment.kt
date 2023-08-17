@@ -36,7 +36,7 @@ class LoadingDialogFragment : DialogFragment() {
         builder.setView(fl2)
 
         val dialog = builder.create()
-
+        dialog?.requestWindowFeature(STYLE_NO_TITLE)
         // 去边框
         dialog.window?.apply {
             val layoutParams = attributes
@@ -55,7 +55,6 @@ class LoadingDialogFragment : DialogFragment() {
 
     override fun show(manager: FragmentManager, tag: String?) {
         super.show(manager, tag)
-        dialog?.requestWindowFeature(STYLE_NO_TITLE);
         val window = dialog?.window
         if (window != null) {
             val layoutParams = window.attributes

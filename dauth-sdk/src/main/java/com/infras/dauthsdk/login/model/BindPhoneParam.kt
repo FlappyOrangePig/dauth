@@ -11,17 +11,17 @@
 */
 package com.infras.dauthsdk.login.model
 
-
 /**
- * 
- * @param  
- * @param openudid 用户id
- * @param phone 手机号
- * @param phone_area_code 手机区号
- * @param verify_code 验证码
- * @param sign 检验参数
+ * Bind phone param
+ *
+ * @property openudid
+ * @property phone
+ * @property phone_area_code
+ * @property verify_code
+ * @property sign
+ * @property accessTokenInHeader
+ * @constructor Create empty Bind phone param
  */
-
 data class BindPhoneParam (
     /* 用户id */
     val openudid: String,
@@ -34,7 +34,5 @@ data class BindPhoneParam (
     /* 检验参数 */
     val sign: String,
     val accessTokenInHeader: AccessTokenInHeader? = null
-) {
-
-}
+)
 

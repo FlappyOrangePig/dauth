@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.lightColors
@@ -41,7 +42,7 @@ class EoaBusinessActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Page()
+            PageWithViewModel()
         }
         lifecycleScope.launch {
             viewModel.toastEvent.collect {
@@ -50,24 +51,32 @@ class EoaBusinessActivity : BaseActivity() {
         }
     }
 
+    @Composable
+    fun PageWithViewModel(vm: EoaBusinessViewModel = viewModel) {
+        Page(vm.textState.value,
+            { viewModel.connect(this@EoaBusinessActivity) },
+            { viewModel.getAddress() },
+            { viewModel.personalSign(this@EoaBusinessActivity) },
+            { viewModel.sendTransaction(this@EoaBusinessActivity) }
+        )
+    }
+
     @Preview
     @Composable
-    fun Page() {
+    fun Page(
+        eoaAccountAddress: String = "我是EOA地址",
+        onClickConnect: () -> Unit = {},
+        onClickGetAddress: () -> Unit = {},
+        onClickPersonalSign: () -> Unit = {},
+        onClickSendTransaction: () -> Unit = {},
+    ) {
         MaterialTheme(colors = lightColors()) {
             Column(verticalArrangement = Arrangement.Top) {
-                EoaAccountAddress(viewModel.textState.value)
-                SubmitButton("connect") {
-                    viewModel.connect(this@EoaBusinessActivity)
-                }
-                SubmitButton("getAddress") {
-                    viewModel.getAddress()
-                }
-                SubmitButton("personalSign") {
-                    viewModel.personalSign(this@EoaBusinessActivity)
-                }
-                SubmitButton("sendTransaction") {
-                    viewModel.sendTransaction(this@EoaBusinessActivity)
-                }
+                EoaAccountAddress(eoaAccountAddress)
+                SubmitButton("connect", onClickConnect)
+                SubmitButton("getAddress", onClickGetAddress)
+                SubmitButton("personalSign", onClickPersonalSign)
+                SubmitButton("sendTransaction", onClickSendTransaction)
             }
         }
     }
@@ -92,7 +101,11 @@ class EoaBusinessActivity : BaseActivity() {
             modifier = Modifier
                 .requiredWidth(Dp.Unspecified)
                 .requiredHeight(Dp.Unspecified),
-            onClick = onClick
+            onClick = onClick,
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color(0xFF4182FF),
+                contentColor = Color.White
+            )
         ) {
             Text(text = name)
         }

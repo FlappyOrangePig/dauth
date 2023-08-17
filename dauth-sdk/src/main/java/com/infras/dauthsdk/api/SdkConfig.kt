@@ -1,6 +1,7 @@
 package com.infras.dauthsdk.api
 
 import androidx.annotation.IntDef
+import com.infras.dauthsdk.api.annotation.DAuthLogLevel
 
 @Retention(AnnotationRetention.SOURCE)
 @IntDef(DAuthStageEnum.STAGE_TEST, DAuthStageEnum.STAGE_LIVE)
@@ -42,6 +43,7 @@ class SdkConfig {
     /**
      * clientSecret 在DAuth后台注册得到的clientSecret
      */
+    @Deprecated("not used any more")
     var clientSecret: String? = null
 
     /**
@@ -80,25 +82,5 @@ class SdkConfig {
      * 日志回调。优先级最高，打开后忽略所有[isLogOpen]、[fileLogLevel]、[consoleLogLevel]
      */
     var logCallback: ((level: Int , tag: String, log: String) -> Unit)? = null
-
-    /**
-     * 【test】不使用分布式签名，直接本地签名。（测试期本地会保存所有密钥分片，上线时移除）
-     */
-    var localSign = false
-
-    /**
-     * 【test】在本地直接提交UserOperation，不使用服务端的relayer。上链后本地提交会有权限问题
-     */
-    var useLocalRelayer = false
-
-    /**
-     * 【test】
-     */
-    var useDevWebSocketServer = false
-
-    /**
-     * 【test】
-     */
-    var useDevRelayerServer = false
 }
 

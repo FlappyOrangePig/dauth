@@ -1,7 +1,7 @@
 ext {
 }.versions = [
         version_code                 : 1,
-        version_name                 : '0.0.17',
+        version_name                 : '0.0.18',
         min_sdk                      : 23,
         target_sdk                   : 33,
         compile_sdk                  : 34,
@@ -29,7 +29,7 @@ ext {
         room                         : "2.5.0",
         retrofit                     : "2.9.0",
         glide                        : "4.11.0",
-        okhttp                       : "5.0.0-alpha.2",
+        okhttp                       : "5.0.0-alpha.11",
         okhttp_logging_interceptor   : "4.11.0",
         serialization                : "1.5.0",
 

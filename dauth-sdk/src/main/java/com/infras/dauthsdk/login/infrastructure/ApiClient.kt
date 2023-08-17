@@ -30,7 +30,6 @@ internal open class ApiClient {
         protected const val FormDataMediaType = "multipart/form-data"
 
         private val clientId get() = DAuthSDK.impl.config.clientId.orEmpty()
-        private val clientSecret get() = DAuthSDK.impl.config.clientSecret.orEmpty()
 
         @JvmStatic
         var defaultHeaders: Map<String, String> by ApplicationDelegates.setOnce(
@@ -38,7 +37,6 @@ internal open class ApiClient {
                 ContentType to FormDataMediaType,
                 Accept to JsonMediaType,
                 "client_id" to clientId,
-                "client_secret" to clientSecret,
             )
         )
     }
@@ -52,8 +50,8 @@ internal open class ApiClient {
     protected inline fun <reified T: Any> requestBody(
         content: T,
         mediaType: String = FormDataMediaType,
+        url: String,
     ): RequestBody {
-
         if (content is File) {
             return content
                 .asRequestBody(mediaType.toMediaTypeOrNull())
@@ -186,10 +184,10 @@ internal open class ApiClient {
             RequestMethod.GET -> Request.Builder().url(url)
             RequestMethod.HEAD -> Request.Builder().url(url).head()
             RequestMethod.PATCH -> Request.Builder().url(url)
-                .patch(requestBody(body, contentType))
-            RequestMethod.PUT -> Request.Builder().url(url).put(requestBody(body, contentType))
+                .patch(requestBody(body, contentType, url.toString()))
+            RequestMethod.PUT -> Request.Builder().url(url).put(requestBody(body, contentType, url.toString()))
             RequestMethod.POST -> Request.Builder().url(url)
-                .post(requestBody(body, contentType))
+                .post(requestBody(body, contentType, url.toString()))
             RequestMethod.OPTIONS -> Request.Builder().url(url).method("OPTIONS", null)
         }
         headers.forEach { header -> requestBuilder.addHeader(header.key, header.value) }

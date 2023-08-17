@@ -1,24 +1,22 @@
 package com.infras.dauth
 
 import android.app.Application
-import com.infras.dauth.BuildConfig
-import com.infras.dauthsdk.api.DAuthChainEnum
-import com.infras.dauthsdk.api.DAuthSDK
-import com.infras.dauthsdk.api.DAuthStageEnum
-import com.infras.dauthsdk.api.SdkConfig
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.util.DAuthEnv
 import com.infras.dauth.util.LogUtil
-import com.infras.dauthsdk.api.DAuthLogLevel
+import com.infras.dauthsdk.api.DAuthSDK
+import com.infras.dauthsdk.api.SdkConfig
+import com.infras.dauthsdk.api.annotation.DAuthLogLevel
 
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
-private const val GOOGLE_CLIENT_ID = "209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com"
-
-private const val TAG = "MyApplication"
+private const val GOOGLE_CLIENT_ID =
+    "209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com"
 
 class MyApplication : Application() {
 
     companion object {
+        private const val TAG = "MyApplication"
         lateinit var app: MyApplication
             private set
     }
@@ -26,26 +24,21 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val configStage =
-            if (BuildConfig.IS_LIVE) DAuthStageEnum.STAGE_LIVE else DAuthStageEnum.STAGE_TEST
-        val configChain =
-            if (BuildConfig.IS_LIVE) DAuthChainEnum.CHAIN_ARBITRUM else DAuthChainEnum.CHAIN_ARBITRUM_GOERLI
+        val env = when (BuildConfig.IS_LIVE) {
+            true -> DAuthEnv.EnvProd
+            false -> DAuthEnv.EnvDev
+        }
 
         runSpending(TAG, "启动耗时") {
             app = this
             val config = SdkConfig().apply {
-                stage = configStage
-                chain = configChain
-                clientId = BuildConfig.CLIENT_ID
-                clientSecret = BuildConfig.CLIENT_SECRET
+                stage = env.stage
+                chain = env.chain
+                clientId = env.clientId
                 twitterConsumerKey = CONSUMER_KEY
                 twitterConsumerSecret = CONSUMER_SECRET
                 consoleLogLevel = DAuthLogLevel.LEVEL_DEBUG
                 isLogOpen = true
-                localSign = false
-                useLocalRelayer = false
-                useDevWebSocketServer = false
-                useDevRelayerServer = false
                 googleClientId = GOOGLE_CLIENT_ID
             }
             val sdk = DAuthSDK.instance

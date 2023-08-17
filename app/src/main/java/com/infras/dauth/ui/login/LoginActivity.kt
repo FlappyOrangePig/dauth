@@ -1,4 +1,4 @@
-package com.infras.dauth.ui
+package com.infras.dauth.ui.login
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,20 +8,19 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.main.MainActivity
+import com.infras.dauth.ui.main.WalletTestActivity
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.util.HideApiUtil
 import com.infras.dauth.util.LogUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.api.annotation.DAuthAccountType
+import com.infras.dauthsdk.api.annotation.SignType3rd
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.api.entity.ResponseCode
 import kotlinx.coroutines.launch
-
-private const val GOOGLE = "GOOGLE"
-private const val TWITTER = "TWITTER"
-private const val FACEBOOK = "FACEBOOK"
-private const val ACCOUNT_TYPE_OF_EMAIL = 10
 
 class LoginActivity : BaseActivity() {
     private var _binding: ActivityLoginLayoutBinding? = null
@@ -47,7 +46,7 @@ class LoginActivity : BaseActivity() {
                 val loginResultData = sdk.loginByMobileOrEmail(
                     account,
                     password,
-                    ACCOUNT_TYPE_OF_EMAIL
+                    DAuthAccountType.ACCOUNT_TYPE_OF_EMAIL
                 )
                 loadingDialog.dismiss()
                 when (loginResultData) {
@@ -84,14 +83,14 @@ class LoginActivity : BaseActivity() {
 
         ivGoogle.setOnClickListener {
             lifecycleScope.launch {
-                val loginResultData = sdk.loginWithType(GOOGLE, this@LoginActivity)
+                val loginResultData = sdk.loginWithType(SignType3rd.GOOGLE, this@LoginActivity)
                 handleLoginResult(loginResultData)
             }
         }
 
         ivTwitter.setOnClickListener {
             lifecycleScope.launch {
-                val loginResultData = sdk.loginWithType(TWITTER, this@LoginActivity)
+                val loginResultData = sdk.loginWithType(SignType3rd.TWITTER, this@LoginActivity)
                 handleLoginResult(loginResultData)
             }
         }

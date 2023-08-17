@@ -1,4 +1,4 @@
-package com.infras.dauth.ui
+package com.infras.dauth.ui.main
 
 import android.content.Context
 import android.content.Intent
@@ -30,14 +30,13 @@ import org.web3j.crypto.Hash
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.tx.gas.DefaultGasProvider
+import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 
-private const val TAG = "WalletTestActivity"
-
 private class ExecuteArgs(
     val address: String,
-    val amound: BigInteger,
+    val amount: BigInteger,
     val byteArray: ByteArray
 )
 
@@ -88,16 +87,17 @@ class WalletTestActivity : BaseActivity() {
         }
         btnSign.setOnClickListener {
             val msg = "abcdef".toByteArray()
-            val msgHash = Numeric.toHexString(Hash.sha3(msg))
+            val msgHash = Hash.sha3(msg)
+            val msgHashHex = Numeric.toHexString(Hash.sha3(msg))
             lifecycleScope.launch{
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val r = sdk.mpcSign(msgHash)
+                val r = sdk.mpcSign(msgHashHex)
                 loadingDialog.dismiss()
-                LogUtil.i(TAG, "hex=$r")
+                LogUtil.i(logTag, "hex=$r")
                 if (r == null) {
                     ToastUtil.show(context, "签名失败")
                 } else {
-                    val eoaAddress = WalletUtil.getWalletAddress(msg, r)
+                    val eoaAddress = WalletUtil.getWalletAddress(msgHash, r)
                     if (eoaAddress == null) {
                         ToastUtil.show(context, "签名成功，获取签名者失败")
                     } else {
@@ -144,13 +144,15 @@ class WalletTestActivity : BaseActivity() {
                         val encoded = Numeric.hexStringToByteArray(FunctionEncoder.encode(func))
                         ExecuteArgs(to, BigInteger.ZERO, encoded)
                     } else {
-                        ExecuteArgs(to, BigInteger("1111"), byteArrayOf())
+                        //val wei = Convert.toWei("10", Convert.Unit.FINNEY).toBigInteger()
+                        val wei = Convert.toWei("1111", Convert.Unit.WEI).toBigInteger()
+                        ExecuteArgs(to, wei, byteArrayOf())
                     }
 
                     loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                     val result = sdk.createUserOpAndEstimateGas(
                         args.address,
-                        args.amound,
+                        args.amount,
                         args.byteArray
                     )
                     loadingDialog.dismiss()

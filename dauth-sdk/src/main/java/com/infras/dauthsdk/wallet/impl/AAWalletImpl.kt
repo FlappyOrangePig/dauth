@@ -10,6 +10,7 @@ import com.infras.dauthsdk.api.entity.TokenType
 import com.infras.dauthsdk.api.entity.WalletAddressData
 import com.infras.dauthsdk.api.entity.WalletBalanceData
 import com.infras.dauthsdk.login.utils.DAuthLogger
+import com.infras.dauthsdk.mpc.ext.ElapsedContext
 import com.infras.dauthsdk.mpc.websocket.WebsocketManager
 import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.impl.manager.WalletManager
@@ -42,7 +43,10 @@ class AAWalletImpl internal constructor(): IAAWalletApi {
 
     override suspend fun createWallet(forceCreate: Boolean): DAuthResult<CreateWalletData> {
         return withContext(Dispatchers.Default) {
-            Managers.walletManager.initWallet(forceCreate)
+            val context = ElapsedContext(TAG, "createWallet")
+            Managers.walletManager.initWallet(context, forceCreate).also {
+                context.finish()
+            }
         }
     }
 
@@ -97,7 +101,10 @@ class AAWalletImpl internal constructor(): IAAWalletApi {
             return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_ADDRESS)
         }
         val aaAddress = addressResult.data.aaAddress
-        return web3m.executeUserOperation(userOperation, aaAddress)
+        val context = ElapsedContext(TAG, "executeUserOperation")
+        val result = web3m.executeUserOperation(context, userOperation, aaAddress)
+        context.finish()
+        return result
     }
 
     override suspend fun createUserOpAndEstimateGas(
@@ -122,7 +129,9 @@ class AAWalletImpl internal constructor(): IAAWalletApi {
         val encodedFunction = FunctionEncoder.encode(function)
         val callData = Numeric.hexStringToByteArray(encodedFunction)
 
-        val execResult = web3m.createUserOpAndEstimateGas(signerAddress, aaAddress, callData)
+        val context = ElapsedContext(TAG, "createUserOpAndEstimateGas")
+        val execResult = web3m.createUserOpAndEstimateGas(context, signerAddress, aaAddress, callData)
+        context.finish()
         DAuthLogger.d(
             "createUserOpAndEstimateGas $contractAddress $balance ${func.size} result=$execResult",
             TAG

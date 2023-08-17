@@ -6,7 +6,7 @@ import com.infras.dauthsdk.login.utils.DAuthLogger
 sealed class DAuthResult<T> {
 
     abstract fun getError(): String?
-    fun isSuccess() = getError() != null
+    fun isSuccess() = getError() == null
 
     class Success<T>(val data: T) : DAuthResult<T>() {
         override fun getError() = null
@@ -65,6 +65,7 @@ sealed class DAuthResult<T> {
         const val SDK_ERROR_SIGN = 14
         const val SDK_ERROR_GET_SIGNER_BY_SIGNATURE = 15
         const val SDK_ERROR_USER_CANCELED = 16
+        const val SDK_ERROR_GENERATE_KEY = 17
 
         fun getSdkErrorDescription(@DAuthSdkErrorEnum code: Int) = when (code) {
             SDK_ERROR_UNKNOWN -> "unknown error"
@@ -84,6 +85,7 @@ sealed class DAuthResult<T> {
             SDK_ERROR_SET_KEY -> "set key"
             SDK_ERROR_SIGN -> "sign"
             SDK_ERROR_USER_CANCELED -> "user canceled"
+            SDK_ERROR_GENERATE_KEY -> "generate key"
             else -> "?"
         }
     }
@@ -108,6 +110,7 @@ sealed class DAuthResult<T> {
     DAuthResult.SDK_ERROR_SIGN,
     DAuthResult.SDK_ERROR_GET_SIGNER_BY_SIGNATURE,
     DAuthResult.SDK_ERROR_USER_CANCELED,
+    DAuthResult.SDK_ERROR_GENERATE_KEY,
 )
 annotation class DAuthSdkErrorEnum
 

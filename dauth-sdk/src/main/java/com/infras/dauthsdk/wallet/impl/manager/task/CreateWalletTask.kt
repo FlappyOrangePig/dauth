@@ -1,5 +1,6 @@
 package com.infras.dauthsdk.wallet.impl.manager.task
 
+import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.entity.CreateWalletData
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.DAuthResult.Companion.SDK_ERROR_AA_ADDRESS_INVALID
@@ -9,7 +10,6 @@ import com.infras.dauthsdk.api.entity.traceResult
 import com.infras.dauthsdk.api.entity.transformError
 import com.infras.dauthsdk.login.model.BindWalletParam
 import com.infras.dauthsdk.login.model.GetParticipantsRes
-import com.infras.dauthsdk.login.model.LogReportParam
 import com.infras.dauthsdk.login.network.MpcServiceConst.MpcSecretAlreadyBoundError
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.DAuthLogger
@@ -19,10 +19,13 @@ import com.infras.dauthsdk.mpc.MpcKeyIds
 import com.infras.dauthsdk.mpc.ext.ElapsedContext
 import com.infras.dauthsdk.mpc.util.MergeResultUtil
 import com.infras.dauthsdk.wallet.ext.digest
+import com.infras.dauthsdk.wallet.impl.ConfigurationManager
 import com.infras.dauthsdk.wallet.impl.manager.Managers
 import com.infras.dauthsdk.wallet.impl.manager.WalletManager
 import com.infras.dauthsdk.wallet.util.AssertUtil
 import com.infras.dauthsdk.wallet.util.ThreadUtil
+import com.infras.dauthsdk.wallet.util.sha3
+import com.infras.dauthsdk.wallet.util.toHexString
 
 private const val TAG = "CreateWalletTask"
 
@@ -38,10 +41,14 @@ internal class CreateWalletTask(
 
     suspend fun execute(): DAuthResult<CreateWalletData> {
         ThreadUtil.assertInMainThread(false)
-        val state = context.runSpending("getWalletState") { walletPrefsV2.getWalletState() }
+        val state = context.runSpending("getWalletState") {
+            walletPrefsV2.getWalletState()
+        }
         AssertUtil.assert(state < WalletManager.STATE_OK)
 
-        val allKeys = context.runSpending("getAllKeys") { keystore.getAllKeys() }
+        val allKeys = context.runSpending("getAllKeys") {
+            keystore.getAllKeys()
+        }
         val keySize = allKeys.size
         val keys = when (keySize) {
             MpcKeyIds.getKeyIds().size -> {
@@ -50,16 +57,45 @@ internal class CreateWalletTask(
                 allKeys
             }
             else -> {
-                // 创建三片
-                val generated = context.runSpending("generate keys") {
-                    val preGenerateKeyManager = Managers.preGenerateKeyManager
-                    val popped = preGenerateKeyManager.popKeys()
-                    if (popped.size == MpcKeyIds.getKeyIds().size) {
-                        DAuthLogger.d("use pre-generated", TAG)
-                        popped
-                    } else {
-                        DAuthLogger.d("generate now", TAG)
-                        DAuthJniInvoker.generateSignKeys().toList()
+                val serverGenerateKey = ConfigurationManager.innerConfig.serverGenerateKey
+                val generated = if (serverGenerateKey) {
+                    val generateResult = context.runSpending("generate keys") { rh ->
+                        val msgHashHex =
+                            DAuthJniInvoker.genRandomMsg().toByteArray().sha3().toHexString()
+                        val r = mpcApi.generateKeys(msgHashHex)
+                        val list = if (r != null && r.isSuccess()) {
+                            listOf(r.data.s0, r.data.s1, r.data.s2).filter { it.isNotEmpty() }
+                        } else {
+                            null
+                        }
+                        if (list == null) {
+                            DAuthLogger.e("gen key network error", TAG)
+                            DAuthResult.NetworkError()
+                        } else if (list.size != MpcKeyIds.getKeyIds().size) {
+                            DAuthLogger.e("gen key error", TAG)
+                            DAuthResult.SdkError(DAuthResult.SDK_ERROR_GENERATE_KEY)
+                        } else {
+                            DAuthResult.Success(list)
+                        }.also { rh.result = it.isSuccess() }
+                    }
+                    if (generateResult !is DAuthResult.Success) {
+                        return DAuthResult.NetworkError()
+                    }
+                    generateResult.data
+                } else {
+                    // 创建三片
+                    context.runSpending("generate keys") { rh ->
+                        val preGenerateKeyManager = Managers.preGenerateKeyManager
+                        val popped = preGenerateKeyManager.popKeys()
+                        if (popped.size == MpcKeyIds.getKeyIds().size) {
+                            DAuthLogger.d("use pre-generated", TAG)
+                            popped
+                        } else {
+                            DAuthLogger.d("generate now", TAG)
+                            DAuthJniInvoker.generateSignKeys().toList()
+                        }.also {
+                            rh.result = it.size == MpcKeyIds.getKeyIds().size
+                        }
                     }
                 }
 
@@ -89,17 +125,22 @@ internal class CreateWalletTask(
         }
 
         // 生成账号
-        val signerAddress = context.runSpending("generateEoaAddress") {
+        val signerAddress = context.runSpending("generateEoaAddress") { rh ->
             val msg = DAuthJniInvoker.genRandomMsg()
             DAuthJniInvoker.generateEoaAddress(msg.toByteArray(), keys).also {
                 DAuthLogger.i("generateEoaAddress $it", TAG)
+            }.also {
+                rh.result = !it.isNullOrEmpty()
             }
         } ?: return DAuthResult.SdkError(SDK_ERROR_CANNOT_GENERATE_ADDRESS)
-        val aaAddressResult = context.runSpending("generateAAAddress") {
+        val aaAddressResult = context.runSpending("generateAAAddress") { rh ->
             // 根据EOA地址获取AA地址
             val web3m = Managers.web3m
             web3m.getAaAddressByEoaAddress(signerAddress)
-                .also { it.traceResult(TAG, "generateAAAddress") }
+                .also {
+                    it.traceResult(TAG, "generateAAAddress")
+                    rh.result = it.isSuccess()
+                }
         }
         if (aaAddressResult !is DAuthResult.Success) {
             return aaAddressResult.transformError()
@@ -118,7 +159,6 @@ internal class CreateWalletTask(
             mergeResult,
         )
 
-        context.traceElapsedList()
         return r
     }
 
@@ -139,8 +179,10 @@ internal class CreateWalletTask(
             dauthKey,
             mergeResult
         )
-        val bindResponse = context.runSpending("bindWallet") {
-            requestApi.bindWallet(bindWalletParam)
+        val bindResponse = context.runSpending("bindWallet") { rh ->
+            requestApi.bindWallet(bindWalletParam).also {
+                rh.result = (it?.isSuccess() == true)
+            }
         }
         if (bindResponse == null) {
             DAuthLogger.e("bind network error", TAG)
@@ -163,8 +205,10 @@ internal class CreateWalletTask(
             val setKeyUrl = participantDAuth.set_key_url
             val key = keys[keyId]
             val finalMergeResult = mergeResult.takeIf { keyId == MpcKeyIds.KEY_INDEX_DAUTH_SERVER }
-            val p = context.runSpending("dispatch keys $keyId") {
-                mpcApi.setKey(setKeyUrl, key, finalMergeResult)
+            val p = context.runSpending("dispatch keys $keyId") { rh ->
+                mpcApi.setKey(setKeyUrl, key, finalMergeResult).also {
+                    rh.result = (it != null)
+                }
             }
             DAuthLogger.d("set key $keyId ${key.digest()} ret=${p?.ret}", TAG)
             if (p == null) {
@@ -173,7 +217,7 @@ internal class CreateWalletTask(
             }
             when (p.ret) {
                 ResponseCode.RESPONSE_CORRECT_CODE -> {
-                    DAuthLogger.e("success", TAG)
+                    DAuthLogger.d("success", TAG)
                 }
 
                 MpcSecretAlreadyBoundError -> {
@@ -192,12 +236,14 @@ internal class CreateWalletTask(
             keystore.releaseTempKeys()
         }
 
-        val r = context.runSpending("save address") {
+        val r = context.runSpending("save address") { rh ->
             if (walletPrefsV2.setAddresses(eoaAddress, aaAddress)) {
                 DAuthResult.Success(CreateWalletData(aaAddress))
             } else {
                 DAuthLogger.e("sp error", TAG)
                 DAuthResult.SdkError(DAuthResult.SDK_ERROR_UNKNOWN)
+            }.also {
+                rh.result = it.isSuccess()
             }
         }
         DAuthLogger.d("submit result=$r", TAG)

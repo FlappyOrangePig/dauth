@@ -1,4 +1,4 @@
-package com.infras.dauth.ui
+package com.infras.dauth.ui.login
 
 import android.content.Context
 import android.content.Intent
@@ -75,7 +75,5 @@ class ResetPasswordActivity : BaseActivity() {
                 }
             }
         }
-
-
     }
 }

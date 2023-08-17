@@ -1,4 +1,4 @@
-package com.infras.dauth.ui
+package com.infras.dauth.ui.login
 
 import android.content.Context
 import android.content.Intent
@@ -9,6 +9,7 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.databinding.ActivityRegisterLayoutBinding
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 

@@ -54,7 +54,6 @@ import kotlin.random.Random
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
 private const val CLIENT_ID = "e2fc714c4727ee9395f324cd2e7f331f"
-private const val CLIENT_SECRET = "4657*@cde"
 
 private inline fun <T> runSpending(log: String, crossinline block: () -> T): T {
     println("$log >>>")
@@ -77,12 +76,7 @@ class ExampleUnitTest {
             twitterConsumerKey = CONSUMER_KEY
             twitterConsumerSecret = CONSUMER_SECRET
             clientId = CLIENT_ID
-            clientSecret = CLIENT_SECRET
             isLogOpen = true
-            localSign = false
-            useLocalRelayer = false
-            useDevWebSocketServer = false
-            useDevRelayerServer = false
         }
         val accessToken = "at115bec87af40a985853cda9b9e75c7a7"
         val authId = "d6a2a49bd1bd251e32cbf80ae6a52f1b"

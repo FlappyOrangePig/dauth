@@ -1,7 +1,7 @@
 package com.infras.dauthsdk.login.utils
 
 import android.util.Log
-import com.infras.dauthsdk.api.DAuthLogLevel
+import com.infras.dauthsdk.api.annotation.DAuthLogLevel
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.wallet.ext.safeApp
 import com.infras.dauthsdk.wallet.impl.manager.Managers

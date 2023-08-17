@@ -25,7 +25,7 @@ internal class StatsManager internal constructor(
     private val clientId get() = DAuthSDK.impl.config.clientId.orEmpty()
     @Volatile
     private var job: Job? = null
-    private val featureOpen = false
+    private val featureOpen = true
 
     fun initialize() {
         if (!featureOpen) return
@@ -79,6 +79,7 @@ internal class StatsManager internal constructor(
             }.let {
                 LogReportParam(it)
             }.let {
+                DAuthLogger.d("realSend ${it.data}", TAG)
                 requestApi.sendLogReport(it)
             }
         }

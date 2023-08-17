@@ -20,7 +20,7 @@
 
         <activity
             android:theme="@style/Theme.client"
-            android:name="com.infras.dauth.ui.LoginActivity"
+            android:name="com.infras.dauth.ui.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,11 +29,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.infras.dauth.ui.ResetPasswordActivity"/>
-        <activity android:name="com.infras.dauth.ui.RegisterActivity"/>
-        <activity android:name="com.infras.dauth.ui.MainActivity"/>
-        <activity android:name="com.infras.dauth.ui.LoginByMobileActivity"/>
-        <activity android:name="com.infras.dauth.ui.WalletTestActivity" />
+        <activity android:name="com.infras.dauth.ui.login.ResetPasswordActivity"/>
+        <activity android:name="com.infras.dauth.ui.login.RegisterActivity"/>
+        <activity android:name="com.infras.dauth.ui.main.MainActivity"/>
+        <activity android:name="com.infras.dauth.ui.login.LoginByMobileActivity"/>
+        <activity android:name="com.infras.dauth.ui.main.WalletTestActivity" />
         <activity android:name="com.infras.dauth.ui.eoa.EoaBusinessActivity" />
         <!--        <activity android:name="com.facebook.FacebookActivity"-->
 <!--            android:configChanges=-->

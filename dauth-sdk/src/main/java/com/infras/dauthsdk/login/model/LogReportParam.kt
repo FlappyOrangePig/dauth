@@ -14,6 +14,7 @@ class LogReportParam(val data: String) {
         val contextId: String,
         val contextName: String,
         val eventName: String,
-        val duration: Long
+        val duration: Long,
+        val result: String,
     )
 }
