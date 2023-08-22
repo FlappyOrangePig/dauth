@@ -111,7 +111,7 @@ class SignResult(
         // MPC.so返回的结果为0或者1
         // 但是以太坊的合法值范围是[27, 34]
         // 参考方法signedMessageHashToKey
-        val vByte = (v + 27).toByte()
+        val vByte = v.toByte()
         return SignatureData(vByte, r, s)
     }
 

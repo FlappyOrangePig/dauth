@@ -2,15 +2,21 @@
 
 extern "C"
 {
+
+    enum MPCType{
+        e_gg18,
+        e_gg20,
+        e_cmp
+    };
     //生成MPC签名密钥分片, 函数比较耗时，建议采用异步调用
     //threshold: MPC签名门限数
-    //partyIds: 参与签名的参与方的id🔢
+    //partyIds: 参与签名的参与方的id
     //使用完后 freeMemory() 进行内存释放
     //eg. const char** partyids = ["id1", "id2", "id3"]
     //eg. const char** keys = generateSignKeys(2, partyids, 3); freeMemoryArray(keys, 3);
     //eg.  test/genMain.cpp
 
-    const char** generateSignKeys( int threshold, const char** partyIds, int idCount);
+    const char** generateSignKeys(int threshold, const char** partyIds, int idCount, MPCType type =  MPCType::e_gg18);
 
     //释放字符串数组内存
     //p: 字符串数组指针
@@ -32,7 +38,7 @@ extern "C"
     //count:数组长度
     //return: 新私钥数组，长度与输入长度一致
     //使用完后 freeMemoryArray() 进行内存释放
-    const char**  refreshKeys(const KeyInfo** keys, int count);
+    const char**  refreshKeys(const KeyInfo** keys, int count, MPCType type =  MPCType::e_gg18);
 
 
     //本地签名一个消息
@@ -41,7 +47,7 @@ extern "C"
     //ids: 签名私钥的id，与generateSignKeys产生key的id一致
     //keyCount: 私钥数组长度
     
-    const char* localSignMsg(const char* msghash, const KeyInfo* keys, int keyCount );
+    const char* localSignMsg(const char* msghash, const KeyInfo* keys, int keyCount, MPCType type =  MPCType::e_gg20 );
 
 
     //分布式签名
@@ -66,7 +72,7 @@ extern "C"
         unsigned int len;//数据长度
     } SignOutBuffer;
     
-    void* remoteSignMsg(const char* msghash, const RemoteSignKeyInfo* signInfo, SignOutBuffer** outSign , unsigned int& outBufferCount);
+    void* remoteSignMsg(const char* msghash, const RemoteSignKeyInfo* signInfo, SignOutBuffer** outSign , unsigned int& outBufferCount, MPCType type =  MPCType::e_gg20);
     
     //分布式签名过程函数
     //p: remoteSignMsg的输出
