@@ -8,17 +8,18 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.eoa.EoaBusinessActivity
+import com.infras.dauth.ui.login.fragment.SignInByCodeFragment
+import com.infras.dauth.ui.login.fragment.SignInByPasswordFragment
+import com.infras.dauth.ui.login.repository.SignInRepository
 import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.ui.main.WalletTestActivity
-import com.infras.dauth.ui.eoa.EoaBusinessActivity
+import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.HideApiUtil
-import com.infras.dauth.util.LogUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
-import com.infras.dauthsdk.api.annotation.DAuthAccountType
 import com.infras.dauthsdk.api.annotation.SignType3rd
 import com.infras.dauthsdk.api.entity.DAuthResult
-import com.infras.dauthsdk.api.entity.LoginResultData
 import com.infras.dauthsdk.api.entity.ResponseCode
 import kotlinx.coroutines.launch
 
@@ -27,6 +28,10 @@ class LoginActivity : BaseActivity() {
     private val binding: ActivityLoginLayoutBinding get() = _binding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
     private val sdk get() = sdk()
+
+    private var currentFragmentType = 0 // 0=code 1=password
+    private val signInByCode by lazy { SignInByCodeFragment.newInstance() }
+    private val signInByPassword by lazy { SignInByPasswordFragment.newInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,41 +43,6 @@ class LoginActivity : BaseActivity() {
 
     private fun ActivityLoginLayoutBinding.initView() {
         // 邮箱登录
-        btnDauthLogin.setOnClickListener {
-            val account = edtAccount.text.toString()
-            val password = edtPassword.text.toString()
-            lifecycleScope.launch {
-                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val loginResultData = sdk.loginByMobileOrEmail(
-                    account,
-                    password,
-                    DAuthAccountType.ACCOUNT_TYPE_OF_EMAIL
-                )
-                loadingDialog.dismiss()
-                when (loginResultData) {
-                    is LoginResultData.Success -> {
-                        if (loginResultData.needCreateWallet) {
-                            handleCreateWallet()
-                        } else {
-                            val idToken = loginResultData.accessToken
-                            // 处理登录成功逻辑
-                            MainActivity.launch(this@LoginActivity)
-                            LogUtil.d(logTag, "登录成功，返回的ID令牌：$idToken")
-                        }
-                    }
-
-                    is LoginResultData.Failure -> {
-                        val failureCode = loginResultData.code
-                        // 处理登录失败逻辑
-                        LogUtil.d(logTag, "登录失败，返回的errorCode：$failureCode")
-                    }
-
-                    else -> {}
-                }
-            }
-
-        }
-
         tvForgetPwd.setOnClickListener {
             ResetPasswordActivity.launch(this@LoginActivity)
         }
@@ -82,16 +52,40 @@ class LoginActivity : BaseActivity() {
         }
 
         ivGoogle.setOnClickListener {
+            val a = this@LoginActivity
             lifecycleScope.launch {
-                val loginResultData = sdk.loginWithType(SignType3rd.GOOGLE, this@LoginActivity)
-                handleLoginResult(loginResultData)
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                val result = SignInRepository().signIn {
+                    sdk.loginWithType(SignType3rd.GOOGLE, a)
+                }
+                loadingDialog.dismiss()
+                ToastUtil.show(
+                    a,
+                    getString(if (result) R.string.success else (R.string.failure))
+                )
+                if (result) {
+                    MainActivity.launch(a)
+                    finish()
+                }
             }
         }
 
         ivTwitter.setOnClickListener {
+            val a = this@LoginActivity
             lifecycleScope.launch {
-                val loginResultData = sdk.loginWithType(SignType3rd.TWITTER, this@LoginActivity)
-                handleLoginResult(loginResultData)
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                val result = SignInRepository().signIn {
+                    sdk.loginWithType(SignType3rd.TWITTER, a)
+                }
+                loadingDialog.dismiss()
+                ToastUtil.show(
+                    a,
+                    getString(if (result) R.string.success else (R.string.failure))
+                )
+                if (result) {
+                    MainActivity.launch(a)
+                    finish()
+                }
             }
         }
 
@@ -102,25 +96,6 @@ class LoginActivity : BaseActivity() {
                     ToastUtil.show(it.context, "$connectResult")
                 }
             }
-        }
-
-        tvSendCode.setOnClickListener {
-            val account = edtAccount.text.toString()
-            lifecycleScope.launch {
-                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val response = sdk.sendEmailVerifyCode(account)
-                loadingDialog.dismiss()
-                if (response?.ret == 0) {
-                    ToastUtil.show(applicationContext, "验证码发送成功")
-                    LogUtil.d(logTag, "验证码发送成功")
-                } else {
-                    ToastUtil.show(applicationContext, "验证码发送失败")
-                }
-            }
-        }
-
-        btnMobileLogin.setOnClickListener {
-            LoginByMobileActivity.launch(it.context)
         }
 
         tvDauth.setOnClickListener {
@@ -157,69 +132,44 @@ class LoginActivity : BaseActivity() {
                 }
             }
         }
-    }
 
-    private fun handleLoginResult(loginResultData: LoginResultData?) {
-        when (loginResultData) {
-            is LoginResultData.Success -> {
-                if (loginResultData.needCreateWallet) {
-                    handleCreateWallet()
-                } else {
-                    val idToken = loginResultData.accessToken
-                    // 处理登录成功逻辑
-                    MainActivity.launch(this@LoginActivity)
-                    LogUtil.d(logTag, "登录成功，返回的ID令牌：$idToken")
+        tvPasswordLogin.setOnClickListener {
+            when (currentFragmentType) {
+                0 -> {
+                    currentFragmentType = 1
+                    updateCurrentFragment()
                 }
-            }
 
-            is LoginResultData.Failure -> {
-                val failureCode = loginResultData.code
-                // 处理登录失败逻辑
-                LogUtil.d(logTag, "登录失败，返回的errorCode：$failureCode")
-            }
+                1 -> {
+                    currentFragmentType = 0
+                    updateCurrentFragment()
+                }
 
-            else -> {
-                LogUtil.e(logTag, "用户取消授权")
+                else -> throw RuntimeException()
             }
         }
+
+        currentFragmentType = DemoPrefs.getLastLoginType()
+        updateCurrentFragment()
     }
 
-    //创建aa钱包
-    private fun handleCreateWallet() {
-        lifecycleScope.launch {
-            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val createWalletRes = sdk.createWallet(false)
-            loadingDialog.dismiss()
-            if (createWalletRes is DAuthResult.Success) {
-                val address = createWalletRes.data.address
-                LogUtil.d(logTag, "创建的aa钱包地址：$address")
-                MainActivity.launch(this@LoginActivity)
+    private fun updateCurrentFragment() {
+        when (currentFragmentType) {
+            1 -> {
+                val tx = supportFragmentManager.beginTransaction()
+                tx.replace(R.id.fl_fragment_container, signInByPassword)
+                tx.commit()
+                binding.tvPasswordLogin.text = "验证码登录"
             }
-        }
-    }
 
+            0 -> {
+                val tx = supportFragmentManager.beginTransaction()
+                tx.replace(R.id.fl_fragment_container, signInByCode)
+                tx.commit()
+                binding.tvPasswordLogin.text = "密码登录"
+            }
 
-    override fun onResume() {
-        super.onResume()
-        testWeb3()
-    }
-
-    private fun testWeb3() {
-        lifecycleScope.launch {
-            // 查询明达的MIMO-NFT列表
-            /*val tokenIds = sdk.queryWalletBalance(
-                MING_DA_S_ADDRESS, TokenType.ERC721(
-                    MIMO_AVATAR_CONTRACT_ADDRESS
-                )
-            )
-            ToastUtil.show(this@LoginActivity, tokenIds.toString())*/
-
-            // 查询sepolia-test上面某人的BULL_TOKEN
-            /*val balance = sdk.queryWalletBalance(
-                Web3Const.ANY_ONE_WHO_RECEIVE_BULL_TOKEN_ON_SEPOLIA_TEST_NETWORK,
-                TokenType.ERC20(Web3Const.BULL_TOKEN_CONTRACT_ADDRESS)
-            )
-            ToastUtil.show(this@LoginActivity, balance.toString())*/
+            else -> throw RuntimeException()
         }
     }
 

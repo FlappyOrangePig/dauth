@@ -5,11 +5,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
-import com.infras.dauth.util.ToastUtil
-import com.infras.dauth.util.Web3Const
 import com.infras.dauth.databinding.ActivityMainLayoutBinding
+import com.infras.dauth.ext.dp
 import com.infras.dauth.ext.handleByToast
+import com.infras.dauth.ext.isMail
 import com.infras.dauth.ext.mount
 import com.infras.dauth.ext.myAddress
 import com.infras.dauth.ext.tokenIds
@@ -18,7 +21,12 @@ import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.LogUtil
+import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.util.Web3Const
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.api.annotation.DAuthAccountType.Companion.ACCOUNT_TYPE_OF_EMAIL
+import com.infras.dauthsdk.api.annotation.DAuthAccountType.Companion.ACCOUNT_TYPE_OF_MOBILE
+import com.infras.dauthsdk.api.annotation.DAuthAccountType.Companion.ACCOUNT_TYPE_OF_OWN
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.TokenType
 import com.infras.dauthsdk.login.model.AccountRes
@@ -69,10 +77,9 @@ class MainActivity : BaseActivity() {
             DialogHelper.showInputDialogMayHaveLeak(
                 activity = a,
                 title = "enter email",
-                defaultValue = DemoPrefs.getLastEmail()
+                defaultValue = DemoPrefs.getLastEmail().takeIf { it.isMail() }
             ) { mail ->
                 if (mail.isNotEmpty()) {
-                    DemoPrefs.setLastEmail(mail)
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val accountRes = sdk.queryAccountByEmail(mail)
@@ -96,10 +103,9 @@ class MainActivity : BaseActivity() {
             DialogHelper.showInputDialogMayHaveLeak(
                 activity = a,
                 title = "input email",
-                defaultValue = DemoPrefs.getLastEmail()
+                defaultValue = DemoPrefs.getLastEmail().takeIf { it.isMail() }
             ) { mail ->
                 if (mail.isNotEmpty()) {
-                    DemoPrefs.setLastEmail(mail)
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val response = sdk.sendEmailVerifyCode(mail)
@@ -134,10 +140,9 @@ class MainActivity : BaseActivity() {
             DialogHelper.showInputDialogMayHaveLeak(
                 activity = a,
                 title = "input email",
-                defaultValue = DemoPrefs.getLastEmail()
+                defaultValue = DemoPrefs.getLastEmail().takeIf { it.isMail() }
             ) { mail ->
                 if (mail.isNotEmpty()) {
-                    DemoPrefs.setLastEmail(mail)
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val response = sdk.sendEmailVerifyCode(mail)
@@ -207,7 +212,7 @@ class MainActivity : BaseActivity() {
 
             else -> {}
         }
-        sb.appendLine("ETH: $result")
+        sb.appendLine("ETH: $result wei")
     }
 
     private suspend fun showUsdt(sb: StringBuilder) {
@@ -248,7 +253,7 @@ class MainActivity : BaseActivity() {
 
     private fun queryAccountInfo(showDetail: Boolean) {
         lifecycleScope.launch {
-            binding.tvWalletAddress.text = "AA钱包地址：${AccountManager.getAccountAddress()}"
+            binding.tvWalletAddress.text = "${AccountManager.getAccountAddress()}"
 
             val accountRes = sdk.queryAccountByAuthid()
             val data = accountRes?.data
@@ -257,7 +262,7 @@ class MainActivity : BaseActivity() {
                 return@launch
             }
 
-            binding.tvUserInfo.text = StringBuilder().apply {
+            binding.tvUserInfo.text = StringBuilder().run {
                 data.nickname.takeUnless { it.isNullOrEmpty() }?.let {
                     appendLine("昵称：${it}")
                 }
@@ -267,42 +272,47 @@ class MainActivity : BaseActivity() {
                 data.phone.takeUnless { it.isNullOrEmpty() }?.let {
                     appendLine("电话：${it}")
                 }
+                data.user_type.takeUnless { it == null }?.let {
+                    val typeStr = when (it) {
+                        ACCOUNT_TYPE_OF_EMAIL -> "邮箱"
+                        ACCOUNT_TYPE_OF_MOBILE -> "手机"
+                        ACCOUNT_TYPE_OF_OWN -> "自有账号"
+                        else -> "$it"
+                    }
+                    appendLine("用户类型：${typeStr}")
+                }
+                data.has_password.takeUnless { it == null }?.let {
+                    appendLine("有密码：${it == 1}")
+                }
+
+                this.toString().removeSuffix("\n")
             }
+            Glide.with(this@MainActivity)
+                .load(data.head_img_url)
+                .transform(RoundedCorners(8.dp()))
+                .placeholder(R.drawable.svg_ic_default_avatar)
+                .into(binding.ivAvatar)
+
             if (showDetail) {
                 showAccountInfoDialog(data)
             }
         }
     }
 
-    private fun runIfNotNull(input: Any?, block:()->Unit){
-        if (input != null){
-            block.invoke()
-        }
-    }
-
     private fun showAccountInfoDialog(data: AccountRes.Data) {
         val sb = StringBuilder().apply {
-            data.account?.let { appendLine("account=$it") }
-            data.nickname?.let { appendLine("nickname=$it") }
-            data.birthday?.let { appendLine("birthday=$it") }
-            data.sex?.let { appendLine("sex=$it") }
-            data.email?.let { appendLine("email=$it") }
-            data.phone?.let { appendLine("phone=$it") }
-            data.phone_area_code?.let { appendLine("phone_area_code=$it") }
-            data.real_name?.let { appendLine("real_name=$it") }
-            data.identity?.let { appendLine("identity=$it") }
-            data.identity_Status?.let { appendLine("identity_Status=$it") }
-            data.head_img_url?.let { appendLine("head_img_url=$it") }
-            data.country?.let { appendLine("country=$it") }
-            data.province?.let { appendLine("province=$it") }
-            data.city?.let { appendLine("city=$it") }
-            data.district?.let { appendLine("district=$it") }
-            data.address?.let { appendLine("address=$it") }
-            data.user_type?.let { appendLine("user_type=$it") }
-            data.user_state?.let { appendLine("user_state=$it") }
-            data.create_time?.let { appendLine("create_time=$it") }
-            data.has_password?.let { appendLine("has_password=$it") }
+            traceObjectValue(this, data)
         }
         DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, sb.toString())
+    }
+
+    private fun traceObjectValue(sb: StringBuilder, d: AccountRes.Data) {
+        val j = d::class.java
+        j.declaredFields.forEach { f ->
+            f.isAccessible = true
+            f.get(d)?.toString()?.takeIf { it.isNotEmpty() }?.let { finalValue ->
+                sb.appendLine("${f.name}:${finalValue}")
+            }
+        }
     }
 }

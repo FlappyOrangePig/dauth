@@ -273,15 +273,6 @@ class WalletTestActivity : BaseActivity() {
                 initData()
             }
         }
-        btnUserOpEvent.setOnClickListener {
-            lifecycleScope.launch {
-                val a = sdk.queryWalletAddress()
-                if (a !is DAuthResult.Success) {
-                    return@launch
-                }
-                //Web3Manager.userOpFlow(a.data.signerAddress)
-            }
-        }
         btnMockCrash.setOnClickListener {
             val a = 100 / 0
             println(a)

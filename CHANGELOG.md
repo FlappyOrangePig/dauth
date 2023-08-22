@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+## [0.0.19] - 2023-08-22
+
+### Added
+
+- demo支持密码登录
+- 
+### Changed
+
+- 签名性能优化
+- demo UI优化
+
 ## [0.0.18] - 2023-08-18
 
 ### Added
@@ -40,5 +51,6 @@
 - 密钥从SharedPreference迁移到文件（由于未发布，需要重装后测试）
 
 [unreleased]: https://github.com/FlappyOrangePig/dauth/tree/master
+[0.0.19]: https://github.com/FlappyOrangePig/dauth/releases/tag/0.0.19
 [0.0.18]: https://github.com/FlappyOrangePig/dauth/releases/tag/0.0.18
 [0.0.17]: https://github.com/FlappyOrangePig/dauth/releases/tag/0.0.17
