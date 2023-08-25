@@ -17,7 +17,7 @@
         android:id="@+id/tv_dauth_register"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="用邮箱注册DAuth"
+        android:text="Sign up with email"
         android:textColor="@color/black"
         android:textSize="30sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -32,7 +32,7 @@
         android:layout_height="40dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:hint="输入邮箱"
+        android:hint="Enter email"
         app:layout_constraintTop_toBottomOf="@id/tv_dauth_register"
         android:layout_marginTop="20dp"/>
 
@@ -43,7 +43,7 @@
         android:layout_height="40dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:hint="输入密码"
+        android:hint="Enter password"
         android:inputType="textPassword"
         app:layout_constraintTop_toBottomOf="@id/edt_account"
         android:layout_marginTop="20dp"/>
@@ -55,7 +55,7 @@
         android:layout_height="40dp"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:hint="确认密码"
+        android:hint="confirm password"
         android:inputType="textPassword"
         app:layout_constraintTop_toBottomOf="@id/edt_password"
         android:layout_marginTop="20dp"/>
@@ -67,7 +67,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:text="注册"
+        android:text="Submit"
         android:textAllCaps="false"
         app:layout_constraintTop_toBottomOf="@id/edt_ensure_password"
         android:layout_marginBottom="50dp"

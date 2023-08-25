@@ -15,12 +15,9 @@
         android:supportsRtl="false"
         tools:replace="android:supportsRtl, android:dataExtractionRules, android:fullBackupContent"
         tools:targetApi="31">
-<!--        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>-->
-<!--        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>-->
 
-        <activity
-            android:theme="@style/Theme.client"
-            android:name="com.infras.dauth.ui.login.LoginActivity"
+        <activity android:name="com.infras.dauth.ui.splash.SplashActivity"
+            android:theme="@style/Theme.client.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,12 +26,17 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.infras.dauth.ui.login.LoginActivity"/>
         <activity android:name="com.infras.dauth.ui.login.ResetPasswordActivity"/>
         <activity android:name="com.infras.dauth.ui.login.RegisterActivity"/>
         <activity android:name="com.infras.dauth.ui.main.MainActivity"/>
         <activity android:name="com.infras.dauth.ui.main.WalletTestActivity" />
         <activity android:name="com.infras.dauth.ui.eoa.EoaBusinessActivity" />
-        <!--        <activity android:name="com.facebook.FacebookActivity"-->
+        <activity android:name="com.infras.dauth.ui.wallet.HomeActivity" />
+
+        <!--        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>-->
+<!--        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>-->
+<!--        <activity android:name="com.facebook.FacebookActivity"-->
 <!--            android:configChanges=-->
 <!--                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"-->
 <!--            android:label="@string/app_name" />-->

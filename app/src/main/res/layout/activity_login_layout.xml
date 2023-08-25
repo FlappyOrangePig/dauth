@@ -94,7 +94,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginBottom="15dp"
-        android:text="忘记密码"
+        android:text="Forgot password"
         android:textColor="@color/blue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -104,7 +104,7 @@
         style="@style/Theme.client.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="密码登录"
+        android:text="Sign in with password"
         android:textColor="@color/blue"
         app:layout_constraintBottom_toBottomOf="@id/tv_forget_pwd"
         app:layout_constraintEnd_toStartOf="@id/tv_register"
@@ -116,7 +116,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
-        android:text="注册"
+        android:text="Sign up"
         android:textColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_forget_pwd" />

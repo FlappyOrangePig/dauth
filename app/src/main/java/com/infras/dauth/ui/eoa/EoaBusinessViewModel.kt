@@ -2,8 +2,8 @@ package com.infras.dauth.ui.eoa
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.util.HideApiUtil
 import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.api.IEoaWalletApi
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class EoaBusinessViewModel : ViewModel() {
+class EoaBusinessViewModel : BaseViewModel() {
 
     companion object {
         private const val TAG = "EoaBusinessViewModel"

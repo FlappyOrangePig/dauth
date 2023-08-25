@@ -44,3 +44,11 @@ fun BaseResponse?.handleByToast() {
         }
     }
 }
+
+internal fun String.addressForShort(): String {
+    return if (this.length <= 8){
+        this
+    }else{
+        "${substring(0, 5)}***${substring(length - 3, length)}"
+    }
+}

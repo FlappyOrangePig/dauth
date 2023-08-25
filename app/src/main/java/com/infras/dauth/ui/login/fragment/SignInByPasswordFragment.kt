@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
 import com.infras.dauth.databinding.FragmentSignInByPasswordBinding
+import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.login.viewmodel.SignInByPasswordViewModel
 import com.infras.dauth.ui.main.MainActivity
@@ -54,7 +55,7 @@ class SignInByPasswordFragment private constructor() : BaseFragment() {
                         getString(if (result) R.string.success else (R.string.failure))
                     )
                     if (result) {
-                        MainActivity.launch(this)
+                        this.launchMainPage()
                         this.finish()
                     }
                 }

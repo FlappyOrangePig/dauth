@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.databinding.ActivityRegisterLayoutBinding
+import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.widget.LoadingDialogFragment
@@ -53,7 +54,7 @@ class RegisterActivity : BaseActivity() {
                     loadingDialog.dismiss()
                     if (code != null) {
                         if (code == 0) {
-                            MainActivity.launch(context)
+                            context.launchMainPage()
                         } else {
                             ToastUtil.show(context, "创建自有账号失败 errorCode: $code")
                         }

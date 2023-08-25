@@ -5,8 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import coil.load
+import coil.transform.RoundedCornersTransformation
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityMainLayoutBinding
@@ -287,11 +287,21 @@ class MainActivity : BaseActivity() {
 
                 this.toString().removeSuffix("\n")
             }
-            Glide.with(this@MainActivity)
-                .load(data.head_img_url)
-                .transform(RoundedCorners(8.dp()))
-                .placeholder(R.drawable.svg_ic_default_avatar)
-                .into(binding.ivAvatar)
+
+            binding.ivAvatar.load(data.head_img_url) {
+                transformations(
+                    RoundedCornersTransformation(
+                        8.dp().toFloat(),
+                        8.dp().toFloat(),
+                        8.dp().toFloat(),
+                        8.dp().toFloat()
+                    )
+                )
+                // 可选：设置占位符
+                placeholder(R.drawable.svg_ic_default_avatar)
+                // 可选：设置错误占位符
+                error(R.drawable.svg_ic_default_avatar)
+            }
 
             if (showDetail) {
                 showAccountInfoDialog(data)

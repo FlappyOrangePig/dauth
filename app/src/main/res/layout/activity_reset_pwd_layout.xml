@@ -31,7 +31,7 @@
         android:layout_marginStart="50dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="50dp"
-        android:hint="输入邮箱"
+        android:hint="Enter email"
         app:layout_constraintTop_toBottomOf="@id/tv_new_pwd" />
 
     <EditText
@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:hint="输入新密码"
+        android:hint="Enter new password"
         android:inputType="textPassword"
         app:layout_constraintTop_toBottomOf="@id/edt_account"
         android:layout_marginTop="20dp"/>
@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
-        android:hint="输入验证码"
+        android:hint="Enter SMS verification code"
         app:layout_constraintTop_toBottomOf="@id/edt_new_pwd"
         android:layout_marginTop="20dp"/>
 
