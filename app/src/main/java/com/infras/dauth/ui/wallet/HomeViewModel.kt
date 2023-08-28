@@ -1,10 +1,12 @@
 package com.infras.dauth.ui.wallet
 
+import android.app.Activity
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.PersonalInfoEntity
+import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.GasUtil
 import com.infras.dauthsdk.api.annotation.DAuthAccountType
@@ -147,8 +149,8 @@ class HomeViewModel : BaseViewModel() {
         return null
     }
 
-    fun logout() {
-        sdk.logout()
+    fun logout(activity: Activity) {
+        AccountManager.logout(activity)
     }
 
     suspend fun createUserOpAndEstimateGas(

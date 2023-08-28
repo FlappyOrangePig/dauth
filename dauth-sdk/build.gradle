@@ -91,3 +91,34 @@ dependencies {
 }
 
 apply from: '../maven_publish.gradle'
+
+/******************************************************************************
+ * Dokka配置
+ * 参考：
+ * https://github.com/Kotlin/dokka/issues/324
+ * https://kotlinlang.org/docs/dokka-gradle.html#package-options
+ ******************************************************************************/
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.DokkaConfiguration.Visibility
+afterEvaluate { project ->
+    tasks.withType(DokkaTask.class) {
+        dokkaSourceSets {
+            configureEach {
+                perPackageOption {
+                    matchingRegex.set(".*")
+                    suppress.set(true)
+                    skipDeprecated.set(false)
+                    reportUndocumented.set(false)
+                    documentedVisibilities.set([Visibility.PUBLIC])
+                }
+                perPackageOption {
+                    matchingRegex.set("com.infras.dauthsdk.api")
+                    suppress.set(false)
+                    skipDeprecated.set(false)
+                    reportUndocumented.set(false)
+                    documentedVisibilities.set([Visibility.PUBLIC])
+                }
+            }
+        }
+    }
+}

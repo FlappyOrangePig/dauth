@@ -228,8 +228,7 @@ class HomeActivity : BaseActivity() {
                         this@HomeActivity,
                         "sign out?"
                     ) {
-                        viewModel.logout()
-                        finishAffinity()
+                        viewModel.logout(this@HomeActivity)
                     }
                 },
                 onClickDebug = { MainActivity.launch(this) }

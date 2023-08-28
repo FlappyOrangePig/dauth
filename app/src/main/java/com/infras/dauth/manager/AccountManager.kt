@@ -1,5 +1,7 @@
 package com.infras.dauth.manager
 
+import android.app.Activity
+import com.infras.dauth.ui.login.LoginActivity
 import com.infras.dauthsdk.api.IDAuthApi
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.WalletAddressData
@@ -27,6 +29,12 @@ internal object AccountManager {
 
     suspend fun isWalletExists(): Boolean {
         return !getAccountAddress().isNullOrEmpty()
+    }
+
+    fun logout(activity: Activity) {
+        sdk.logout()
+        activity.finishAffinity()
+        LoginActivity.launch(activity)
     }
 }
 

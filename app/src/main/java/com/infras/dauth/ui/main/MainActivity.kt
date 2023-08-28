@@ -178,10 +178,8 @@ class MainActivity : BaseActivity() {
         }
 
         binding.btnQuit.setOnClickListener {
-            sdk.logout()
-            finish()
+            AccountManager.logout(this)
         }
-
     }
 
     override fun onDestroy() {
