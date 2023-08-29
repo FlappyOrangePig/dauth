@@ -13,11 +13,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
 import androidx.compose.material.Text
@@ -26,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -37,9 +37,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.InvalidationStrategy
 import coil.compose.rememberAsyncImagePainter
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
@@ -47,11 +47,11 @@ import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.TagsEntity
 import com.infras.dauth.entity.TokenInfo
 import com.infras.dauth.entity.TokenInfoOfTag
-import com.infras.dauth.ui.main.MainActivity
-import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
 import com.infras.dauth.widget.compose.DViewPager
+import com.infras.dauth.widget.compose.constant.DStrings
 
 class BuyAndSellActivity : BaseActivity() {
 
@@ -64,7 +64,7 @@ class BuyAndSellActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainLayout(onClickCurrencyToggle = { ToastUtil.show(this, "coming soon") })
+            MainLayout(onClickCurrencyToggle = { })
         }
     }
 
@@ -73,7 +73,8 @@ class BuyAndSellActivity : BaseActivity() {
     @Composable
     private fun TokenListView(
         modifier: Modifier = Modifier,
-        tokens: List<TokenInfo> = BuyAndSellActivityMockData.tokenInfoList.first().tokenInfoList
+        tokens: List<TokenInfo> = BuyAndSellActivityMockData.tokenInfoList.first().tokenInfoList,
+        onClickItem: (TokenInfo) -> Unit = {}
     ) {
         LazyColumn(
             modifier = modifier
@@ -84,10 +85,11 @@ class BuyAndSellActivity : BaseActivity() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(37.dp)
+                            .clickable { onClickItem.invoke(t) }
                     ) {
                         val (ivAvatar, tvName, tvIssuer, tvPrice, tvChangeRange, vSpace) = createRefs()
 
-                        val placeHolder = ColorPainter(Color.Gray)
+                        val placeHolder = ColorPainter(DColors.GRAY)
                         val painter: Painter = rememberAsyncImagePainter(
                             model = t.avatarUrl,
                             placeholder = placeHolder,
@@ -96,7 +98,7 @@ class BuyAndSellActivity : BaseActivity() {
                         )
                         Image(
                             painter = painter,
-                            contentDescription = "Image",
+                            contentDescription = DStrings.IMAGE_DEFAULT_CONTENT_DESCRIPTION,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .constrainAs(ivAvatar) {
@@ -122,7 +124,7 @@ class BuyAndSellActivity : BaseActivity() {
                                 bottom.linkTo(parent.bottom)
                             }
                         )
-                        val color = if (t.changeRange.startsWith("-")) Color.Red else Color.Gray
+                        val color = if (t.changeRange.startsWith("-")) Color.Red else DColors.GRAY
                         Text(text = t.changeRange,
                             color = color,
                             fontSize = 11.sp,
@@ -201,7 +203,11 @@ class BuyAndSellActivity : BaseActivity() {
                     height = Dimension.fillToConstraints
                 }
                 .fillMaxWidth(),
-                tokens = tokenListOfCurrentTag)
+                tokens = tokenListOfCurrentTag,
+                onClickItem = {
+                    BuyTokenActivity.launch(this@BuyAndSellActivity)
+                }
+            )
         }
     }
 
@@ -219,23 +225,19 @@ class BuyAndSellActivity : BaseActivity() {
         ),
         onClickCurrencyToggle: () -> Unit = {}
     ) {
-        Box(
+
+
+        ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
+            val (cbCurrencySelector, ivBackArrow, pwCurrencyMenu) = createRefs()
+
             DViewPager.BundledViewPager(
                 indicatorAtTop = true,
                 style = 1,
                 pagerEntities = pagerEntities
-            )
-
-            Text(
-                text = "CNY ▼",
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .clickable { onClickCurrencyToggle.invoke() }
-                    .padding(start = 15.dp, end = 15.dp, top = 8.dp, bottom = 8.dp)
             )
 
             Image(
@@ -243,13 +245,58 @@ class BuyAndSellActivity : BaseActivity() {
                 contentDescription = "",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .align(Alignment.TopStart)
+                    .constrainAs(ivBackArrow) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                    }
                     .padding(start = 10.dp)
                     .clickable { finish() }
                     .padding(top = 8.dp, bottom = 8.dp, start = 10.dp, end = 10.dp)
                     .width(IntrinsicSize.Min)
                     .height(IntrinsicSize.Min)
             )
+
+            var showPopup by remember {
+                mutableStateOf(false)
+            }
+
+            Text(
+                text = "CNY ▼",
+                modifier = Modifier
+                    .constrainAs(cbCurrencySelector) {
+                        top.linkTo(parent.top)
+                        end.linkTo(parent.end)
+                    }
+                    .clickable {
+                        onClickCurrencyToggle.invoke()
+                        showPopup = !showPopup
+                    }
+                    .padding(start = 15.dp, end = 15.dp, top = 8.dp, bottom = 8.dp)
+            )
+
+            Box(
+                modifier = Modifier.constrainAs(pwCurrencyMenu) {
+                    top.linkTo(cbCurrencySelector.bottom)
+                    end.linkTo(cbCurrencySelector.end)
+                }
+            ) {
+                DropdownMenu(
+                    expanded = showPopup,
+                    onDismissRequest = { showPopup = false },
+                    properties = PopupProperties(
+                        focusable = true,
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true
+                    ),
+                    modifier = Modifier
+                        .width(IntrinsicSize.Min)
+                        .height(IntrinsicSize.Min)
+                ) {
+                    DropdownMenuItem(onClick = { showPopup = false }) {
+                        Text(text = "CNY")
+                    }
+                }
+            }
         }
     }
 }

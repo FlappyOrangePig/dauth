@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.entity.PagerEntity
+import com.infras.dauth.widget.compose.constant.DColors
 import kotlinx.coroutines.launch
 
 object DViewPager {
@@ -130,7 +131,7 @@ object DViewPager {
             val pagerCount = pagerEntities.size
             repeat(pagerCount) { iteration ->
                 val color = if (pagerState.currentPage == iteration) Color.Black else Color.Black
-                val underLineColor = if (pagerState.currentPage == iteration) Color.Gray else Color.Transparent
+                val underLineColor = if (pagerState.currentPage == iteration) DColors.GRAY else Color.Transparent
                 val rememberScope = rememberCoroutineScope()
                 Box(modifier = Modifier
                     .width(80.dp)

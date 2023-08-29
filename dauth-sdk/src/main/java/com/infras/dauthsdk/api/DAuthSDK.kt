@@ -48,6 +48,7 @@ class DAuthSDK private constructor(
 
     @VisibleForTesting
     fun initSDKForTest(context: Context, config: SdkConfig) {
+        Managers.context = context
         this._config = config
     }
 

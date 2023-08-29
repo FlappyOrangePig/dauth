@@ -2,7 +2,6 @@ package com.infras.dauth.widget.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
@@ -13,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.infras.dauth.entity.TagsEntity
+import com.infras.dauth.widget.compose.constant.DColors
 
 object DFlowRow {
 
@@ -26,7 +26,7 @@ object DFlowRow {
             repeat(entities.size) { index ->
                 val e = entities[index]
                 val textColor = if (e.selected) Color.White else Color.Black
-                val backgroundColor = if (e.selected) Color.Black else Color.Gray
+                val backgroundColor = if (e.selected) Color.Black else DColors.GRAY
 
                 Text(text = e.title,
                     color = textColor,

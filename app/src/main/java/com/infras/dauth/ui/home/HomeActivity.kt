@@ -63,7 +63,9 @@ import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.DComingSoonLayout
+import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauth.widget.compose.DViewPager
 import com.infras.dauthsdk.api.entity.DAuthResult
 import kotlinx.coroutines.launch
@@ -73,8 +75,6 @@ import java.math.BigInteger
 class HomeActivity : BaseActivity() {
 
     companion object {
-        private const val COMING_SOON = "coming soon"
-
         fun launch(context: Context) {
             val intent = Intent(context, HomeActivity::class.java)
             context.startActivity(intent)
@@ -200,7 +200,7 @@ class HomeActivity : BaseActivity() {
     @Composable
     fun PageWithViewModel(viewModel: HomeViewModel = this.viewModel) {
         val blockShowComingSoon = {
-            ToastUtil.show(this, COMING_SOON)
+            ToastUtil.show(this, DStrings.COMING_SOON)
         }
         val walletTab: @Composable () -> Unit = {
             WalletTab(
@@ -367,7 +367,7 @@ class HomeActivity : BaseActivity() {
                     }
                     .size(45.dp),
             ) {
-                val placeHolder = ColorPainter(Color.Gray)
+                val placeHolder = ColorPainter(DColors.GRAY)
                 val painter: Painter = rememberAsyncImagePainter(
                     model = avatarUrl,
                     placeholder = placeHolder,
@@ -376,7 +376,7 @@ class HomeActivity : BaseActivity() {
                 )
                 Image(
                     painter = painter,
-                    contentDescription = "Image",
+                    contentDescription = DStrings.IMAGE_DEFAULT_CONTENT_DESCRIPTION,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
