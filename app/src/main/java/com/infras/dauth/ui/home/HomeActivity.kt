@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.wallet
+package com.infras.dauth.ui.home
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -57,11 +57,14 @@ import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.ext.addressForShort
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.buy.BuyAndSellActivity
 import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauth.widget.compose.DComingSoonLayout
+import com.infras.dauth.widget.compose.DViewPager
 import com.infras.dauthsdk.api.entity.DAuthResult
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -208,7 +211,9 @@ class HomeActivity : BaseActivity() {
                     copyToClipboard(address)
                 },
                 onClickReceive = blockShowComingSoon,
-                onClickBuy = blockShowComingSoon,
+                onClickBuy = {
+                    BuyAndSellActivity.launch(this)
+                },
                 onClickSwap = blockShowComingSoon,
                 onClickProperty = blockShowComingSoon,
                 onClickSend = {
@@ -245,16 +250,7 @@ class HomeActivity : BaseActivity() {
     }
 
     @Composable
-    fun ComingSoonLayout() {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(Color.Transparent)
-        ) {
-            Text(text = COMING_SOON, modifier = Modifier.align(Alignment.Center))
-        }
-    }
+    fun ComingSoonLayout() = DComingSoonLayout.ComingSoonLayout()
 
     @Composable
     fun HomePageFunctionButton(title: String, onClick: () -> Unit) {
@@ -572,8 +568,7 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    //@Preview
-    @OptIn(ExperimentalFoundationApi::class)
+    @Preview
     @Composable
     fun HomePageViewPager(
         pagerEntities: List<PagerEntity> = listOf(
@@ -582,50 +577,10 @@ class HomeActivity : BaseActivity() {
             PagerEntity("Profile") { ProfileTab() },
         )
     ) {
-        Column(modifier = Modifier.background(Color.White)) {
-            val pageCount = pagerEntities.size
-            val pagerState = rememberPagerState(
-                initialPage = 1,
-                pageCount = { pageCount }
-            )
-
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, true)
-            ) { page ->
-                // Our page content
-                pagerEntities[page].createPager.invoke()
-            }
-
-            Row(
-                Modifier
-                    .height(35.dp)
-                    .fillMaxWidth()
-            ) {
-                repeat(pageCount) { iteration ->
-                    val color = if (pagerState.currentPage == iteration) Color.Red else Color.Black
-                    val rememberScope = rememberCoroutineScope()
-                    Box(modifier = Modifier
-                        .fillMaxHeight()
-                        .clickable {
-                            rememberScope.launch {
-                                pagerState.animateScrollToPage(
-                                    iteration
-                                )
-                            }
-                        }
-                        .weight(1F, true)) {
-                        Text(
-                            text = pagerEntities.get(index = iteration).pagerTitle,
-                            color = color,
-                            fontSize = 20.sp,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                }
-            }
-        }
+        DViewPager.BundledViewPager(
+            initialPage = 1,
+            indicatorAtTop = false,
+            pagerEntities = pagerEntities
+        )
     }
 }

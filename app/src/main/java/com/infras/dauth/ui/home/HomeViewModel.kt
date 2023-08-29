@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.wallet
+package com.infras.dauth.ui.home
 
 import android.app.Activity
 import androidx.compose.runtime.State
