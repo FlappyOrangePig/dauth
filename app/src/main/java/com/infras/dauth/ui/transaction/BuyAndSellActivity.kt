@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.buy
+package com.infras.dauth.ui.transaction
 
 import android.content.Context
 import android.content.Intent
@@ -47,6 +47,7 @@ import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.TagsEntity
 import com.infras.dauth.entity.TokenInfo
 import com.infras.dauth.entity.TokenInfoOfTag
+import com.infras.dauth.ui.transaction.test.BuyAndSellActivityMockData
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow

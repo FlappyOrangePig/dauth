@@ -33,9 +33,10 @@
         <activity android:name="com.infras.dauth.ui.main.WalletTestActivity" />
         <activity android:name="com.infras.dauth.ui.eoa.EoaBusinessActivity" />
         <activity android:name="com.infras.dauth.ui.home.HomeActivity" />
-        <activity android:name="com.infras.dauth.ui.buy.BuyAndSellActivity" />
-        <activity android:name="com.infras.dauth.ui.buy.BuyTokenActivity" />
-        <activity android:name="com.infras.dauth.ui.buy.BuyWithActivity" />
+        <activity android:name="com.infras.dauth.ui.transaction.BuyAndSellActivity" />
+        <activity android:name="com.infras.dauth.ui.transaction.BuyTokenActivity" />
+        <activity android:name="com.infras.dauth.ui.transaction.BuyWithActivity" />
+        <activity android:name="com.infras.dauth.ui.transaction.OrdersActivity" />
 
         <!--        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>-->
 <!--        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>-->

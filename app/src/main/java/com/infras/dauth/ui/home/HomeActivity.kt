@@ -57,7 +57,7 @@ import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.ext.addressForShort
 import com.infras.dauth.manager.sdk
-import com.infras.dauth.ui.buy.BuyAndSellActivity
+import com.infras.dauth.ui.transaction.BuyAndSellActivity
 import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil

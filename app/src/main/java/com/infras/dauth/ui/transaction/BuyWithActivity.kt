@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.buy
+package com.infras.dauth.ui.transaction
 
 import android.content.Context
 import android.content.Intent
@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.PayMethodEntity
-import com.infras.dauth.widget.compose.DTitleLayout
+import com.infras.dauth.widget.compose.titleWith1Icon
 
 class BuyWithActivity : BaseActivity() {
 
@@ -39,8 +39,6 @@ class BuyWithActivity : BaseActivity() {
             context.startActivity(Intent(context, BuyWithActivity::class.java))
         }
     }
-
-    private val titleLayout by lazy { DTitleLayout() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +51,7 @@ class BuyWithActivity : BaseActivity() {
     @Preview
     @Composable
     private fun BuyWithScreen(
-        payMethods: List<PayMethodEntity> = listOf(
+        payMethods: List<PayMethodEntity> = mutableListOf(
             PayMethodEntity(
                 "Wechat Pay",
                 "Unit Price： 7.29 CNY",
@@ -65,16 +63,11 @@ class BuyWithActivity : BaseActivity() {
                 false
             ),
             PayMethodEntity(
-                "Wechat Pay",
-                "Unit Price： 7.34 CNY",
-                false
-            ),
-            PayMethodEntity(
                 "AliPay",
                 "Unit Price： 7.31 CNY",
                 false
             ),
-        )
+        ).let { it.plus(it) }
     ) {
         Scaffold(
             content = { padding ->
@@ -84,7 +77,7 @@ class BuyWithActivity : BaseActivity() {
                         .fillMaxWidth()
                         .fillMaxHeight()
                 ) {
-                    titleLayout.titleWith1Icon(
+                    titleWith1Icon(
                         title = "Buy with",
                         onClickBack = { finish() },
                         id = null,

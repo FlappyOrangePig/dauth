@@ -15,6 +15,7 @@ import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.login.LoginActivity
+import com.infras.dauth.util.SystemUIUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauthsdk.api.entity.ResponseCode
 import kotlinx.coroutines.delay
@@ -41,6 +42,10 @@ class SplashActivity : BaseActivity() {
         }
         setContentView(root)
         performAutoLogin()
+    }
+
+    override fun showSystemUI() {
+        SystemUIUtil.show(window, SystemUIUtil.ThemeDrawByDeveloper(lightStatusMode = false))
     }
 
     private fun performAutoLogin() {

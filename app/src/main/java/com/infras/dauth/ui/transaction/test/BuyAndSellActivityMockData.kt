@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.buy
+package com.infras.dauth.ui.transaction.test
 
 import com.infras.dauth.entity.TagsEntity
 import com.infras.dauth.entity.TokenInfo

@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.buy
+package com.infras.dauth.ui.transaction
 
 import android.content.Context
 import android.content.Intent
@@ -35,8 +35,7 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.util.ConvertUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.constant.DColors
-import com.infras.dauth.widget.compose.constant.DStrings
-import com.infras.dauth.widget.compose.DTitleLayout
+import com.infras.dauth.widget.compose.titleWith1Icon
 import java.math.BigInteger
 
 class BuyTokenActivity : BaseActivity() {
@@ -48,25 +47,29 @@ class BuyTokenActivity : BaseActivity() {
         }
     }
 
-    private val titleLayout = DTitleLayout()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            BuyTokenScreen(selectPayMethod = { amount ->
-                if (amount >= BigInteger("10")) {
-                    BuyWithActivity.launch(this)
-                } else {
-                    ToastUtil.show(this, INPUT_TIPS)
+            BuyTokenScreen(
+                selectPayMethod = { amount ->
+                    if (amount >= BigInteger("10")) {
+                        BuyWithActivity.launch(this)
+                    } else {
+                        ToastUtil.show(this, INPUT_TIPS)
+                    }
+                },
+                onClickOrders = {
+                    OrdersActivity.launch(this@BuyTokenActivity)
                 }
-            })
+            )
         }
     }
 
     @Preview
     @Composable
     private fun BuyTokenScreen(
-        selectPayMethod: (BigInteger) -> Unit = {}
+        selectPayMethod: (BigInteger) -> Unit = {},
+        onClickOrders: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -85,9 +88,9 @@ class BuyTokenActivity : BaseActivity() {
                     }
                     val amountWithSeparator = ConvertUtil.addCommasToNumber(amount)
 
-                    titleLayout.titleWith1Icon(
+                    titleWith1Icon(
                         onClickBack = { finish() },
-                        onClickRightIcon = { ToastUtil.show(this@BuyTokenActivity, DStrings.COMING_SOON) },
+                        onClickRightIcon = { onClickOrders.invoke() },
                     )
 
                     Text(

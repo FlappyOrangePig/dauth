@@ -6,11 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -36,7 +39,10 @@ object DViewPager {
         indicatorAtTop: Boolean,
         pagerEntities: List<PagerEntity>,
     ) {
-        Column(modifier = Modifier.background(Color.White).fillMaxHeight().fillMaxWidth()) {
+        Column(modifier = Modifier
+            .background(Color.White)
+            .fillMaxHeight()
+            .fillMaxWidth()) {
             val pageCount = pagerEntities.size
             val pagerState = rememberPagerState(
                 initialPage = initialPage,
@@ -134,7 +140,7 @@ object DViewPager {
                 val underLineColor = if (pagerState.currentPage == iteration) DColors.GRAY else Color.Transparent
                 val rememberScope = rememberCoroutineScope()
                 Box(modifier = Modifier
-                    .width(80.dp)
+                    .width(IntrinsicSize.Min)
                     .fillMaxHeight()
                     .clickable {
                         rememberScope.launch {
@@ -146,12 +152,18 @@ object DViewPager {
                     Text(
                         text = pagerEntities.get(index = iteration).pagerTitle,
                         color = color,
-                        fontSize = 20.sp,
-                        modifier = Modifier.align(Alignment.Center)
+                        maxLines = 1,
+                        fontSize = 13.sp,
+                        modifier = Modifier
+                            .padding(start = 5.dp, end = 5.dp)
+                            .align(Alignment.Center)
+                            .width(IntrinsicSize.Min)
                     )
 
-                    Box(modifier = Modifier.background(underLineColor)
-                        .width(60.dp)
+                    Box(modifier = Modifier
+                        .background(underLineColor)
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
                         .height(2.dp)
                         .align(Alignment.BottomCenter)
                     )
