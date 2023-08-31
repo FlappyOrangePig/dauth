@@ -31,18 +31,29 @@ import kotlinx.coroutines.launch
 
 object DViewPager {
 
+    /**
+     * 指示器和ViewPager全家桶
+     * @param modifier
+     * @param initialPage
+     * @param style
+     * @param indicatorAtTop
+     * @param pagerEntities
+     */
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun BundledViewPager(
+        modifier: Modifier = Modifier,
         initialPage: Int = 0,
         style: Int = 0,
         indicatorAtTop: Boolean,
         pagerEntities: List<PagerEntity>,
     ) {
-        Column(modifier = Modifier
-            .background(Color.White)
-            .fillMaxHeight()
-            .fillMaxWidth()) {
+        Column(
+            modifier = modifier
+                .background(Color.White)
+                .fillMaxHeight()
+                .fillMaxWidth()
+        ) {
             val pageCount = pagerEntities.size
             val pagerState = rememberPagerState(
                 initialPage = initialPage,
@@ -50,13 +61,25 @@ object DViewPager {
             )
 
             val createIndicator: @Composable () -> Unit = {
-                if (style == 0) {
-                    ViewPagerIndicators(pagerState = pagerState, pagerEntities = pagerEntities)
-                } else {
-                    ViewPagerIndicatorsWithUnderLine(
+                when(style){
+                    0 -> ViewPagerIndicators(pagerState = pagerState, pagerEntities = pagerEntities)
+                    1 -> ViewPagerIndicatorsWithUnderLine(
+                        modifier = Modifier
+                            .width(IntrinsicSize.Min)
+                            .height(IntrinsicSize.Min)
+                            .align(Alignment.CenterHorizontally),
                         pagerState = pagerState,
                         pagerEntities = pagerEntities
                     )
+                    2 -> ViewPagerIndicatorsWithUnderLine(
+                        Modifier
+                            .width(IntrinsicSize.Min)
+                            .height(IntrinsicSize.Min)
+                            .align(Alignment.Start),
+                        pagerState = pagerState,
+                        pagerEntities = pagerEntities
+                    )
+                    else -> throw IllegalStateException()
                 }
             }
 
@@ -126,13 +149,12 @@ object DViewPager {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun ColumnScope.ViewPagerIndicatorsWithUnderLine(
+        modifier: Modifier,
         pagerState: PagerState,
         pagerEntities: List<PagerEntity>
     ) {
         Row(
-            Modifier
-                .height(35.dp)
-                .align(Alignment.CenterHorizontally)
+            modifier = modifier
         ) {
             val pagerCount = pagerEntities.size
             repeat(pagerCount) { iteration ->
@@ -140,6 +162,7 @@ object DViewPager {
                 val underLineColor = if (pagerState.currentPage == iteration) DColors.GRAY else Color.Transparent
                 val rememberScope = rememberCoroutineScope()
                 Box(modifier = Modifier
+                    .padding(start = 0.dp, end = 0.dp)
                     .width(IntrinsicSize.Min)
                     .fillMaxHeight()
                     .clickable {
@@ -152,12 +175,13 @@ object DViewPager {
                     Text(
                         text = pagerEntities.get(index = iteration).pagerTitle,
                         color = color,
+                        minLines = 1,
                         maxLines = 1,
-                        fontSize = 13.sp,
+                        fontSize = 16.sp,
                         modifier = Modifier
-                            .padding(start = 5.dp, end = 5.dp)
+                            .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp)
                             .align(Alignment.Center)
-                            .width(IntrinsicSize.Min)
+                            .width(IntrinsicSize.Max)
                     )
 
                     Box(modifier = Modifier
