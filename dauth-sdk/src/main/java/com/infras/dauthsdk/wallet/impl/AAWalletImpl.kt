@@ -96,13 +96,26 @@ class AAWalletImpl internal constructor(): IAAWalletApi {
     override suspend fun execute(
         userOperation: UserOperation
     ): DAuthResult<CommitTransactionData> {
+        // NOTE: Deleting this method will cause binary incompatibilities for users who already use this method
+        return execute(userOperation = userOperation, appKeyPart = "")
+    }
+
+    override suspend fun execute(
+        userOperation: UserOperation,
+        appKeyPart: String,
+    ): DAuthResult<CommitTransactionData> {
         val addressResult = queryWalletAddress()
         if (addressResult !is DAuthResult.Success) {
             return DAuthResult.SdkError(SDK_ERROR_CANNOT_GET_ADDRESS)
         }
         val aaAddress = addressResult.data.aaAddress
         val context = ElapsedContext(TAG, "executeUserOperation")
-        val result = web3m.executeUserOperation(context, userOperation, aaAddress)
+        val result = web3m.executeUserOperation(
+            context = context,
+            userOperation = userOperation,
+            aaAddress = aaAddress,
+            appKeyPart = appKeyPart
+        )
         context.finish()
         return result
     }

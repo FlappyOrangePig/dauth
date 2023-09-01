@@ -56,13 +56,19 @@ interface IAAWalletApi {
         func: ByteArray
     ): DAuthResult<CreateUserOpAndEstimateGasData>
 
+    @Deprecated("use the new method of the same name")
+    suspend fun execute(userOperation: UserOperation): DAuthResult<CommitTransactionData>
+
     /**
      * 执行[UserOperation]
      *
      * @param userOperation 用户操作，由[createUserOpAndEstimateGas]方法创建
+     * @param appKeyPart 业务方维护的一片密钥。
+     * 分布签【默认】：传空字符串，安全性高；
+     * 本地签：使用传入分片和本地密钥进行签名，安全性低。
      * @return 成功则返回txHash
      */
-    suspend fun execute(userOperation: UserOperation): DAuthResult<CommitTransactionData>
+    suspend fun execute(userOperation: UserOperation, appKeyPart: String): DAuthResult<CommitTransactionData>
 
     @DAuthExperimentalApi
     fun getWeb3j(): Web3j
