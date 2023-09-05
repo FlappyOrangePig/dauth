@@ -1,5 +1,6 @@
 package com.infras.dauthsdk.wallet.ext
 
+import com.infras.dauthsdk.wallet.util.AndroidKeystoreUtil
 import java.io.File
 import java.io.IOException
 
@@ -16,13 +17,15 @@ internal class SafeFile private constructor(
     fun safeWriteText(text: String) {
         val lock = getLockFile(file)
         lock.createNewFile()
-        file.writeText(text)
+        val encrypt = AndroidKeystoreUtil.encode(text)
+        file.writeText(encrypt)
         lock.delete()
     }
 
     fun safeReadText(): String? {
         return if (safeExists()) {
-            return file.readText()
+            val encrypted = file.readText()
+            return AndroidKeystoreUtil.decode(encrypted)
         } else {
             null
         }

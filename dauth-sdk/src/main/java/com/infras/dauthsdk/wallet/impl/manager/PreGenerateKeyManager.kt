@@ -103,7 +103,7 @@ internal class PreGenerateKeyManager(
 
         val r = MpcKeyIds.getKeyIds().mapNotNull {
             val f = getKeyFile(it)
-            val k = f.safe().safeReadText()
+            val k = runCatchingWithLog { f.safe().safeReadText() }
             f.delete()
             if (k.isNullOrEmpty()) {
                 return@mapNotNull null
