@@ -13,11 +13,13 @@ import com.infras.dauth.databinding.ActivityMainLayoutBinding
 import com.infras.dauth.ext.dp
 import com.infras.dauth.ext.handleByToast
 import com.infras.dauth.ext.isMail
+import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.mount
 import com.infras.dauth.ext.myAddress
 import com.infras.dauth.ext.tokenIds
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.sdk
+import com.infras.dauth.ui.login.ResetPasswordActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.LogUtil
@@ -37,8 +39,7 @@ class MainActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, MainActivity::class.java)
-            context.startActivity(intent)
+            context.launch(MainActivity::class.java)
         }
     }
 

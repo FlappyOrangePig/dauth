@@ -17,12 +17,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
@@ -56,6 +58,7 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.ext.addressForShort
+import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.transaction.BuyAndSellActivity
 import com.infras.dauth.ui.main.MainActivity
@@ -67,6 +70,9 @@ import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauth.widget.compose.DViewPager
+import com.infras.dauth.widget.compose.DViewPager.ViewPagerContent
+import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicators
+import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicatorsWithUnderLine
 import com.infras.dauthsdk.api.entity.DAuthResult
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -76,8 +82,7 @@ class HomeActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, HomeActivity::class.java)
-            context.startActivity(intent)
+            context.launch(HomeActivity::class.java)
         }
     }
 
@@ -568,6 +573,7 @@ class HomeActivity : BaseActivity() {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Preview
     @Composable
     fun HomePageViewPager(
@@ -577,10 +583,21 @@ class HomeActivity : BaseActivity() {
             PagerEntity("Profile") { ProfileTab() },
         )
     ) {
-        DViewPager.BundledViewPager(
-            initialPage = 1,
-            indicatorAtTop = false,
-            pagerEntities = pagerEntities
-        )
+
+        Column(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxHeight()
+                .fillMaxWidth()
+        ) {
+            val pageCount = pagerEntities.size
+            val pagerState = rememberPagerState(
+                initialPage = 1,
+                pageCount = { pageCount }
+            )
+
+            ViewPagerContent(pagerState = pagerState, pagerEntities = pagerEntities)
+            ViewPagerIndicators(pagerState = pagerState, pagerEntities = pagerEntities)
+        }
     }
 }

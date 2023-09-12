@@ -75,25 +75,7 @@ class HomeViewModel : BaseViewModel() {
     }
 
     private fun getAuthId(): String {
-        return try {
-            val dauthLogin = Class.forName("com.infras.dauthsdk.api.DAuthSDK")
-                .getDeclaredField("loginApi").also { it.isAccessible = true }
-                .get(sdk)
-
-            val prefs = Class.forName("com.infras.dauthsdk.login.impl.DAuthLogin")
-                .getDeclaredMethod("getPrefs").also { it.isAccessible = true }
-                .invoke(dauthLogin)
-
-
-            val authId = Class.forName("com.infras.dauthsdk.login.utils.LoginPrefs")
-                .getDeclaredMethod("getAuthId").also { it.isAccessible = true }
-                .invoke(prefs) as String
-
-            authId
-        } catch (t: Throwable) {
-            t.printStackTrace()
-            ""
-        }
+        return AccountManager.getAuthId()
     }
 
     private fun generatePersonInfo(d: AccountRes.Data) {

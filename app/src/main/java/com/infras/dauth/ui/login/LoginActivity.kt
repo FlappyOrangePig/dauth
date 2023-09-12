@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
+import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
@@ -35,7 +36,7 @@ class LoginActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            context.startActivity(Intent(context, LoginActivity::class.java))
+            context.launch(LoginActivity::class.java)
         }
     }
 

@@ -46,6 +46,10 @@ class DAuthSDK private constructor(
         return Managers.eoaWalletApi
     }
 
+    override fun getDepositApi(): IDepositApi {
+        return Managers.depositApi
+    }
+
     @VisibleForTesting
     fun initSDKForTest(context: Context, config: SdkConfig) {
         Managers.context = context

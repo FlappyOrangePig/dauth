@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityResetPwdLayoutBinding
+import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauthsdk.login.model.ResetByPasswordParam
@@ -29,8 +30,7 @@ class ResetPasswordActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, ResetPasswordActivity::class.java)
-            context.startActivity(intent)
+            context.launch(ResetPasswordActivity::class.java)
         }
     }
 

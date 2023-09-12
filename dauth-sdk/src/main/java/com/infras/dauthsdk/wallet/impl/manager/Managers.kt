@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.infras.dauthsdk.api.IEoaWalletApi
 import com.infras.dauthsdk.login.network.RequestApi
+import com.infras.dauthsdk.login.network.RequestApiDeposit
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.LoginPrefs
 import com.infras.dauthsdk.mpc.MpcKeyStore
@@ -34,6 +35,7 @@ internal object Managers {
     lateinit var logManager: DLogManager
     lateinit var fileManager: FileManager
     lateinit var eoaWalletApi: EoaWalletImpl
+    lateinit var depositApi: RequestApiDeposit
     lateinit var preGenerateKeyManager: PreGenerateKeyManager
     lateinit var globalPrefsManager: GlobalPrefsManager
     lateinit var statsManager: StatsManager
@@ -51,6 +53,7 @@ internal object Managers {
         connectManager = ConnectManager(context)
         requestApi = RequestApi()
         requestApiMpc = RequestApiMpc()
+        depositApi = RequestApiDeposit()
         web3m = Web3Manager().also { it.reset(ConfigurationManager.chain().rpcUrl) }
         deviceId = DeviceUtil.getDeviceId(context)
         logManager = DLogManager(fileManager)

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.ext.launch
 import com.infras.dauth.util.ToastUtil
 import kotlinx.coroutines.launch
 
@@ -32,8 +33,7 @@ class EoaBusinessActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, EoaBusinessActivity::class.java)
-            context.startActivity(intent)
+            context.launch(EoaBusinessActivity::class.java)
         }
     }
 

@@ -61,7 +61,7 @@ object DViewPager {
             )
 
             val createIndicator: @Composable () -> Unit = {
-                when(style){
+                when (style) {
                     0 -> ViewPagerIndicators(pagerState = pagerState, pagerEntities = pagerEntities)
                     1 -> ViewPagerIndicatorsWithUnderLine(
                         modifier = Modifier
@@ -71,6 +71,7 @@ object DViewPager {
                         pagerState = pagerState,
                         pagerEntities = pagerEntities
                     )
+
                     2 -> ViewPagerIndicatorsWithUnderLine(
                         Modifier
                             .width(IntrinsicSize.Min)
@@ -79,6 +80,7 @@ object DViewPager {
                         pagerState = pagerState,
                         pagerEntities = pagerEntities
                     )
+
                     else -> throw IllegalStateException()
                 }
             }
@@ -95,7 +97,7 @@ object DViewPager {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun ColumnScope.ViewPagerContent(
+    fun ColumnScope.ViewPagerContent(
         pagerState: PagerState,
         pagerEntities: List<PagerEntity>
     ) {
@@ -112,7 +114,7 @@ object DViewPager {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun ColumnScope.ViewPagerIndicators(
+    fun ColumnScope.ViewPagerIndicators(
         pagerState: PagerState,
         pagerEntities: List<PagerEntity>
     ) {
@@ -148,7 +150,7 @@ object DViewPager {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun ColumnScope.ViewPagerIndicatorsWithUnderLine(
+    fun ColumnScope.ViewPagerIndicatorsWithUnderLine(
         modifier: Modifier,
         pagerState: PagerState,
         pagerEntities: List<PagerEntity>
@@ -159,7 +161,8 @@ object DViewPager {
             val pagerCount = pagerEntities.size
             repeat(pagerCount) { iteration ->
                 val color = if (pagerState.currentPage == iteration) Color.Black else Color.Black
-                val underLineColor = if (pagerState.currentPage == iteration) DColors.GRAY else Color.Transparent
+                val underLineColor =
+                    if (pagerState.currentPage == iteration) DColors.GRAY else Color.Transparent
                 val rememberScope = rememberCoroutineScope()
                 Box(modifier = Modifier
                     .padding(start = 0.dp, end = 0.dp)
@@ -184,12 +187,13 @@ object DViewPager {
                             .width(IntrinsicSize.Max)
                     )
 
-                    Box(modifier = Modifier
-                        .background(underLineColor)
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(2.dp)
-                        .align(Alignment.BottomCenter)
+                    Box(
+                        modifier = Modifier
+                            .background(underLineColor)
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(2.dp)
+                            .align(Alignment.BottomCenter)
                     )
                 }
             }

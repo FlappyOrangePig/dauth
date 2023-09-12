@@ -1,7 +1,6 @@
 package com.infras.dauth.ui.transaction
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -30,13 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.PayMethodEntity
+import com.infras.dauth.ext.launch
 import com.infras.dauth.widget.compose.titleWith1Icon
 
 class BuyWithActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            context.startActivity(Intent(context, BuyWithActivity::class.java))
+            context.launch(BuyWithActivity::class.java)
         }
     }
 

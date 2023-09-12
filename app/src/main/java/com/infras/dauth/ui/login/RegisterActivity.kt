@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.databinding.ActivityRegisterLayoutBinding
+import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.main.MainActivity
@@ -21,8 +22,7 @@ class RegisterActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, RegisterActivity::class.java)
-            context.startActivity(intent)
+            context.launch(RegisterActivity::class.java)
         }
     }
 

@@ -1,7 +1,6 @@
 package com.infras.dauth.ui.transaction
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -12,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.PagerEntity
+import com.infras.dauth.ext.launch
 import com.infras.dauth.widget.compose.DViewPager
 import com.infras.dauth.widget.compose.titleWith1Icon
 
@@ -19,7 +19,7 @@ class OrdersActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            context.startActivity(Intent(context, OrdersActivity::class.java))
+            context.launch(OrdersActivity::class.java)
         }
     }
 

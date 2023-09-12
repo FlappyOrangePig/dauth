@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityWalletTestBinding
+import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.mount
 import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.DialogHelper
@@ -44,8 +45,7 @@ class WalletTestActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, WalletTestActivity::class.java)
-            context.startActivity(intent)
+            context.launch(WalletTestActivity::class.java)
         }
 
         // 苟建的测试链账号

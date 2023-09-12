@@ -4,10 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -27,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -47,26 +52,61 @@ import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.TagsEntity
 import com.infras.dauth.entity.TokenInfo
 import com.infras.dauth.entity.TokenInfoOfTag
+import com.infras.dauth.ext.launch
+import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.ui.main.WalletTestActivity
 import com.infras.dauth.ui.transaction.test.BuyAndSellActivityMockData
-import com.infras.dauth.widget.compose.constant.DColors
+import com.infras.dauth.ui.transaction.viewmodel.BuyAndSellViewModel
+import com.infras.dauth.ui.transaction.widget.UnverifiedDialogFragment
+import com.infras.dauth.ui.transaction.widget.VerifiedDialogFragment
+import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
 import com.infras.dauth.widget.compose.DViewPager
+import com.infras.dauth.widget.compose.DViewPager.ViewPagerContent
+import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicators
+import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicatorsWithUnderLine
+import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
 
 class BuyAndSellActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            context.startActivity(Intent(context, BuyAndSellActivity::class.java))
+            context.launch(BuyAndSellActivity::class.java)
         }
     }
+
+    private val loadingDialogFragment = LoadingDialogFragment.newInstance()
+    private val viewModel: BuyAndSellViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MainLayout(onClickCurrencyToggle = { })
         }
+        viewModel.accountDetail.observe(this) {
+            if (it == null) {
+                UnverifiedDialogFragment.newInstance(
+                    AccountManager.getAuthId()
+                ).show(supportFragmentManager, UnverifiedDialogFragment.TAG)
+            }else{
+                VerifiedDialogFragment.newInstance(
+                    AccountManager.getAuthId()
+                ).show(supportFragmentManager, VerifiedDialogFragment.TAG)
+            }
+        }
+        fetchData()
+    }
+
+    private fun fetchData() {
+        loadingDialogFragment.show(supportFragmentManager, LoadingDialogFragment.TAG)
+        viewModel.fetchCurrencyList()
+        loadingDialogFragment.dismiss()
+
+        loadingDialogFragment.show(supportFragmentManager, LoadingDialogFragment.TAG)
+        viewModel.fetchAccountDetail()
+        loadingDialogFragment.dismiss()
     }
 
     @Preview
@@ -217,6 +257,7 @@ class BuyAndSellActivity : BaseActivity() {
         DComingSoonLayout.ComingSoonLayout()
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Preview
     @Composable
     private fun MainLayout(
@@ -226,8 +267,6 @@ class BuyAndSellActivity : BaseActivity() {
         ),
         onClickCurrencyToggle: () -> Unit = {}
     ) {
-
-
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
@@ -235,11 +274,27 @@ class BuyAndSellActivity : BaseActivity() {
         ) {
             val (cbCurrencySelector, ivBackArrow, pwCurrencyMenu) = createRefs()
 
-            DViewPager.BundledViewPager(
-                indicatorAtTop = true,
-                style = 1,
-                pagerEntities = pagerEntities
-            )
+            Column(
+                modifier = Modifier
+                    .background(Color.White)
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+            ) {
+                val pageCount = pagerEntities.size
+                val pagerState = rememberPagerState(
+                    initialPage = 0,
+                    pageCount = { pageCount }
+                )
+                ViewPagerIndicatorsWithUnderLine(
+                    modifier = Modifier
+                        .width(IntrinsicSize.Min)
+                        .height(IntrinsicSize.Min)
+                        .align(Alignment.CenterHorizontally),
+                    pagerState = pagerState,
+                    pagerEntities = pagerEntities
+                )
+                ViewPagerContent(pagerState = pagerState, pagerEntities = pagerEntities)
+            }
 
             Image(
                 painterResource(R.drawable.svg_ic_back_arrow),

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <TextView
+    <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_dauth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -88,7 +88,7 @@
 
     </LinearLayout>
 
-    <TextView
+    <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_forget_pwd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -99,7 +99,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
+    <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_password_login"
         style="@style/Theme.client.TextView"
         android:layout_width="wrap_content"
@@ -111,7 +111,7 @@
         app:layout_constraintStart_toEndOf="@id/tv_forget_pwd"
         app:layout_constraintTop_toTopOf="@id/tv_forget_pwd" />
 
-    <TextView
+    <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_register"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

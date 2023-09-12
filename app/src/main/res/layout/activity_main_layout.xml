@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
+            <com.infras.dauth.widget.IFTextView
                 android:id="@+id/tv_wallet_address"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
                 android:layout_marginStart="10dp"
                 tools:text="钱包地址：0x1231293810293810283" />
 
-            <TextView
+            <com.infras.dauth.widget.IFTextView
                 android:id="@+id/tv_user_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

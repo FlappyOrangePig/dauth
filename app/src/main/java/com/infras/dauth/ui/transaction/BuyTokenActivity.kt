@@ -1,7 +1,6 @@
 package com.infras.dauth.ui.transaction
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -32,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.ext.launch
 import com.infras.dauth.util.ConvertUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.constant.DColors
@@ -43,7 +43,7 @@ class BuyTokenActivity : BaseActivity() {
     companion object {
         private const val INPUT_TIPS = "Enter a minimum of 10 USDT"
         fun launch(context: Context) {
-            context.startActivity(Intent(context, BuyTokenActivity::class.java))
+            context.launch(BuyTokenActivity::class.java)
         }
     }
 

@@ -63,6 +63,18 @@
         <item name="android:importantForAutofill" tools:targetApi="o">no</item>
     </style>
 
+    <style name="Theme.client.EditText.KYC" parent="Theme.client">
+        <item name="android:gravity">left|center_vertical</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:paddingStart">15dp</item>
+        <item name="android:paddingEnd">15dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColorHint">@color/gray_b4</item>
+        <item name="android:background">@drawable/bg_black_r0_s1</item>
+        <item name="android:maxLines">1</item>"
+    </style>
+
     <style name="Theme.client.Logo" parent="Theme.client">
         <item name="android:gravity">left|center_vertical</item>
         <item name="android:textColor">@android:color/black</item>
