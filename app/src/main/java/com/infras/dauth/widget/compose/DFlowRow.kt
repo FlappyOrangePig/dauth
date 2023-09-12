@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.infras.dauth.entity.TagsEntity
+import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
 import com.infras.dauth.widget.compose.constant.DColors
 
 object DFlowRow {

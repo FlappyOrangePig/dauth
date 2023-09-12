@@ -1,8 +1,9 @@
 package com.infras.dauth.ui.transaction.test
 
-import com.infras.dauth.entity.TagsEntity
-import com.infras.dauth.entity.TokenInfo
-import com.infras.dauth.entity.TokenInfoOfTag
+import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
+import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfo
+import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfoOfTag
+import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 
 object BuyAndSellActivityMockData {
 
@@ -12,14 +13,16 @@ object BuyAndSellActivityMockData {
             issuer = "tether",
             avatarUrl = "https://img1.baidu.com/it/u=1535503495,3105965414&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "+10%",
-            "$111"
+            "$111",
+            DigitalCurrencyListRes.Crypto_list()
         ),
         TokenInfo(
             name = "ETH",
             issuer = "ethereum",
             avatarUrl = "https://img1.baidu.com/it/u=1777458741,3394283602&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "-10%",
-            "$222"
+            "$222",
+            DigitalCurrencyListRes.Crypto_list()
         ),
     ).let { origin ->
         mutableListOf<TokenInfo>().also { created ->
@@ -34,14 +37,16 @@ object BuyAndSellActivityMockData {
             issuer = "tether",
             avatarUrl = "https://img1.baidu.com/it/u=1535503495,3105965414&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "0%",
-            "$444"
+            "$444",
+            DigitalCurrencyListRes.Crypto_list()
         ),
         TokenInfo(
             name = "ETH",
             issuer = "ethereum",
             avatarUrl = "https://img1.baidu.com/it/u=1777458741,3394283602&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "-110%",
-            "$333"
+            "$333",
+            DigitalCurrencyListRes.Crypto_list()
         ),
     ).let { origin ->
         mutableListOf<TokenInfo>().also { created ->

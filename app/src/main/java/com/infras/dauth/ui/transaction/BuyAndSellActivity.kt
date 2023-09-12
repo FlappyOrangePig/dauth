@@ -1,7 +1,6 @@
 package com.infras.dauth.ui.transaction
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -27,6 +26,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,12 +49,11 @@ import coil.compose.rememberAsyncImagePainter
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.PagerEntity
-import com.infras.dauth.entity.TagsEntity
-import com.infras.dauth.entity.TokenInfo
-import com.infras.dauth.entity.TokenInfoOfTag
+import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfoOfTag
+import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
+import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfo
 import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.ui.main.WalletTestActivity
 import com.infras.dauth.ui.transaction.test.BuyAndSellActivityMockData
 import com.infras.dauth.ui.transaction.viewmodel.BuyAndSellViewModel
 import com.infras.dauth.ui.transaction.widget.UnverifiedDialogFragment
@@ -62,12 +61,11 @@ import com.infras.dauth.ui.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
-import com.infras.dauth.widget.compose.DViewPager
 import com.infras.dauth.widget.compose.DViewPager.ViewPagerContent
-import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicators
 import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicatorsWithUnderLine
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
+import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 
 class BuyAndSellActivity : BaseActivity() {
 
@@ -83,20 +81,24 @@ class BuyAndSellActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainLayout(onClickCurrencyToggle = { })
+            MainLayoutWithViewModel(viewModel)
         }
+        initViewModel()
+        fetchData()
+    }
+
+    private fun initViewModel() {
         viewModel.accountDetail.observe(this) {
             if (it == null) {
                 UnverifiedDialogFragment.newInstance(
                     AccountManager.getAuthId()
                 ).show(supportFragmentManager, UnverifiedDialogFragment.TAG)
-            }else{
+            } else {
                 VerifiedDialogFragment.newInstance(
                     AccountManager.getAuthId()
                 ).show(supportFragmentManager, VerifiedDialogFragment.TAG)
             }
         }
-        fetchData()
     }
 
     private fun fetchData() {
@@ -199,7 +201,9 @@ class BuyAndSellActivity : BaseActivity() {
 
     @Preview
     @Composable
-    private fun BuyTab(tokens: List<TokenInfoOfTag> = BuyAndSellActivityMockData.tokenInfoList) {
+    private fun BuyTab(
+        tokenInfoOfTag: List<TokenInfoOfTag> = BuyAndSellActivityMockData.tokenInfoList
+    ) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
@@ -215,7 +219,7 @@ class BuyAndSellActivity : BaseActivity() {
             var tagIndex by remember {
                 mutableStateOf(0)
             }
-            val entities = tokens.mapIndexed { index, tokenInfoOfTag ->
+            val entities = tokenInfoOfTag.mapIndexed { index, tokenInfoOfTag ->
                 TagsEntity(
                     title = tokenInfoOfTag.tag.title,
                     selected = tagIndex == index,
@@ -236,7 +240,7 @@ class BuyAndSellActivity : BaseActivity() {
                 entities = entities,
             )
 
-            val tokenListOfCurrentTag = tokens[tagIndex].tokenInfoList
+            val tokenListOfCurrentTag = tokenInfoOfTag[tagIndex].tokenInfoList
             TokenListView(modifier = Modifier
                 .constrainAs(rvTokens) {
                     top.linkTo(flTags.bottom)
@@ -257,6 +261,22 @@ class BuyAndSellActivity : BaseActivity() {
         DComingSoonLayout.ComingSoonLayout()
     }
 
+    @Composable
+    private fun MainLayoutWithViewModel(vm: BuyAndSellViewModel) {
+        val data by remember {
+            vm.tokenInfoOfTagList
+        }
+        MainLayout(
+            onClickCurrencyToggle = { vm.updateSelect(it) },
+            pagerEntities = listOf(
+                PagerEntity("Buy") { BuyTab(data.buyTab) },
+                PagerEntity("Sale") { SellTab() },
+            ),
+            fiatList = data.fiatList,
+            fiatSelectIndex = data.fiatSelectIndex,
+        )
+    }
+
     @OptIn(ExperimentalFoundationApi::class)
     @Preview
     @Composable
@@ -265,8 +285,13 @@ class BuyAndSellActivity : BaseActivity() {
             PagerEntity("Buy") { BuyTab() },
             PagerEntity("Sale") { SellTab() },
         ),
-        onClickCurrencyToggle: () -> Unit = {}
+        fiatList: List<DigitalCurrencyListRes.Fiat_list> = listOf(
+            DigitalCurrencyListRes.Fiat_list("CNY")
+        ),
+        onClickCurrencyToggle: (Int) -> Unit = {},
+        fiatSelectIndex: Int? = null,
     ) {
+        print(fiatSelectIndex)
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
@@ -315,16 +340,16 @@ class BuyAndSellActivity : BaseActivity() {
             var showPopup by remember {
                 mutableStateOf(false)
             }
+            var fiatText = if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiat_code.orEmpty()
 
             Text(
-                text = "CNY ▼",
+                text = fiatText,
                 modifier = Modifier
                     .constrainAs(cbCurrencySelector) {
                         top.linkTo(parent.top)
                         end.linkTo(parent.end)
                     }
                     .clickable {
-                        onClickCurrencyToggle.invoke()
                         showPopup = !showPopup
                     }
                     .padding(start = 15.dp, end = 15.dp, top = 8.dp, bottom = 8.dp)
@@ -348,8 +373,15 @@ class BuyAndSellActivity : BaseActivity() {
                         .width(IntrinsicSize.Min)
                         .height(IntrinsicSize.Min)
                 ) {
-                    DropdownMenuItem(onClick = { showPopup = false }) {
-                        Text(text = "CNY")
+                    fiatList.forEachIndexed { index, fiatList ->
+                        val fiatCode = fiatList.fiat_code.orEmpty()
+                        DropdownMenuItem(onClick = {
+                            showPopup = false
+                            fiatText = fiatCode
+                            onClickCurrencyToggle.invoke(index)
+                        }) {
+                            Text(text = fiatCode)
+                        }
                     }
                 }
             }
