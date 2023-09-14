@@ -2,6 +2,7 @@ package com.infras.dauth
 
 import android.app.Application
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.manager.ResourceManager
 import com.infras.dauth.util.DAuthEnv
 import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.api.DAuthSDK
@@ -20,6 +21,9 @@ class MyApplication : Application() {
         lateinit var app: MyApplication
             private set
     }
+
+    lateinit var resourceManager: ResourceManager
+        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -44,6 +48,7 @@ class MyApplication : Application() {
             val sdk = DAuthSDK.instance
             sdk.initSDK(this, config = config)
             AccountManager.attachSdk(sdk)
+            resourceManager = ResourceManager(this)
         }
     }
 }

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingStart="22dp"
-    android:paddingEnd="22dp">
+    android:paddingEnd="22dp"
+    android:background="@color/white">
 
     <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_title"
@@ -80,6 +81,7 @@
                 android:layout_height="32dp"
                 android:layout_marginTop="10dp"
                 android:hint="Enter your email Code"
+                android:inputType="number"
                 app:layout_constraintTop_toBottomOf="@id/et_email" />
 
             <com.infras.dauth.widget.IFTextView

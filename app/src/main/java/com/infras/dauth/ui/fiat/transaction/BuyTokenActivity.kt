@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.transaction
+package com.infras.dauth.ui.fiat.transaction
 
 import android.content.Context
 import android.os.Bundle
@@ -31,21 +31,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.entity.BuyTokenPageInputEntity
 import com.infras.dauth.ext.launch
 import com.infras.dauth.util.ConvertUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.titleWith1Icon
+import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
+import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 import java.math.BigInteger
 
 class BuyTokenActivity : BaseActivity() {
 
     companion object {
         private const val INPUT_TIPS = "Enter a minimum of 10 USDT"
-        fun launch(context: Context) {
-            context.launch(BuyTokenActivity::class.java)
+        private const val EXTRA_INPUT = "EXTRA_INPUT"
+        fun launch(
+            context: Context,
+            input: BuyTokenPageInputEntity
+        ) {
+            context.launch(BuyTokenActivity::class.java) {
+                it.putExtra(EXTRA_INPUT, input)
+            }
         }
     }
+
+    private val input get() = intent.getParcelableExtraCompat<BuyTokenPageInputEntity>(EXTRA_INPUT)!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +100,7 @@ class BuyTokenActivity : BaseActivity() {
                     val amountWithSeparator = ConvertUtil.addCommasToNumber(amount)
 
                     titleWith1Icon(
+                        title = "Buy ${input.crypto_info.crypto_code}",
                         onClickBack = { finish() },
                         onClickRightIcon = { onClickOrders.invoke() },
                     )
@@ -99,7 +111,8 @@ class BuyTokenActivity : BaseActivity() {
                         fontSize = 16.sp,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = 90.dp)
+                            .padding(top = 90.dp),
+                        textAlign = TextAlign.Center
                     )
 
                     Text(

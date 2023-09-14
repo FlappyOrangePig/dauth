@@ -1,14 +1,13 @@
 package com.infras.dauth.ui.login
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityResetPwdLayoutBinding
 import com.infras.dauth.ext.launch
-import com.infras.dauth.manager.sdk
+import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauthsdk.login.model.ResetByPasswordParam
 import kotlinx.coroutines.launch
@@ -19,7 +18,7 @@ class ResetPasswordActivity : BaseActivity() {
 
     private var _binding: ActivityResetPwdLayoutBinding? = null
     private val binding: ActivityResetPwdLayoutBinding get() = _binding!!
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

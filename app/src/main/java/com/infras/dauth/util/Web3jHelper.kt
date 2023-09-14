@@ -1,6 +1,6 @@
 package com.infras.dauth.util
 
-import com.infras.dauth.manager.AccountManager.sdk
+import com.infras.dauth.manager.AccountManager
 import com.infras.dauthsdk.api.entity.DAuthResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,7 +39,7 @@ private suspend inline fun <S, T : Response<*>, D> Request<S, T>.awaitLite(cross
 
 object Web3jHelper {
 
-    private val web3j get() = sdk().getWeb3j()
+    private val web3j get() = AccountManager.sdk.getWeb3j()
 
     private const val RICH_EOA_ACCOUNT = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"
     private const val RICH_EOA_PRIVATE_KEY = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"

@@ -1,5 +1,6 @@
 package com.infras.dauthsdk.login.model
 
+import com.infras.dauthsdk.api.entity.ResponseCode
 import com.infras.dauthsdk.login.network.BaseResponse
 
 class AccountDetailRes(
@@ -17,4 +18,6 @@ class AccountDetailRes(
         val id_back_img: String,
         val result: Long,// 开⼾状态 0000：开⼾成功 0001：开⼾处理中 0002：开⼾失败
     )
+
+    fun verifyChannelExists() = (ret == ResponseCode.ACCOUNT_NOT_EXIST_OR_REGISTERED)
 }

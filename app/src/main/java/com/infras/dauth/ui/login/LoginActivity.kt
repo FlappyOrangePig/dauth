@@ -1,7 +1,6 @@
 package com.infras.dauth.ui.login
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
@@ -10,11 +9,11 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.launchMainPage
-import com.infras.dauth.manager.sdk
+import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.ui.login.fragment.SignInByCodeFragment
 import com.infras.dauth.ui.login.fragment.SignInByPasswordFragment
-import com.infras.dauth.ui.login.repository.SignInRepository
+import com.infras.dauth.repository.SignInRepository
 import com.infras.dauth.ui.main.WalletTestActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.HideApiUtil
@@ -28,7 +27,7 @@ class LoginActivity : BaseActivity() {
     private var _binding: ActivityLoginLayoutBinding? = null
     private val binding: ActivityLoginLayoutBinding get() = _binding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     private var currentFragmentType = 0 // 0=code 1=password
     private val signInByCode by lazy { SignInByCodeFragment.newInstance() }
@@ -64,7 +63,7 @@ class LoginActivity : BaseActivity() {
                 val result = SignInRepository().signIn {
                     sdk.loginWithType(SignType3rd.GOOGLE, a)
                 }
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     a,
                     getString(if (result) R.string.success else (R.string.failure))
@@ -83,7 +82,7 @@ class LoginActivity : BaseActivity() {
                 val result = SignInRepository().signIn {
                     sdk.loginWithType(SignType3rd.TWITTER, a)
                 }
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     a,
                     getString(if (result) R.string.success else (R.string.failure))

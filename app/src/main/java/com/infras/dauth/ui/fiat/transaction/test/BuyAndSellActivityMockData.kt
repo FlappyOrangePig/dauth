@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.transaction.test
+package com.infras.dauth.ui.fiat.transaction.test
 
 import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
 import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfo
@@ -14,7 +14,7 @@ object BuyAndSellActivityMockData {
             avatarUrl = "https://img1.baidu.com/it/u=1535503495,3105965414&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "+10%",
             "$111",
-            DigitalCurrencyListRes.Crypto_list()
+            DigitalCurrencyListRes.CryptoInfo()
         ),
         TokenInfo(
             name = "ETH",
@@ -22,7 +22,7 @@ object BuyAndSellActivityMockData {
             avatarUrl = "https://img1.baidu.com/it/u=1777458741,3394283602&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "-10%",
             "$222",
-            DigitalCurrencyListRes.Crypto_list()
+            DigitalCurrencyListRes.CryptoInfo()
         ),
     ).let { origin ->
         mutableListOf<TokenInfo>().also { created ->
@@ -38,7 +38,7 @@ object BuyAndSellActivityMockData {
             avatarUrl = "https://img1.baidu.com/it/u=1535503495,3105965414&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "0%",
             "$444",
-            DigitalCurrencyListRes.Crypto_list()
+            DigitalCurrencyListRes.CryptoInfo()
         ),
         TokenInfo(
             name = "ETH",
@@ -46,7 +46,7 @@ object BuyAndSellActivityMockData {
             avatarUrl = "https://img1.baidu.com/it/u=1777458741,3394283602&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
             changeRange = "-110%",
             "$333",
-            DigitalCurrencyListRes.Crypto_list()
+            DigitalCurrencyListRes.CryptoInfo()
         ),
     ).let { origin ->
         mutableListOf<TokenInfo>().also { created ->

@@ -5,14 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.ext.isMail
 import com.infras.dauth.ext.isPhone
-import com.infras.dauth.manager.sdk
-import com.infras.dauth.ui.login.repository.SignInRepository
+import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.repository.SignInRepository
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauthsdk.api.annotation.DAuthAccountType
 
 class SignInByCodeViewModel : BaseViewModel() {
 
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
     private val _account = MutableLiveData<String>()
     private val account: LiveData<String> = _account
 

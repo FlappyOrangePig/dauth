@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.transaction
+package com.infras.dauth.ui.fiat.transaction
 
 import android.content.Context
 import android.os.Bundle
@@ -26,7 +26,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,16 +47,16 @@ import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberAsyncImagePainter
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
-import com.infras.dauth.entity.PagerEntity
-import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfoOfTag
 import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
 import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfo
+import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfoOfTag
+import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.ui.transaction.test.BuyAndSellActivityMockData
-import com.infras.dauth.ui.transaction.viewmodel.BuyAndSellViewModel
-import com.infras.dauth.ui.transaction.widget.UnverifiedDialogFragment
-import com.infras.dauth.ui.transaction.widget.VerifiedDialogFragment
+import com.infras.dauth.ui.fiat.transaction.test.BuyAndSellActivityMockData
+import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyAndSellViewModel
+import com.infras.dauth.ui.fiat.transaction.widget.UnverifiedDialogFragment
+import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
@@ -71,7 +70,7 @@ class BuyAndSellActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            context.launch(BuyAndSellActivity::class.java)
+            context.launch(com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity::class.java)
         }
     }
 
@@ -88,15 +87,19 @@ class BuyAndSellActivity : BaseActivity() {
     }
 
     private fun initViewModel() {
-        viewModel.accountDetail.observe(this) {
-            if (it == null) {
-                UnverifiedDialogFragment.newInstance(
-                    AccountManager.getAuthId()
-                ).show(supportFragmentManager, UnverifiedDialogFragment.TAG)
-            } else {
-                VerifiedDialogFragment.newInstance(
-                    AccountManager.getAuthId()
-                ).show(supportFragmentManager, VerifiedDialogFragment.TAG)
+        viewModel.verifyChannelExists.observe(this) {
+            when (it) {
+                true -> {
+                    VerifiedDialogFragment.newInstance(
+                        AccountManager.getAuthId()
+                    ).show(supportFragmentManager, VerifiedDialogFragment.TAG)
+                }
+
+                false -> {
+                    UnverifiedDialogFragment.newInstance(
+                        AccountManager.getAuthId()
+                    ).show(supportFragmentManager, UnverifiedDialogFragment.TAG)
+                }
             }
         }
     }
@@ -250,7 +253,7 @@ class BuyAndSellActivity : BaseActivity() {
                 .fillMaxWidth(),
                 tokens = tokenListOfCurrentTag,
                 onClickItem = {
-                    BuyTokenActivity.launch(this@BuyAndSellActivity)
+                    com.infras.dauth.ui.fiat.transaction.BuyTokenActivity.Companion.launch(this@BuyAndSellActivity)
                 }
             )
         }
@@ -285,8 +288,8 @@ class BuyAndSellActivity : BaseActivity() {
             PagerEntity("Buy") { BuyTab() },
             PagerEntity("Sale") { SellTab() },
         ),
-        fiatList: List<DigitalCurrencyListRes.Fiat_list> = listOf(
-            DigitalCurrencyListRes.Fiat_list("CNY")
+        fiatList: List<DigitalCurrencyListRes.FiatInfo> = listOf(
+            DigitalCurrencyListRes.FiatInfo("CNY")
         ),
         onClickCurrencyToggle: (Int) -> Unit = {},
         fiatSelectIndex: Int? = null,
@@ -340,7 +343,8 @@ class BuyAndSellActivity : BaseActivity() {
             var showPopup by remember {
                 mutableStateOf(false)
             }
-            var fiatText = if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiat_code.orEmpty()
+            var fiatText =
+                if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiat_code.orEmpty()
 
             Text(
                 text = fiatText,

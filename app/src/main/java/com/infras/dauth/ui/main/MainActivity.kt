@@ -1,7 +1,6 @@
 package com.infras.dauth.ui.main
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
@@ -18,8 +17,6 @@ import com.infras.dauth.ext.mount
 import com.infras.dauth.ext.myAddress
 import com.infras.dauth.ext.tokenIds
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.manager.sdk
-import com.infras.dauth.ui.login.ResetPasswordActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.LogUtil
@@ -46,7 +43,7 @@ class MainActivity : BaseActivity() {
     private var mainBinding: ActivityMainLayoutBinding? = null
     private val binding: ActivityMainLayoutBinding get() = mainBinding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +62,7 @@ class MainActivity : BaseActivity() {
                 showEth(sb)
                 showUsdt(sb)
                 showNfts(sb)
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, sb.toString())
             }
         }
@@ -84,7 +81,7 @@ class MainActivity : BaseActivity() {
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val accountRes = sdk.queryAccountByEmail(mail)
-                        loadingDialog.dismiss()
+                        loadingDialog.dismissAllowingStateLoss()
                         val data = accountRes?.data
                         if (data == null) {
                             ToastUtil.show(a, "获取失败")
@@ -110,7 +107,7 @@ class MainActivity : BaseActivity() {
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val response = sdk.sendEmailVerifyCode(mail)
-                        loadingDialog.dismiss()
+                        loadingDialog.dismissAllowingStateLoss()
                         if (response?.ret != 0) {
                             return@launch
                         }
@@ -127,7 +124,7 @@ class MainActivity : BaseActivity() {
                                         LoadingDialogFragment.TAG
                                     )
                                     val result = sdk.bindEmail(mail, code)
-                                    loadingDialog.dismiss()
+                                    loadingDialog.dismissAllowingStateLoss()
                                     result.handleByToast()
                                 }
                             }
@@ -147,7 +144,7 @@ class MainActivity : BaseActivity() {
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val response = sdk.sendEmailVerifyCode(mail)
-                        loadingDialog.dismiss()
+                        loadingDialog.dismissAllowingStateLoss()
                         if (response?.ret != 0) {
                             return@launch
                         }
@@ -164,7 +161,7 @@ class MainActivity : BaseActivity() {
                                         LoadingDialogFragment.TAG
                                     )
                                     val result = sdk.checkEmail(mail, code)
-                                    loadingDialog.dismiss()
+                                    loadingDialog.dismissAllowingStateLoss()
                                     result.handleByToast()
                                 }
                             }
@@ -193,7 +190,7 @@ class MainActivity : BaseActivity() {
             lifecycleScope.launch {
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                 val result = sdk.setPassword(SetPasswordParam().apply { this.password = password })
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 result.handleByToast()
             }
         }

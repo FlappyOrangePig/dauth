@@ -13,7 +13,6 @@ import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.manager.sdk
 import com.infras.dauth.ui.login.LoginActivity
 import com.infras.dauth.util.SystemUIUtil
 import com.infras.dauth.util.ToastUtil
@@ -23,7 +22,7 @@ import kotlinx.coroutines.launch
 
 class SplashActivity : BaseActivity() {
 
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

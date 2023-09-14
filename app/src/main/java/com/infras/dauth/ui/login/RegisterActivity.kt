@@ -1,17 +1,15 @@
 package com.infras.dauth.ui.login
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.app.BaseActivity
-import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.databinding.ActivityRegisterLayoutBinding
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.launchMainPage
-import com.infras.dauth.manager.sdk
-import com.infras.dauth.ui.main.MainActivity
+import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import kotlinx.coroutines.launch
 
@@ -46,12 +44,12 @@ class RegisterActivity : BaseActivity() {
             if (account.isNotEmpty() && password.isNotEmpty() && ensurePassword.isNotEmpty()) {
                 lifecycleScope.launch {
                     loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                    val code = sdk().createDAuthAccount(
+                    val code = AccountManager.sdk.createDAuthAccount(
                         account,
                         password,
                         ensurePassword
                     )
-                    loadingDialog.dismiss()
+                    loadingDialog.dismissAllowingStateLoss()
                     if (code != null) {
                         if (code == 0) {
                             context.launchMainPage()

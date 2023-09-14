@@ -1,17 +1,19 @@
-package com.infras.dauth.ui.login.repository
+package com.infras.dauth.repository
 
-import com.infras.dauth.manager.sdk
+import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.LoginResultData
+import com.infras.dauthsdk.login.model.BindPhoneParam
+import com.infras.dauthsdk.login.network.BaseResponse
 
-class SignInRepository {
+class SignInRepository constructor() {
 
     companion object {
         private const val TAG = "SignInRepository"
     }
 
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     suspend fun signIn(signInBlock: suspend () -> LoginResultData?): Boolean {
         val result = signInBlock.invoke()
@@ -57,5 +59,19 @@ class SignInRepository {
 
     suspend fun sendPhoneVerifyCode(phone: String, areaCode: String): Boolean {
         return sdk.sendPhoneVerifyCode(phone, areaCode)?.isSuccess() ?: false
+    }
+
+    suspend fun bindEmail(email: String, verifyCode: String): BaseResponse? {
+        return sdk.bindEmail(email, verifyCode)
+    }
+
+    suspend fun bindPhone(phone: String, areaCode: String, verifyCode: String): BaseResponse? {
+        return sdk.bindPhone(
+            BindPhoneParam(
+                phone = phone,
+                phone_area_code = areaCode,
+                verify_code = verifyCode
+            )
+        )
     }
 }

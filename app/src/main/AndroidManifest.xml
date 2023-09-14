@@ -42,15 +42,15 @@
             android:screenOrientation="portrait"/>
         <activity android:name="com.infras.dauth.ui.home.HomeActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.infras.dauth.ui.transaction.BuyAndSellActivity"
+        <activity android:name="com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.infras.dauth.ui.transaction.BuyTokenActivity"
+        <activity android:name="com.infras.dauth.ui.fiat.transaction.BuyTokenActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.infras.dauth.ui.transaction.BuyWithActivity"
+        <activity android:name="com.infras.dauth.ui.fiat.transaction.BuyWithActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.infras.dauth.ui.transaction.OrdersActivity"
+        <activity android:name="com.infras.dauth.ui.fiat.transaction.OrdersActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.infras.dauth.ui.transaction.KycSubmitActivity"
+        <activity android:name="com.infras.dauth.ui.fiat.transaction.KycSubmitActivity"
             android:screenOrientation="portrait"/>
 
         <!--        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>-->

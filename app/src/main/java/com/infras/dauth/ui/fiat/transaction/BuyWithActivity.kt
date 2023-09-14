@@ -1,4 +1,4 @@
-package com.infras.dauth.ui.transaction
+package com.infras.dauth.ui.fiat.transaction
 
 import android.content.Context
 import android.os.Bundle

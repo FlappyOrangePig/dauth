@@ -67,4 +67,8 @@ class LoadingDialogFragment : BaseDialogFragment() {
         }
         isCancelable = false
     }
+
+    override fun dismissAllowingStateLoss() {
+        super.dismissAllowingStateLoss()
+    }
 }

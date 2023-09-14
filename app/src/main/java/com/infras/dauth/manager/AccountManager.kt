@@ -8,13 +8,12 @@ import com.infras.dauthsdk.api.entity.WalletAddressData
 
 internal object AccountManager {
 
-    private lateinit var sdk: IDAuthApi
+    lateinit var sdk: IDAuthApi
+        private set
 
     fun attachSdk(sdk: IDAuthApi){
         this.sdk = sdk
     }
-
-    internal fun sdk() = sdk
 
     private suspend fun getAccountAddressResult(): DAuthResult<WalletAddressData> {
         return sdk.queryWalletAddress()
@@ -59,5 +58,3 @@ internal object AccountManager {
         }
     }
 }
-
-internal fun sdk() = AccountManager.sdk()

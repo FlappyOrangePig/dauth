@@ -48,7 +48,7 @@ class SignInByPasswordFragment private constructor() : BaseFragment() {
             lifecycleScope.launch {
                 loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
                 val result = viewModel.sendSubmitRequest()
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 requireActivity().apply {
                     ToastUtil.show(
                         this,

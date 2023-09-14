@@ -47,7 +47,7 @@ class SignInByCodeFragment private constructor() : BaseFragment() {
             lifecycleScope.launch {
                 loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
                 val result = viewModel.sendVerifyCode()
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     it.context,
                     getString(if (result) R.string.success else (R.string.failure))
@@ -58,7 +58,7 @@ class SignInByCodeFragment private constructor() : BaseFragment() {
             lifecycleScope.launch {
                 loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
                 val result = viewModel.sendSubmitRequest()
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 requireActivity().apply {
                     ToastUtil.show(
                         this,

@@ -1,27 +1,28 @@
-package com.infras.dauth.ui.transaction.widget
+package com.infras.dauth.ui.fiat.transaction.widget
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.infras.dauth.databinding.DialogFragmentVerifiedBinding
+import com.infras.dauth.databinding.DialogFragmentVerifyFailedBinding
 import com.infras.dauth.ext.setDebouncedOnClickListener
+import com.infras.dauth.ui.fiat.transaction.KycSubmitActivity
 import com.infras.dauth.widget.dialog.BottomDialogFragment
 
-class VerifiedDialogFragment : BottomDialogFragment() {
+class VerifyFailedDialogFragment : BottomDialogFragment() {
 
     companion object {
-        const val TAG = "VerifiedDialogFragment"
+        const val TAG = "VerifyFailedDialogFragment"
         private const val EXTRA_USER_ID = "EXTRA_USER_ID"
 
-        fun newInstance(userId: String): VerifiedDialogFragment {
-            return VerifiedDialogFragment().also {
+        fun newInstance(userId: String): VerifyFailedDialogFragment {
+            return VerifyFailedDialogFragment().also {
                 it.arguments = Bundle().apply { putString(EXTRA_USER_ID, userId) }
             }
         }
     }
 
-    private var _binding: DialogFragmentVerifiedBinding? = null
+    private var _binding: DialogFragmentVerifyFailedBinding? = null
     private val binding get() = _binding!!
     private val userId get() = requireArguments().getString(EXTRA_USER_ID)
 
@@ -30,10 +31,14 @@ class VerifiedDialogFragment : BottomDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DialogFragmentVerifiedBinding.inflate(inflater, container, false)
+        _binding = DialogFragmentVerifyFailedBinding.inflate(inflater, container, false)
         binding.tvDauthId.text = userId.toString()
-        binding.tvOk.setDebouncedOnClickListener {
+        binding.tvLatter.setDebouncedOnClickListener {
             dismiss()
+        }
+        binding.tvGetVerified.setDebouncedOnClickListener {
+            dismiss()
+            KycSubmitActivity.launch(it.context)
         }
         return binding.root
     }

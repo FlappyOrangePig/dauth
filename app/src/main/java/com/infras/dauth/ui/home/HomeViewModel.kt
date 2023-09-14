@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.GasUtil
 import com.infras.dauthsdk.api.annotation.DAuthAccountType
 import com.infras.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
@@ -20,7 +19,7 @@ import java.math.BigInteger
 
 class HomeViewModel : BaseViewModel() {
 
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
     private val _balance = mutableStateOf("")
     val balance: State<String> = _balance
     private val _address = mutableStateOf("")

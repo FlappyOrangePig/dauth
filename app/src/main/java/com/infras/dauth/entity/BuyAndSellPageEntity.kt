@@ -4,7 +4,7 @@ import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 
 data class BuyAndSellPageEntity(
     val buyTab: List<TokenInfoOfTag>,
-    val fiatList: List<DigitalCurrencyListRes.Fiat_list>,
+    val fiatList: List<DigitalCurrencyListRes.FiatInfo>,
     var fiatSelectIndex: Int?,
 ) {
     data class TokenInfoOfTag(
@@ -24,7 +24,7 @@ data class BuyAndSellPageEntity(
         val avatarUrl: String,
         val changeRange: String,
         val price: String,
-        val crypto: DigitalCurrencyListRes.Crypto_list,
+        val crypto: DigitalCurrencyListRes.CryptoInfo,
     )
 }
 
