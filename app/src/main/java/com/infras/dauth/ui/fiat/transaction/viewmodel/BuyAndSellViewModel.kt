@@ -7,14 +7,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.BuyAndSellPageEntity
+import com.infras.dauth.entity.KycBundledState
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 import kotlinx.coroutines.launch
 
 class BuyAndSellViewModel : BaseViewModel() {
 
-    private var _verifyChannelExists = MutableLiveData<Boolean>()
-    val verifyChannelExists: LiveData<Boolean> = _verifyChannelExists
+    private var _kycBundledState = MutableLiveData<KycBundledState>()
+    val kycBundledState: LiveData<KycBundledState> = _kycBundledState
 
     private val _tokenInfoOfTagList = mutableStateOf(getBuyAndSellPageEntity(listOf(), listOf()))
     val tokenInfoOfTagList: State<BuyAndSellPageEntity> = _tokenInfoOfTagList
@@ -23,36 +25,35 @@ class BuyAndSellViewModel : BaseViewModel() {
 
     fun fetchAccountDetail() = viewModelScope.launch {
         val r = repo.accountDetail()
-        if (r != null) {
-            when {
-                r.isSuccess() -> {
-                    r.data != null
-                    _verifyChannelExists.value = (r.data != null)
-                }
-
-                r.verifyChannelExists() -> {
-                    _verifyChannelExists.value = false
-                }
+        if (r != null && r.isSuccess()) {
+            r.data?.let {
+                val newValue = KycBundledState(
+                    kycState = it.detail?.state,
+                    isBound = it.is_bind == 1
+                )
+                _kycBundledState.value = newValue
             }
         }
     }
 
     fun fetchCurrencyList() = viewModelScope.launch {
-        val r = repo.currencyList()
+        val r = showLoading { repo.currencyList() }
         if (r != null && r.isSuccess()) {
-            val cryptoList = r.data?.crypto_info ?: listOf()
+            val cryptoList = r.data?.cryptoList ?: listOf()
             val tokenInfoList = cryptoList.map {
                 BuyAndSellPageEntity.TokenInfo(
-                    name = it.crypto_code.orEmpty(),
-                    issuer = "tether",
-                    avatarUrl = it.crypto_icon.orEmpty(),
+                    name = it.cryptoCode.orEmpty(),
+                    issuer = it.cryptoIssuer.orEmpty(),
+                    avatarUrl = it.cryptoIcon.orEmpty(),
                     changeRange = "+10%",
                     "$111",
                     it
                 )
             }
-            val fiatList = r.data?.fiat_info ?: listOf()
+            val fiatList = r.data?.fiatList ?: listOf()
             _tokenInfoOfTagList.value = getBuyAndSellPageEntity(tokenInfoList, fiatList)
+
+            fetchPrice(fiatList, cryptoList)
         }
     }
 
@@ -92,5 +93,19 @@ class BuyAndSellViewModel : BaseViewModel() {
             fiatSelectIndex = index
         )
         _tokenInfoOfTagList.value = newValue
+    }
+
+    private suspend fun fetchPrice(
+        fiatList: List<DigitalCurrencyListRes.FiatInfo>,
+        cryptoList: List<DigitalCurrencyListRes.CryptoInfo>
+    ) {
+        val r = showLoading {
+            repo.currencyPrice(
+                CurrencyPriceParam(
+                    fiat_list = fiatList.map { it.fiatCode }.first().toString(),
+                    crypto_list = cryptoList.map { it.cryptoCode }.first().toString()
+                )
+            )
+        }
     }
 }

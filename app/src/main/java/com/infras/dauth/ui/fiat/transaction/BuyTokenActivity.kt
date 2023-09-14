@@ -3,6 +3,7 @@ package com.infras.dauth.ui.fiat.transaction
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,9 +19,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,19 +31,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.BuyTokenPageInputEntity
+import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.ext.launch
+import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyTokenViewModel
 import com.infras.dauth.util.ConvertUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.titleWith1Icon
-import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 import java.math.BigInteger
 
 class BuyTokenActivity : BaseActivity() {
 
     companion object {
-        private const val INPUT_TIPS = "Enter a minimum of 10 USDT"
         private const val EXTRA_INPUT = "EXTRA_INPUT"
         fun launch(
             context: Context,
@@ -56,24 +55,53 @@ class BuyTokenActivity : BaseActivity() {
         }
     }
 
-    private val input get() = intent.getParcelableExtraCompat<BuyTokenPageInputEntity>(EXTRA_INPUT)!!
+    private val viewModel: BuyTokenViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel.attachInput(intent.getParcelableExtraCompat(EXTRA_INPUT)!!)
         setContent {
-            BuyTokenScreen(
-                selectPayMethod = { amount ->
-                    if (amount >= BigInteger("10")) {
-                        BuyWithActivity.launch(this)
-                    } else {
-                        ToastUtil.show(this, INPUT_TIPS)
-                    }
-                },
-                onClickOrders = {
-                    OrdersActivity.launch(this@BuyTokenActivity)
-                }
-            )
+            BuyTokenScreenWithViewModel()
         }
+    }
+
+    @Composable
+    private fun BuyTokenScreenWithViewModel() {
+        val inputAmount by remember {
+            viewModel.amount
+        }
+        val estimatedPrice by remember {
+            viewModel.estimatedPrice
+        }
+
+        val fiat = viewModel.getCurrentFiatInfo()
+        BuyTokenScreen(
+            selectPayMethod = { amount ->
+                val fiat = viewModel.getCurrentFiatInfo()
+                if (amount >= BigInteger("10")) {
+                    BuyWithActivity.launch(
+                        this, BuyWithPageInputEntity(
+                            crypto_info = viewModel.input.crypto_info,
+                            fiat_info = fiat,
+                            buyAmount = amount.toString()
+                        )
+                    )
+                } else {
+                    val toast = "Enter a minimum of 10 ${fiat.fiatCode}(${fiat.fiatSymbol})"
+                    ToastUtil.show(this, toast)
+                }
+            },
+            onClickOrders = {
+                OrdersActivity.launch(this@BuyTokenActivity)
+            },
+            onAmountChanged = { amount ->
+                viewModel.updateAmount(amount)
+            },
+            crypto = viewModel.input.crypto_info.cryptoCode.orEmpty(),
+            fiat = "${fiat.fiatCode}(${fiat.fiatSymbol})",
+            priceQuote = estimatedPrice,
+            amount = inputAmount
+        )
     }
 
     @Preview
@@ -81,6 +109,11 @@ class BuyTokenActivity : BaseActivity() {
     private fun BuyTokenScreen(
         selectPayMethod: (BigInteger) -> Unit = {},
         onClickOrders: () -> Unit = {},
+        onAmountChanged: (String) -> Unit = {},
+        crypto: String = "USDT",
+        fiat: String = "CNY",
+        priceQuote: String = "Enter a minimum of 10 $crypto",
+        amount: String = "1234",
     ) {
         Scaffold(
             topBar = {
@@ -93,20 +126,16 @@ class BuyTokenActivity : BaseActivity() {
                         .fillMaxWidth()
                         .fillMaxHeight()
                 ) {
-
-                    var amount by remember {
-                        mutableStateOf("0")
-                    }
                     val amountWithSeparator = ConvertUtil.addCommasToNumber(amount)
 
                     titleWith1Icon(
-                        title = "Buy ${input.crypto_info.crypto_code}",
+                        title = "Buy $crypto",
                         onClickBack = { finish() },
                         onClickRightIcon = { onClickOrders.invoke() },
                     )
 
                     Text(
-                        text = "↑↓\nCNY",
+                        text = "↑↓\n$fiat",
                         color = Color.Black,
                         fontSize = 16.sp,
                         modifier = Modifier
@@ -116,7 +145,7 @@ class BuyTokenActivity : BaseActivity() {
                     )
 
                     Text(
-                        text = "$amountWithSeparator USDT",
+                        text = "$amountWithSeparator $crypto",
                         color = Color.Black,
                         maxLines = 1,
                         fontSize = 30.sp,
@@ -127,7 +156,7 @@ class BuyTokenActivity : BaseActivity() {
                     )
 
                     Text(
-                        text = INPUT_TIPS,
+                        text = priceQuote,
                         color = Color(0xff494949),
                         fontSize = 10.sp,
                         modifier = Modifier
@@ -149,9 +178,9 @@ class BuyTokenActivity : BaseActivity() {
 
                     CalculatorLayout(
                         onItemClick = { str ->
-                            when (str) {
+                            val newAmount = when (str) {
                                 "⬅" -> {
-                                    amount = if (amount.length == 1) {
+                                    if (amount.length == 1) {
                                         "0"
                                     } else {
                                         amount.substring(0, amount.length - 1)
@@ -170,13 +199,16 @@ class BuyTokenActivity : BaseActivity() {
                                     "9",
                                     "0",
                                 ) -> {
-                                    amount = if (amount == "0") {
+                                    if (amount == "0") {
                                         str
                                     } else {
                                         amount.plus(str)
                                     }
                                 }
+
+                                else -> amount
                             }
+                            onAmountChanged.invoke(newAmount)
                         }
                     )
                 }

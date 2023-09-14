@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_black_r5_s1">
+
+    <View
+        android:id="@+id/v_color_block"
+        android:layout_width="2.5dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:background="@color/green1" />
+
+    <com.infras.dauth.widget.IFTextView
+        android:id="@+id/tv_method_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="7dp"
+        android:textColor="@color/black"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@id/v_color_block"
+        app:layout_constraintStart_toStartOf="@id/v_color_block"
+        app:layout_constraintTop_toTopOf="@id/v_color_block"
+        tools:text="AdvCash" />
+
+    <com.infras.dauth.widget.IFTextView
+        android:id="@+id/tv_method_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/gray_9a"
+        android:textSize="8sp"
+        app:layout_constraintStart_toStartOf="@id/v_color_block"
+        app:layout_constraintTop_toBottomOf="@id/v_color_block"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        tools:text="Unit Price： 1.01 USD" />
+
+    <ImageView
+        android:id="@+id/iv_check"
+        android:layout_width="38dp"
+        android:layout_height="32dp"
+        android:paddingStart="10dp"
+        android:paddingTop="7dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="7dp"
+        android:src="@drawable/svg_ic_radio_button_selector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

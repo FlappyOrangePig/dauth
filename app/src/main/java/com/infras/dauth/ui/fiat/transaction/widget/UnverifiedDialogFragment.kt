@@ -14,10 +14,14 @@ class UnverifiedDialogFragment : BottomDialogFragment() {
     companion object {
         const val TAG = "UnverifiedDialogFragment"
         private const val EXTRA_USER_ID = "EXTRA_USER_ID"
+        private const val EXTRA_IS_BOUND = "EXTRA_IS_BOUND"
 
-        fun newInstance(userId: String): UnverifiedDialogFragment {
+        fun newInstance(userId: String, isBound: Boolean): UnverifiedDialogFragment {
             return UnverifiedDialogFragment().also {
-                it.arguments = Bundle().apply { putString(EXTRA_USER_ID, userId) }
+                it.arguments = Bundle().apply {
+                    putString(EXTRA_USER_ID, userId)
+                    putBoolean(EXTRA_IS_BOUND, isBound)
+                }
             }
         }
     }
@@ -25,6 +29,7 @@ class UnverifiedDialogFragment : BottomDialogFragment() {
     private var _binding: DialogFragmentUnverifiedBinding? = null
     private val binding get() = _binding!!
     private val userId get() = requireArguments().getString(EXTRA_USER_ID)
+    private val isBound get() = requireArguments().getBoolean(EXTRA_IS_BOUND)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,7 +43,7 @@ class UnverifiedDialogFragment : BottomDialogFragment() {
         }
         binding.tvGetVerified.setDebouncedOnClickListener {
             dismiss()
-            KycSubmitActivity.launch(it.context)
+            KycSubmitActivity.launch(it.context, isBound)
         }
         return binding.root
     }

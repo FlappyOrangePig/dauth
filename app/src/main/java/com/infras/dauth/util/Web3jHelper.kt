@@ -33,7 +33,7 @@ private suspend inline fun <S, T : Response<*>, D> Request<S, T>.await(crossinli
     }
 }
 
-private suspend inline fun <S, T : Response<*>, D> Request<S, T>.awaitLite(crossinline block: (T) -> D): D? {
+internal suspend inline fun <S, T : Response<*>, D> Request<S, T>.awaitLite(crossinline block: (T) -> D): D? {
     return (await(block) as? DAuthResult.Success)?.data
 }
 

@@ -44,12 +44,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.Visibility
+import androidx.lifecycle.lifecycleScope
 import coil.compose.rememberAsyncImagePainter
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
 import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfo
 import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfoOfTag
+import com.infras.dauth.entity.BuyTokenPageInputEntity
 import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.AccountManager
@@ -57,6 +60,7 @@ import com.infras.dauth.ui.fiat.transaction.test.BuyAndSellActivityMockData
 import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyAndSellViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.UnverifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
+import com.infras.dauth.ui.fiat.transaction.widget.VerifyFailedDialogFragment
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
@@ -65,53 +69,66 @@ import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicatorsWithUnderLi
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
+import kotlinx.coroutines.launch
 
 class BuyAndSellActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            context.launch(com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity::class.java)
+            context.launch(BuyAndSellActivity::class.java)
         }
     }
 
-    private val loadingDialogFragment = LoadingDialogFragment.newInstance()
     private val viewModel: BuyAndSellViewModel by viewModels()
+    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainLayoutWithViewModel(viewModel)
+            MainLayoutWithViewModel()
         }
         initViewModel()
         fetchData()
     }
 
     private fun initViewModel() {
-        viewModel.verifyChannelExists.observe(this) {
-            when (it) {
-                true -> {
-                    VerifiedDialogFragment.newInstance(
-                        AccountManager.getAuthId()
-                    ).show(supportFragmentManager, VerifiedDialogFragment.TAG)
+        viewModel.kycBundledState.observe(this) {
+            val authId = AccountManager.getAuthId()
+            val fm = supportFragmentManager
+            when (it.kycState) {
+                null -> {
+                    UnverifiedDialogFragment.newInstance(
+                        authId, it.isBound
+                    ).show(fm, UnverifiedDialogFragment.TAG)
                 }
 
-                false -> {
-                    UnverifiedDialogFragment.newInstance(
-                        AccountManager.getAuthId()
-                    ).show(supportFragmentManager, UnverifiedDialogFragment.TAG)
+                0 -> {
+                    VerifiedDialogFragment.newInstance(
+                        authId
+                    ).show(fm, VerifiedDialogFragment.TAG)
+                }
+
+                2 -> {
+                    VerifyFailedDialogFragment.newInstance(
+                        authId, it.isBound
+                    ).show(fm, VerifyFailedDialogFragment.TAG)
+                }
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.showLoading.observe(this@BuyAndSellActivity) {
+                if (it) {
+                    loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                } else {
+                    loadingDialog.dismissAllowingStateLoss()
                 }
             }
         }
     }
 
     private fun fetchData() {
-        loadingDialogFragment.show(supportFragmentManager, LoadingDialogFragment.TAG)
         viewModel.fetchCurrencyList()
-        loadingDialogFragment.dismiss()
-
-        loadingDialogFragment.show(supportFragmentManager, LoadingDialogFragment.TAG)
         viewModel.fetchAccountDetail()
-        loadingDialogFragment.dismiss()
     }
 
     @Preview
@@ -177,6 +194,7 @@ class BuyAndSellActivity : BaseActivity() {
                             modifier = Modifier.constrainAs(tvChangeRange) {
                                 end.linkTo(parent.end, 15.dp)
                                 bottom.linkTo(parent.bottom)
+                                visibility = Visibility.Invisible
                             }
                         )
                         Text(text = t.price,
@@ -205,7 +223,8 @@ class BuyAndSellActivity : BaseActivity() {
     @Preview
     @Composable
     private fun BuyTab(
-        tokenInfoOfTag: List<TokenInfoOfTag> = BuyAndSellActivityMockData.tokenInfoList
+        tokenInfoOfTag: List<TokenInfoOfTag> = BuyAndSellActivityMockData.tokenInfoList,
+        onClickItem: (TokenInfo) -> Unit = {}
     ) {
         ConstraintLayout(
             modifier = Modifier
@@ -252,9 +271,7 @@ class BuyAndSellActivity : BaseActivity() {
                 }
                 .fillMaxWidth(),
                 tokens = tokenListOfCurrentTag,
-                onClickItem = {
-                    com.infras.dauth.ui.fiat.transaction.BuyTokenActivity.Companion.launch(this@BuyAndSellActivity)
-                }
+                onClickItem = onClickItem
             )
         }
     }
@@ -265,14 +282,25 @@ class BuyAndSellActivity : BaseActivity() {
     }
 
     @Composable
-    private fun MainLayoutWithViewModel(vm: BuyAndSellViewModel) {
+    private fun MainLayoutWithViewModel(vm: BuyAndSellViewModel = viewModel) {
         val data by remember {
             vm.tokenInfoOfTagList
         }
         MainLayout(
             onClickCurrencyToggle = { vm.updateSelect(it) },
             pagerEntities = listOf(
-                PagerEntity("Buy") { BuyTab(data.buyTab) },
+                PagerEntity("Buy") {
+                    BuyTab(data.buyTab) { tokenInfo ->
+                        val fiatIndex = data.fiatSelectIndex ?: return@BuyTab
+                        BuyTokenActivity.launch(
+                            this, BuyTokenPageInputEntity(
+                                crypto_info = tokenInfo.crypto,
+                                fiat_info = data.fiatList,
+                                selectedFiatIndex = fiatIndex,
+                            )
+                        )
+                    }
+                },
                 PagerEntity("Sale") { SellTab() },
             ),
             fiatList = data.fiatList,
@@ -344,7 +372,7 @@ class BuyAndSellActivity : BaseActivity() {
                 mutableStateOf(false)
             }
             var fiatText =
-                if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiat_code.orEmpty()
+                if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiatCode.orEmpty()
 
             Text(
                 text = fiatText,
@@ -378,7 +406,7 @@ class BuyAndSellActivity : BaseActivity() {
                         .height(IntrinsicSize.Min)
                 ) {
                     fiatList.forEachIndexed { index, fiatList ->
-                        val fiatCode = fiatList.fiat_code.orEmpty()
+                        val fiatCode = fiatList.fiatCode.orEmpty()
                         DropdownMenuItem(onClick = {
                             showPopup = false
                             fiatText = fiatCode

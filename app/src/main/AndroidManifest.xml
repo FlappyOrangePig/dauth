@@ -48,6 +48,8 @@
             android:screenOrientation="portrait"/>
         <activity android:name="com.infras.dauth.ui.fiat.transaction.BuyWithActivity"
             android:screenOrientation="portrait"/>
+        <activity android:name="com.infras.dauth.ui.fiat.transaction.BuyWithActivity2"
+            android:screenOrientation="portrait"/>
         <activity android:name="com.infras.dauth.ui.fiat.transaction.OrdersActivity"
             android:screenOrientation="portrait"/>
         <activity android:name="com.infras.dauth.ui.fiat.transaction.KycSubmitActivity"
