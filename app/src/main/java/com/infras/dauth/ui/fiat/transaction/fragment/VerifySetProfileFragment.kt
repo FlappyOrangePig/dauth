@@ -32,6 +32,7 @@ class VerifySetProfileFragment : BaseFragment() {
 
     companion object {
         const val TAG = "VerifySetProfileFragment"
+        private const val DEBUG_JUMP_DIRECTLY = false
         fun newInstance(): VerifySetProfileFragment {
             return VerifySetProfileFragment()
         }
@@ -77,7 +78,11 @@ class VerifySetProfileFragment : BaseFragment() {
             sendSms()
         }
         tvContinue.setDebouncedOnClickListener {
-            handleContinue()
+            if (DEBUG_JUMP_DIRECTLY) {
+                launchNextPage()
+            } else {
+                handleContinue()
+            }
         }
         spAreaCode.adapter =
             ArrayAdapter(requireContext(), R.layout.spinner_item_phone_area_code, areaCodes)

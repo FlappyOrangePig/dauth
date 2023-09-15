@@ -208,7 +208,7 @@
         android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@id/tv_tips2_1" />
 
-    <TextView
+    <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_continue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

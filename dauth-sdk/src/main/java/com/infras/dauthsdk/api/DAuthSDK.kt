@@ -46,8 +46,8 @@ class DAuthSDK private constructor(
         return Managers.eoaWalletApi
     }
 
-    override fun getDepositApi(): IDepositApi {
-        return Managers.depositApi
+    override fun getFiatApi(): IFiatApi {
+        return Managers.fiatApi
     }
 
     @VisibleForTesting

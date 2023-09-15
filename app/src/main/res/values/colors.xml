@@ -9,12 +9,11 @@
     <color name="black">#000000</color>
     <color name="blue">#4182ff</color>
     <color name="green">#32b585</color>
+    <color name="transparent">#00000000</color>
     <color name="white_2nd">#ededed</color>
-
     <color name="gray_d9">#d9d9d9</color>
     <color name="gray_9a">#9a9a9a</color>
     <color name="gray_b4">#b4b4b4</color>
-    <color name="green1">#5FCE8C</color>
-    #B4B4B4
-
+    <color name="gray_f0">#f0f0f0</color>
+    <color name="green1">#5fce8c</color>
 </resources>

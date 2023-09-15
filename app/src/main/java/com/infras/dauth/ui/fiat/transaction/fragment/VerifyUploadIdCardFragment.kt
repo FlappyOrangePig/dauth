@@ -79,6 +79,7 @@ class VerifyUploadIdCardFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViewModel()
+        fVm.fetchUploadRequirement()
     }
 
     private fun FragmentVerifyUploadIdCardBinding.initView() {

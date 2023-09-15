@@ -98,7 +98,7 @@ class BuyTokenActivity : BaseActivity() {
                 viewModel.updateAmount(amount)
             },
             crypto = viewModel.input.crypto_info.cryptoCode.orEmpty(),
-            fiat = "${fiat.fiatCode}(${fiat.fiatSymbol})",
+            fiat = "${fiat.fiatCode}",
             priceQuote = estimatedPrice,
             amount = inputAmount
         )

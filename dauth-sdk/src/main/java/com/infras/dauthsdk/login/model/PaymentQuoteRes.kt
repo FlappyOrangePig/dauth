@@ -7,9 +7,9 @@ class PaymentQuoteRes(
     val data: Data?,
 ) : BaseResponse() {
     class Data(
-        @Json(name = "FiatAmount")
+        @Json(name = "fiat_amount")
         val fiatAmount: String,
-        @Json(name = "CryptoAmount")
+        @Json(name = "crypto_amount")
         val cryptoAmount: String,
     )
 }

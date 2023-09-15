@@ -1,6 +1,6 @@
 package com.infras.dauthsdk.login.network
 
-import com.infras.dauthsdk.api.IDepositApi
+import com.infras.dauthsdk.api.IFiatApi
 import com.infras.dauthsdk.login.infrastructure.ApiClient
 import com.infras.dauthsdk.login.infrastructure.ReqUrl
 import com.infras.dauthsdk.login.infrastructure.RequestConfig
@@ -10,16 +10,20 @@ import com.infras.dauthsdk.login.model.AccountDocumentationRequestParam
 import com.infras.dauthsdk.login.model.AccountDocumentationRequestRes
 import com.infras.dauthsdk.login.model.AccountOpenParam
 import com.infras.dauthsdk.login.model.AccountOpenRes
+import com.infras.dauthsdk.login.model.CountryListParam
+import com.infras.dauthsdk.login.model.CountryListRes
 import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.CurrencyPriceRes
 import com.infras.dauthsdk.login.model.DigitalCurrencyListParam
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderCreateRes
+import com.infras.dauthsdk.login.model.OrderListParam
+import com.infras.dauthsdk.login.model.OrderListRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import com.infras.dauthsdk.login.model.PaymentQuoteRes
 
-internal class RequestApiDeposit internal constructor() : ApiClient(), IDepositApi {
+internal class RequestApiFiat internal constructor() : ApiClient(), IFiatApi {
 
     override suspend fun accountDetail(): AccountDetailRes? {
         val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/account/detail"))
@@ -31,9 +35,9 @@ internal class RequestApiDeposit internal constructor() : ApiClient(), IDepositA
         return request(c, DigitalCurrencyListParam())
     }
 
-    override suspend fun accountDocumentationRequest(param: AccountDocumentationRequestParam): AccountDocumentationRequestRes? {
+    override suspend fun accountDocumentationRequest(p: AccountDocumentationRequestParam): AccountDocumentationRequestRes? {
         val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/account/doc/request"))
-        return request(c, param)
+        return request(c, p)
     }
 
     override suspend fun accountOpen(p: AccountOpenParam): AccountOpenRes? {
@@ -53,6 +57,16 @@ internal class RequestApiDeposit internal constructor() : ApiClient(), IDepositA
 
     override suspend fun currencyPrice(p: CurrencyPriceParam): CurrencyPriceRes? {
         val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/currency/price"))
+        return request(c, p)
+    }
+
+    override suspend fun orderList(p: OrderListParam): OrderListRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/list"))
+        return request(c, p)
+    }
+
+    override suspend fun countryList(p: CountryListParam): CountryListRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/country/list"))
         return request(c, p)
     }
 }

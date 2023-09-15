@@ -3,6 +3,7 @@ package com.infras.dauth.ui.fiat.transaction.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.infras.dauth.MyApplication
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.entity.PayMethodChooseListEntity
@@ -19,6 +20,7 @@ class BuyWithViewModel : BaseViewModel() {
 
     lateinit var input: BuyWithPageInputEntity
         private set
+    private val resourceManager get() = MyApplication.app.resourceManager
 
     private val _address = MutableLiveData<String>()
     val address: LiveData<String> = _address
@@ -81,7 +83,12 @@ class BuyWithViewModel : BaseViewModel() {
 
             val method = payMethods.value.orEmpty()[sel]
             val token = input.crypto_info.cryptoCode.orEmpty()
-            val walletAddress = address.value.orEmpty()
+            val walletAddress = AccountManager.getAccountAddress()
+            if (walletAddress.isNullOrEmpty()) {
+                toast("address error")
+                return@launch
+            }
+
             val chainId = AccountManager.sdk.getWeb3j().ethChainId().awaitLite {
                 it.chainId
             }
@@ -90,20 +97,21 @@ class BuyWithViewModel : BaseViewModel() {
                 return@launch
             }
 
-            repo.orderCreate(
-                OrderCreateParam(
-                    paymethod_id = method.payMethodInfo.payMethodId.orEmpty(),
-                    withdraw_address = walletAddress,
-                    amount = input.buyAmount,
-                    chain_id = chainId.toString(),
-                    quote_type = "AMOUNT",
-                    asset_type = "CRYPTO",
-                    trade_type = "FIAT",
-                    asset_name = token,
-                    quote_asset_name = token
+            val r = showLoading {
+                repo.orderCreate(
+                    OrderCreateParam(
+                        trade_model = "FAST",
+                        quote_type = "QUANTITY",
+                        fiat_code = input.fiat_info.fiatCode.orEmpty(),
+                        crypto_code = token,
+                        amount = input.buyAmount,
+                        paymethod_id = method.payMethodInfo.payMethodId.orEmpty(),
+                        withdraw_address = walletAddress,
+                        chain_id = chainId.toString(),
+                    )
                 )
-            )
+            }
+            toast(resourceManager.getResponseDigest(r))
         }
-
     }
 }

@@ -18,6 +18,7 @@ import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyWithViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.VerticalDividerItemDecoration
 import com.infras.dauth.util.ConvertUtil
 import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 import kotlinx.coroutines.launch
 
@@ -36,6 +37,7 @@ class BuyWithActivity : BaseActivity() {
     private var _binding: ActivityBuyWithBinding? = null
     private val binding get() = _binding!!
     private val viewModel: BuyWithViewModel by viewModels()
+    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +63,15 @@ class BuyWithActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.toastEvent.collect {
                 ToastUtil.show(this@BuyWithActivity, it)
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.showLoading.observe(this@BuyWithActivity) {
+                if (it) {
+                    loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                } else {
+                    loadingDialog.dismissAllowingStateLoss()
+                }
             }
         }
     }

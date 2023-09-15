@@ -7,19 +7,21 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
 import com.infras.dauth.databinding.FragmentVerifySetIdCardBinding
-import com.infras.dauth.entity.CountryInfo
 import com.infras.dauth.entity.DocumentType
 import com.infras.dauth.entity.KycDocumentInfo
 import com.infras.dauth.entity.KycName
+import com.infras.dauth.entity.KycOpenAccountMethod
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.fiat.transaction.viewmodel.KycSubmitViewModel
+import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifySetIdCardViewModel
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.login.model.CountryListRes.CountryInfo
 import com.infras.dauthsdk.wallet.base.BaseFragment
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class VerifySetIdCardFragment : BaseFragment() {
@@ -30,6 +32,7 @@ class VerifySetIdCardFragment : BaseFragment() {
 
     companion object {
         const val TAG = "VerifySetIdCardFragment"
+        private const val DEBUG_JUMP_DIRECTLY = false
         fun newInstance(): VerifySetIdCardFragment {
             return VerifySetIdCardFragment()
         }
@@ -38,12 +41,11 @@ class VerifySetIdCardFragment : BaseFragment() {
     private var _binding: FragmentVerifySetIdCardBinding? = null
     private val binding get() = _binding!!
     private val viewModel: KycSubmitViewModel by activityViewModels()
+    private val fVm: VerifySetIdCardViewModel by viewModels()
+    private val loadingDialog = LoadingDialogFragment.newInstance()
     private val checkViews by lazy {
         listOf(binding.ivCheckIdCard, binding.ivCheckPassport, binding.ivCheckDrive)
     }
-    private var countries: MutableList<CountryInfo> = mutableListOf()
-    private val loadingDialog = LoadingDialogFragment.newInstance()
-    private var currentDocumentType = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,13 +59,21 @@ class VerifySetIdCardFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initViewModel()
+    }
 
-        fetchData()
+    override fun onResume() {
+        super.onResume()
+        fVm.fetchCountry()
     }
 
     private fun FragmentVerifySetIdCardBinding.initView() {
         tvContinue.setDebouncedOnClickListener {
-            handleContinue()
+            if (DEBUG_JUMP_DIRECTLY) {
+                (activity as? IdCardConfirmCallback)?.onConfirmIdCard()
+            } else {
+                handleContinue()
+            }
         }
         spAreaCode.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -72,7 +82,7 @@ class VerifySetIdCardFragment : BaseFragment() {
                 position: Int,
                 id: Long
             ) {
-                updatePage()
+                fVm.selectCountry(position)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -81,14 +91,49 @@ class VerifySetIdCardFragment : BaseFragment() {
         }
         checkViews.forEachIndexed { index, imageView ->
             imageView.setDebouncedOnClickListener {
-                currentDocumentType = index
-                updatePage()
+                fVm.selectOpenAccountType(index)
+            }
+        }
+    }
+
+    private fun initViewModel() {
+        fVm.countries.observe(viewLifecycleOwner) { countries ->
+            binding.spAreaCode.adapter = ArrayAdapter(
+                requireContext(),
+                R.layout.spinner_item_phone_area_code,
+                countries.map { it.countryName })
+
+            binding.flRoot.visibility = if (countries.isEmpty()) View.GONE else View.VISIBLE
+        }
+        fVm.openAccountMethod.observe(viewLifecycleOwner) {
+            updateOpenAccountMethod(it)
+        }
+        fVm.fullName.observe(viewLifecycleOwner) {
+            if (it) {
+                binding.llNameFull.visibility = View.VISIBLE
+                binding.llNameParts.visibility = View.GONE
+            } else {
+                binding.llNameFull.visibility = View.GONE
+                binding.llNameParts.visibility = View.VISIBLE
+            }
+        }
+        fVm.currentDocumentType.observe(viewLifecycleOwner) {
+            updateCheckView(it)
+        }
+        lifecycleScope.launch {
+            fVm.showLoading.observe(viewLifecycleOwner) {
+                if (it) {
+                    loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
+                } else {
+                    loadingDialog.dismissAllowingStateLoss()
+                }
             }
         }
     }
 
     private fun getCurrentCountryInfo(): CountryInfo? {
         val position = binding.spAreaCode.selectedItemPosition
+        val countries = fVm.countries.value.orEmpty()
         return if (position >= 0 && position < countries.size) {
             countries[position]
         } else {
@@ -96,25 +141,7 @@ class VerifySetIdCardFragment : BaseFragment() {
         }
     }
 
-    private fun updatePage() {
-        val ci = getCurrentCountryInfo()
-        if (ci == null) {
-            binding.flRoot.visibility = View.GONE
-        } else {
-            binding.flRoot.visibility = View.VISIBLE
-            when (ci.useFullName) {
-                true -> {
-                    binding.llNameFull.visibility = View.VISIBLE
-                    binding.llNameParts.visibility = View.GONE
-                }
-
-                false -> {
-                    binding.llNameFull.visibility = View.GONE
-                    binding.llNameParts.visibility = View.VISIBLE
-                }
-            }
-        }
-
+    private fun updateCheckView(currentDocumentType: Int?) {
         checkViews.partition {
             currentDocumentType == checkViews.indexOf(it)
         }.let { partition ->
@@ -123,28 +150,12 @@ class VerifySetIdCardFragment : BaseFragment() {
         }
     }
 
-    private fun fetchData() {
-        if (countries.isNotEmpty()) {
-            return
-        }
-
-        lifecycleScope.launch {
-            loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
-            delay(300)
-            loadingDialog.dismissAllowingStateLoss()
-
-            countries = mutableListOf(
-                CountryInfo("Japan", true),
-                CountryInfo("U.S.A.", false)
-            )
-
-            binding.spAreaCode.adapter = ArrayAdapter(
-                requireContext(),
-                R.layout.spinner_item_phone_area_code,
-                countries.map { it.countryName })
-
-            updatePage()
-        }
+    private fun updateOpenAccountMethod(kycOpenAccountMethod: KycOpenAccountMethod) {
+        binding.clIdCard.visibility = if (kycOpenAccountMethod.idCard) View.VISIBLE else View.GONE
+        binding.clPassport.visibility =
+            if (kycOpenAccountMethod.passport) View.VISIBLE else View.GONE
+        binding.clDriver.visibility =
+            if (kycOpenAccountMethod.driverSLicence) View.VISIBLE else View.GONE
     }
 
     private fun handleContinue() {
@@ -194,7 +205,7 @@ class VerifySetIdCardFragment : BaseFragment() {
             }
         }
 
-        val documentType = when (currentDocumentType) {
+        val documentType = when (fVm.currentDocumentType.value) {
             0 -> {
                 val id = binding.etIdCard.text?.toString().orEmpty()
                 if (id.isEmpty()) {
@@ -214,7 +225,10 @@ class VerifySetIdCardFragment : BaseFragment() {
                 return
             }
 
-            else -> throw RuntimeException()
+            else -> {
+                ToastUtil.show(context, "select document type")
+                return
+            }
         }
 
         val documentInfo = KycDocumentInfo(

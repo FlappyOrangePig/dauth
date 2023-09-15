@@ -57,8 +57,8 @@ import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.ext.addressForShort
 import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.ui.fiat.transaction.OrdersActivity
 import com.infras.dauth.ui.main.MainActivity
-import com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.ToastUtil
@@ -214,7 +214,10 @@ class HomeActivity : BaseActivity() {
                 onClickBuy = {
                     com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity.launch(this)
                 },
-                onClickSwap = blockShowComingSoon,
+                onClickSwap = {
+                    blockShowComingSoon.invoke()
+                    OrdersActivity.launch(this)
+                },
                 onClickProperty = blockShowComingSoon,
                 onClickSend = {
                     viewModel.viewModelScope.launch {

@@ -284,7 +284,7 @@ class BuyAndSellActivity : BaseActivity() {
     @Composable
     private fun MainLayoutWithViewModel(vm: BuyAndSellViewModel = viewModel) {
         val data by remember {
-            vm.tokenInfoOfTagList
+            vm.pageEntity
         }
         MainLayout(
             onClickCurrencyToggle = { vm.updateSelect(it) },

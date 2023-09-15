@@ -109,7 +109,7 @@
                 android:minHeight="160dp"
                 android:scaleType="centerCrop" />
 
-            <TextView
+            <com.infras.dauth.widget.IFTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -136,7 +136,7 @@
                 android:minHeight="160dp"
                 android:scaleType="centerCrop" />
 
-            <TextView
+            <com.infras.dauth.widget.IFTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -147,7 +147,7 @@
 
         </FrameLayout>
 
-        <TextView
+        <com.infras.dauth.widget.IFTextView
             android:id="@+id/tv_continue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

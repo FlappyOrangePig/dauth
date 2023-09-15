@@ -8,5 +8,5 @@ interface IDAuthApi : ILoginApi, IAAWalletApi {
     fun getEoaApi(): IEoaWalletApi
 
     @DAuthExperimentalApi
-    fun getDepositApi(): IDepositApi
+    fun getFiatApi(): IFiatApi
 }

@@ -1,5 +1,4 @@
 package com.infras.dauthsdk.login.model
 
-class AccountDocumentationRequestParam(
-    val country: String
+class CountryListParam(
 ) : IAccessTokenRequest, IAuthorizationRequest

@@ -1,11 +1,10 @@
 package com.infras.dauthsdk.login.model
 
 class OrderCreateParam(
-    val quote_asset_name: String,
+    val trade_model: String, // 交易模式：FREE，FAST，FIAT
     val quote_type: String, // 报价类型：AMOUNT，QUANTITY
-    val asset_type: String, // 报价资产类型：FIAT，CRYPTO
-    val asset_name: String,
-    val trade_type: String, // 交易资产类型：FIAT，CRYPTO
+    val fiat_code: String,
+    val crypto_code: String,
     val amount: String,
     val paymethod_id: String,
     val withdraw_address: String,

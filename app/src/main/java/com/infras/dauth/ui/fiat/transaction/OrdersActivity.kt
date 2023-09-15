@@ -2,80 +2,106 @@ package com.infras.dauth.ui.fiat.transaction
 
 import android.content.Context
 import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import android.view.LayoutInflater
+import android.widget.TextView
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
-import com.infras.dauth.entity.PagerEntity
+import com.infras.dauth.databinding.ActivityOrdersBinding
+import com.infras.dauth.databinding.ItemTabLayoutOrderStateBinding
 import com.infras.dauth.ext.launch
-import com.infras.dauth.widget.compose.DViewPager
-import com.infras.dauth.widget.compose.titleWith1Icon
+import com.infras.dauth.ext.setDebouncedOnClickListener
+import com.infras.dauth.ui.fiat.transaction.adapter.OrdersPagerAdapter
+import com.infras.dauth.util.LogUtil
+import com.infras.dauth.util.SystemUIUtil
 
 class OrdersActivity : BaseActivity() {
 
     companion object {
-        fun launch(context: Context) {
-            context.launch(OrdersActivity::class.java)
+        fun launch(context: Context) = context.launch(OrdersActivity::class.java)
+    }
+
+    private var _binding: ActivityOrdersBinding? = null
+    private val binding get() = _binding!!
+    private val pageListener = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            super.onPageSelected(position)
+            LogUtil.d(logTag, "onPageSelected $position")
+        }
+    }
+    private val onTabSelectListener = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab) {
+            LogUtil.d(logTag, "onTabSelected ${tab.position}")
+            updateTabLayout()
+        }
+
+        override fun onTabUnselected(tab: TabLayout.Tab?) {
+        }
+
+        override fun onTabReselected(tab: TabLayout.Tab?) {
         }
     }
 
+    override fun showSystemUI() {
+        SystemUIUtil.show(
+            window,
+            SystemUIUtil.ThemeDrawByDeveloper(statusBarColor = getColor(R.color.gray_f0))
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            OrdersScreen()
+        _binding = ActivityOrdersBinding.inflate(LayoutInflater.from(this))
+        setContentView(binding.root)
+        binding.initView()
+    }
+
+    private fun ActivityOrdersBinding.initView() {
+        ivBack.setDebouncedOnClickListener {
+            finish()
         }
+        vpOrders.adapter = OrdersPagerAdapter(supportFragmentManager, lifecycle)
+        vpOrders.isUserInputEnabled = false
+        vpOrders.registerOnPageChangeCallback(pageListener)
+
+        val tabLayout = tlIndicatorState
+        tabLayout.addOnTabSelectedListener(onTabSelectListener)
+        TabLayoutMediator(tabLayout, vpOrders) { tab, position ->
+            tab.customView as? TextView ?: ItemTabLayoutOrderStateBinding.inflate(
+                LayoutInflater.from(this@OrdersActivity),
+                tabLayout,
+                false
+            ).also {
+                tab.customView = it.root
+            }
+            tab.text = when (position) {
+                0 -> "Pending"
+                1 -> "Completed"
+                else -> throw RuntimeException()
+            }
+        }.attach()
     }
 
-    @Preview
-    @Composable
-    private fun PendingTab() {
-        DViewPager.BundledViewPager(
-            indicatorAtTop = true,
-            style = 2,
-            pagerEntities = listOf(
-                PagerEntity("All") { },
-                PagerEntity("In progress") { },
-                PagerEntity("In dispute") { },
-            ),
-        )
+    private fun updateTabLayout() {
+        val tabLayout = binding.tlIndicatorState
+        val sel = tabLayout.selectedTabPosition
+        updateTabInTabLayout(0, 0 == sel)
+        updateTabInTabLayout(1, 1 == sel)
     }
 
-    @Preview
-    @Composable
-    private fun CompletedTab() {
-        DViewPager.BundledViewPager(
-            indicatorAtTop = true,
-            style = 2,
-            pagerEntities = listOf(
-                PagerEntity("All") { },
-                PagerEntity("Fulfilled") { },
-                PagerEntity("Canceled") { },
-            ),
-        )
-    }
+    private fun updateTabInTabLayout(position: Int, selected: Boolean) {
+        val tabLayout = binding.tlIndicatorState
+        val tv = tabLayout.getTabAt(position)?.customView as? TextView ?: return
+        when (selected) {
+            true -> {
+                // change text size ?
+            }
 
-    @Preview
-    @Composable
-    private fun OrdersScreen() {
-        Column {
-            titleWith1Icon(
-                title = "Orders",
-                id = null
-            )
-            DViewPager.BundledViewPager(
-                modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                indicatorAtTop = true,
-                style = 2,
-                pagerEntities = listOf(
-                    PagerEntity("Pending") { PendingTab() },
-                    PagerEntity("Completed") { CompletedTab() },
-                ),
-            )
+            false -> {
+                // change text size ?
+            }
         }
     }
 }

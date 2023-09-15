@@ -38,8 +38,3 @@ sealed class DocumentType {
     class Passport(val number: String) : DocumentType()
     class DriverSLicence(val number: String) : DocumentType()
 }
-
-data class CountryInfo(
-    val countryName: String,
-    val useFullName: Boolean,
-)
