@@ -28,6 +28,9 @@ class BuyWithViewModel : BaseViewModel() {
     private val _payMethods = MutableLiveData<List<PayMethodChooseListEntity>>()
     val payMethods: LiveData<List<PayMethodChooseListEntity>> = _payMethods
 
+    private val _createdOrderIdState = MutableLiveData<String>()
+    val createdOrderIdState: LiveData<String> = _createdOrderIdState
+
     var selectMethod: Int? = null
 
     fun attachInput(input: BuyWithPageInputEntity) {
@@ -112,6 +115,12 @@ class BuyWithViewModel : BaseViewModel() {
                 )
             }
             toast(resourceManager.getResponseDigest(r))
+            if (r != null && r.isSuccess()){
+                val orderId = r.data?.orderId.orEmpty()
+                if (orderId.isNotEmpty()){
+                    _createdOrderIdState.value = orderId
+                }
+            }
         }
     }
 }

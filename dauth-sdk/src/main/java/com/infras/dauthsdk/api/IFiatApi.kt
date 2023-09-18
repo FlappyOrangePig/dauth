@@ -12,6 +12,8 @@ import com.infras.dauthsdk.login.model.CurrencyPriceRes
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderCreateRes
+import com.infras.dauthsdk.login.model.OrderDetailParam
+import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.OrderListRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
@@ -92,4 +94,12 @@ interface IFiatApi {
      * @return
      */
     suspend fun countryList(p: CountryListParam): CountryListRes?
+
+    /**
+     * 订单详情
+     *
+     * @param p
+     * @return
+     */
+    suspend fun orderDetail(p: OrderDetailParam): OrderDetailRes?
 }

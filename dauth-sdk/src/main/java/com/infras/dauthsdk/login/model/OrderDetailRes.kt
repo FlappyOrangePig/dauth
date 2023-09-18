@@ -1,0 +1,69 @@
+package com.infras.dauthsdk.login.model
+
+import android.os.Parcelable
+import com.infras.dauthsdk.login.network.BaseResponse
+import com.squareup.moshi.Json
+import kotlinx.parcelize.Parcelize
+
+class OrderDetailRes(
+    val data: Data?,
+) : BaseResponse() {
+
+    @Parcelize
+    class Data(
+        @Json(name = "order_id")
+        val orderId: String? = null,
+        val channel: String? = null,
+        @Json(name = "quote_asset_name")
+        val quoteAssetName: String? = null,
+        @Json(name = "quote_asset_type")
+        val quoteAssetType: String? = null,
+        @Json(name = "asset_name")
+        val assetName: String? = null,
+        @Json(name = "asset_type")
+        val assetType: String? = null,
+        val amount: String? = null,
+        val quantity: String? = null,
+        val price: String? = null,
+        val state: String? = null,
+        @Json(name = "paymethod_info")
+        val payMethodInfo: PayMethodInfo? = null,
+        val fee: String? = null,
+        @Json(name = "create_time")
+        val createTime: Long = 0,
+        @Json(name = "update_time")
+        val updateTime: Long = 0,
+        @Json(name = "pay_time")
+        val payTime: Int = 0,
+        @Json(name = "relese_crypto_time")
+        val releaseCryptoTime: Int = 0,
+        @Json(name = "appeal_time")
+        val appealTime: Int = 0,
+        @Json(name = "withdraw_time")
+        val withdrawTime: Int = 0,
+        @Json(name = "wallet_address")
+        val walletAddress: String? = null,
+        @Json(name = "trancation_id")
+        val transactionId: String? = null,
+        @Json(name = "fiat_code")
+        val fiatCode: String? = null,
+        @Json(name = "crypto_code")
+        val cryptoCode: String? = null,
+    ) : Parcelable
+
+    @Parcelize
+    class PayMethodValueInfo(
+        val account: String? = null,
+        val name: String? = null,
+    ) : Parcelable
+
+    @Parcelize
+    class PayMethodInfo(
+        @Json(name = "paymethod_name")
+        val payMethodName: String? = null,
+        @Json(name = "paymethod_username")
+        val payMethodUsername: String? = null,
+        @Json(name = "paymethod_value_info")
+        val payMethodValueInfo: PayMethodValueInfo? = null,
+    ) : Parcelable
+}

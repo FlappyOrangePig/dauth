@@ -7,6 +7,8 @@ import com.infras.dauthsdk.login.model.AccountOpenParam
 import com.infras.dauthsdk.login.model.CountryListParam
 import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.OrderCreateParam
+import com.infras.dauthsdk.login.model.OrderDetailParam
+import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 
@@ -37,4 +39,6 @@ class FiatTxRepository: IFiatApi {
     override suspend fun orderList(p: OrderListParam) = api.orderList(p)
 
     override suspend fun countryList(p: CountryListParam) = api.countryList(p)
+
+    override suspend fun orderDetail(p: OrderDetailParam) = api.orderDetail(p)
 }

@@ -18,6 +18,8 @@ import com.infras.dauthsdk.login.model.DigitalCurrencyListParam
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderCreateRes
+import com.infras.dauthsdk.login.model.OrderDetailParam
+import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.OrderListRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
@@ -67,6 +69,11 @@ internal class RequestApiFiat internal constructor() : ApiClient(), IFiatApi {
 
     override suspend fun countryList(p: CountryListParam): CountryListRes? {
         val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/country/list"))
+        return request(c, p)
+    }
+
+    override suspend fun orderDetail(p: OrderDetailParam): OrderDetailRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/detail"))
         return request(c, p)
     }
 }

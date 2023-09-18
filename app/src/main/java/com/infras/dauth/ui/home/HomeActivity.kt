@@ -59,6 +59,7 @@ import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.ui.fiat.transaction.OrdersActivity
 import com.infras.dauth.ui.main.MainActivity
+import com.infras.dauth.util.ClipBoardUtil
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.ToastUtil
@@ -126,11 +127,7 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun copyToClipboard(text: String) {
-        val clipboard: ClipboardManager =
-            this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("label", text)
-        clipboard.setPrimaryClip(clip)
-        ToastUtil.show(this, "copied")
+        ClipBoardUtil.copyToClipboard(this, text)
     }
 
     private suspend fun onSend() {

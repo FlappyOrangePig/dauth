@@ -60,6 +60,9 @@ class BuyWithActivity : BaseActivity() {
         viewModel.payMethods.observe(this) {
             (binding.rvPayMethod.adapter as PayMethodAdapter).setData(it)
         }
+        viewModel.createdOrderIdState.observe(this) {
+            OrderDetailActivity.launch(this, it)
+        }
         lifecycleScope.launch {
             viewModel.toastEvent.collect {
                 ToastUtil.show(this@BuyWithActivity, it)

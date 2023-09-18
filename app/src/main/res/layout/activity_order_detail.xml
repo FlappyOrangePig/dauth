@@ -2,16 +2,17 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_title"
         android:layout_width="match_parent"
         android:layout_height="@dimen/title_height"
-        android:background="@color/gray_f0"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <ImageView
             android:id="@+id/iv_back"
@@ -27,7 +28,6 @@
         <com.infras.dauth.widget.IFTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Order Detail"
             android:textColor="@color/black"
             android:textSize="15sp"
             app:layout_constrainedWidth="true"
@@ -38,11 +38,11 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_detail"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_title" />
+        app:layout_constraintTop_toBottomOf="@+id/cl_title" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

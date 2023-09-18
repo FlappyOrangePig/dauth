@@ -11,6 +11,7 @@ import com.drakeet.multitype.MultiTypeAdapter
 import com.infras.dauth.databinding.FragmentPendingOrdersBinding
 import com.infras.dauth.entity.FiatOrderListItemEntity
 import com.infras.dauth.entity.FiatOrderState
+import com.infras.dauth.entity.FiatOrderState.Companion.CREATE_FAIL
 import com.infras.dauth.ext.dp
 import com.infras.dauth.ui.fiat.transaction.OrderDetailActivity
 import com.infras.dauth.ui.fiat.transaction.adapter.OrderListItemBinder
@@ -86,7 +87,10 @@ open class PendingOrdersFragment : BaseFragment() {
     private fun requestOrders() {
         val index = currentTag()
         val tag = getStateTags()[index]
-        viewModel.requestOrders(tag.wireState.toString())
+        val state = tag.wireState
+        val filtered = state.filterNot { it == CREATE_FAIL }
+        val states = filtered.joinToString(",")
+        viewModel.requestOrders(states)
     }
 
     open fun getStateTags(): List<FiatOrderState> {

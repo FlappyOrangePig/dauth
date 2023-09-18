@@ -1,6 +1,5 @@
 package com.infras.dauth.ui.fiat.transaction.fragment
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,18 +14,14 @@ import com.infras.dauth.databinding.FragmentVerifyUploadIdCardBinding
 import com.infras.dauth.entity.DocumentType
 import com.infras.dauth.entity.KycName
 import com.infras.dauth.ext.setDebouncedOnClickListener
-import com.infras.dauth.ui.fiat.transaction.util.CacheFileUtil
 import com.infras.dauth.ui.fiat.transaction.util.ImageBase64Util
-import com.infras.dauth.ui.fiat.transaction.util.ImageScaleUtil
-import com.infras.dauth.ui.fiat.transaction.util.StorageUtil
+import com.infras.dauth.ui.fiat.transaction.util.UriUtil
 import com.infras.dauth.ui.fiat.transaction.viewmodel.KycSubmitViewModel
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifyUploadIdCardViewModel
-import com.infras.dauth.util.LogUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.login.model.AccountOpenParam
 import com.infras.dauthsdk.wallet.base.BaseFragment
-import java.io.File
 
 class VerifyUploadIdCardFragment : BaseFragment() {
 
@@ -54,13 +49,13 @@ class VerifyUploadIdCardFragment : BaseFragment() {
         // 参考教程：https://developer.android.com/training/data-storage/shared/photopicker?hl=zh-cn
         _pickMediaSideA =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                val path = uriTransform(uri) ?: return@registerForActivityResult
+                val path = UriUtil.uriTransform(activity, uri) ?: return@registerForActivityResult
                 pathA = path
                 binding.ivSideA.load(path)
             }
         _pickMediaSideB =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                val path = uriTransform(uri) ?: return@registerForActivityResult
+                val path = UriUtil.uriTransform(activity, uri) ?: return@registerForActivityResult
                 pathB = path
                 binding.ivSideB.load(path)
             }
@@ -169,15 +164,5 @@ class VerifyUploadIdCardFragment : BaseFragment() {
         )
 
         fVm.accountOpen(param)
-    }
-
-    private fun uriTransform(uri: Uri?): String? {
-        uri ?: return null
-        val a = activity ?: return null
-        val dstDir = StorageUtil.getCacheImageDir(a)
-        val file = CacheFileUtil.saveUriToCacheFile(a, uri) ?: return null
-        val scaled = ImageScaleUtil.getScaledImage(dstDir, file.absolutePath)
-        LogUtil.d(logTag, "${file.length()} -> ${File(scaled).length()}")
-        return scaled
     }
 }

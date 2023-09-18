@@ -11,5 +11,5 @@ package com.infras.dauthsdk.login.model
 class OrderListParam(
     val next_id: Int,
     val page_size: Int,
-    val state: String,
+    val state: String?,
 ) : IAccessTokenRequest, IAuthorizationRequest
