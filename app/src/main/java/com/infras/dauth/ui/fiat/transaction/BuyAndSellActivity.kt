@@ -96,10 +96,12 @@ class BuyAndSellActivity : BaseActivity() {
         viewModel.kycBundledState.observe(this) {
             val authId = AccountManager.getAuthId()
             val fm = supportFragmentManager
-            when (it.kycState) {
+            val state = it.kycState
+            val isBound = it.isBound
+            when (state) {
                 null -> {
                     UnverifiedDialogFragment.newInstance(
-                        authId, it.isBound
+                        authId, isBound
                     ).show(fm, UnverifiedDialogFragment.TAG)
                 }
 
@@ -111,7 +113,7 @@ class BuyAndSellActivity : BaseActivity() {
 
                 2 -> {
                     VerifyFailedDialogFragment.newInstance(
-                        authId, it.isBound
+                        authId, isBound
                     ).show(fm, VerifyFailedDialogFragment.TAG)
                 }
             }

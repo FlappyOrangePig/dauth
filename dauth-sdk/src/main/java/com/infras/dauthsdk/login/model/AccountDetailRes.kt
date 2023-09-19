@@ -7,7 +7,8 @@ class AccountDetailRes(
 ) : BaseResponse() {
     class Data(
         val detail: Detail?,
-        val is_bind: Int,// 是否绑定邮箱、手机号 0-未绑定 1-绑定邮箱、手机号
+        val is_phone_bound: Int,
+        val is_email_bound: Int,
     )
 
     class Detail(
@@ -16,7 +17,7 @@ class AccountDetailRes(
         val last_name: String,
         val middle_name: String,
         val issuing_country: String, // 发⾏国家（ISO标准国家码）
-        val id_type: Int, // 证件类型 1：护照,2：驾照,4：⾝份证
+        val id_type: String,
         val id_num: String, // 证件号码
         val id_front_img: String,
         val id_back_img: String,

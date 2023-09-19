@@ -10,6 +10,7 @@ import com.infras.dauth.databinding.ActivityOrderDetailBinding
 import com.infras.dauth.entity.FiatOrderState
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.setDebouncedOnClickListener
+import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCancelFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCompleteFragment
@@ -18,6 +19,7 @@ import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingPayFragme
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderPendingForChain
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderPendingForSellerSReleaseFragment
 import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
@@ -70,6 +72,10 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                         replaceFragment(data)
                     }
                 }
+                ToastUtil.show(
+                    this@OrderDetailActivity,
+                    AppManagers.resourceManager.getResponseDigest(r)
+                )
             }
         }
     }

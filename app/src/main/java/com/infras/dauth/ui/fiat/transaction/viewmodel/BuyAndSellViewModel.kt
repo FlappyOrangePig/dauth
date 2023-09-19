@@ -45,7 +45,7 @@ class BuyAndSellViewModel : BaseViewModel() {
             r.data?.let {
                 val newValue = KycBundledState(
                     kycState = it.detail?.state,
-                    isBound = it.is_bind == 1
+                    isBound = it.is_phone_bound == 1 || it.is_email_bound == 1
                 )
                 _kycBundledState.value = newValue
             }

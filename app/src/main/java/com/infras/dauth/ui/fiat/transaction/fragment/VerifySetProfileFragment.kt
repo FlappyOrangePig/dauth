@@ -4,21 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.FragmentVerifySetProfileBinding
-import com.infras.dauth.ext.isAreaCode
 import com.infras.dauth.ext.isMail
 import com.infras.dauth.ext.isPhone
-import com.infras.dauth.ext.isVerifyCode
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifySetProfileEvent
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifySetProfileViewModel
-import com.infras.dauth.util.ToastUtil
 import kotlinx.coroutines.launch
 
 class VerifySetProfileFragment : BaseFragment() {
@@ -37,8 +36,6 @@ class VerifySetProfileFragment : BaseFragment() {
 
     private var _binding: FragmentVerifySetProfileBinding? = null
     private val binding get() = _binding!!
-    private var showTab = 0
-    private val areaCodes = arrayOf("+86")
     private val fVm: VerifySetProfileViewModel by viewModels()
 
     override fun onCreateView(
@@ -54,17 +51,15 @@ class VerifySetProfileFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViewModel()
-        updateTab()
+        fVm.fetchCountry()
     }
 
     private fun FragmentVerifySetProfileBinding.initView() {
         tvSwitchToEmail.setDebouncedOnClickListener {
-            showTab = 0
-            updateTab()
+            fVm.showTab.value = 0
         }
         tvSwitchToSms.setDebouncedOnClickListener {
-            showTab = 1
-            updateTab()
+            fVm.showTab.value = 1
         }
         tvSendEmail.setDebouncedOnClickListener {
             sendEmail()
@@ -76,11 +71,9 @@ class VerifySetProfileFragment : BaseFragment() {
             if (DEBUG_JUMP_DIRECTLY) {
                 launchNextPage()
             } else {
-                handleContinue()
+                fVm.handleContinue()
             }
         }
-        spAreaCode.adapter =
-            ArrayAdapter(requireContext(), R.layout.spinner_item_phone_area_code, areaCodes)
     }
 
     private fun initViewModel() {
@@ -97,65 +90,54 @@ class VerifySetProfileFragment : BaseFragment() {
                 }
             }
         }
+        fVm.showTab.observe(viewLifecycleOwner) { tab ->
+            when (tab) {
+                0 -> {
+                    binding.clEmail.visibility = View.VISIBLE
+                    binding.clPhone.visibility = View.GONE
+                }
+
+                else -> {
+                    binding.clEmail.visibility = View.GONE
+                    binding.clPhone.visibility = View.VISIBLE
+                }
+            }
+        }
+        binding.etEmail.addTextChangedListener {
+            fVm.mailContent.value = it?.toString()?:""
+        }
+        binding.etEmailCode.addTextChangedListener {
+            fVm.mailCodeContent.value = it?.toString()?:""
+        }
+        binding.etPhone.addTextChangedListener {
+            fVm.phoneContent.value = it?.toString()?:""
+        }
+        binding.etPhoneCode.addTextChangedListener {
+            fVm.phoneCodeContent.value = it?.toString()?:""
+        }
+        binding.spAreaCode.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                fVm.selectAreaCode(position)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+        }
+        fVm.areaCodes.observe(viewLifecycleOwner) { code ->
+            val strings = code.map { "(+${it.phoneAreaCode}) ${it.countryName}" }
+            binding.spAreaCode.adapter =
+                ArrayAdapter(requireContext(), R.layout.spinner_item_phone_area_code, strings)
+        }
     }
 
     override fun getDefaultViewModel(): BaseViewModel {
         return fVm
-    }
-
-    private fun updateTab() {
-        when (showTab) {
-            0 -> {
-                binding.clEmail.visibility = View.VISIBLE
-                binding.clPhone.visibility = View.GONE
-            }
-
-            else -> {
-                binding.clEmail.visibility = View.GONE
-                binding.clPhone.visibility = View.VISIBLE
-            }
-        }
-    }
-
-    private fun handleContinue() {
-        val context = requireActivity()
-        if (showTab == 0) {
-            val email = binding.etEmail.text?.toString().orEmpty()
-            if (!email.isMail()) {
-                ToastUtil.show(context, "mail format error")
-                return
-            }
-            val verifyCode = binding.etEmailCode.text?.toString().orEmpty()
-            if (!verifyCode.isVerifyCode()) {
-                ToastUtil.show(context, "code format error")
-                return
-            }
-
-            fVm.bindEmail(email = email, code = verifyCode)
-        } else {
-            val phone = binding.etPhone.text?.toString().orEmpty()
-            if (!phone.isPhone()) {
-                ToastUtil.show(context, "phone format error")
-                return
-            }
-            val verifyCode = binding.etPhoneCode.text?.toString().orEmpty()
-            if (!verifyCode.isVerifyCode()) {
-                ToastUtil.show(context, "code format error")
-                return
-            }
-            val pos = binding.spAreaCode.selectedItemPosition
-            val areaCode = if (pos >= 0 && pos < areaCodes.size) {
-                areaCodes[pos].removePrefix("+")
-            } else {
-                ""
-            }
-            if (!areaCode.isAreaCode()) {
-                ToastUtil.show(context, "area code format error")
-                return
-            }
-
-            fVm.bindPhone(phone, areaCode, verifyCode)
-        }
     }
 
     private fun sendEmail() {
