@@ -6,6 +6,8 @@ import android.content.ContextWrapper
 import android.content.Intent
 import com.infras.dauth.MyApplication
 
+fun appContext() = MyApplication.app
+
 fun Float.dp(): Int {
     val scale = MyApplication.app.resources.displayMetrics.density
     return (this * scale + 0.5f).toInt()

@@ -20,6 +20,6 @@ class CountryListRes(
         @Json(name = "is_support")
         val isSupport: Boolean,
         @Transient
-        val useFullName: Boolean = false,
+        val useFullName: Boolean = true,
     )
 }

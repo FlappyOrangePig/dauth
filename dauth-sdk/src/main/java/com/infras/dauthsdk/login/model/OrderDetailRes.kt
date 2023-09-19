@@ -34,13 +34,13 @@ class OrderDetailRes(
         @Json(name = "update_time")
         val updateTime: Long = 0,
         @Json(name = "pay_time")
-        val payTime: Int = 0,
+        val payTime: Long = 0,
         @Json(name = "relese_crypto_time")
         val releaseCryptoTime: Int = 0,
         @Json(name = "appeal_time")
-        val appealTime: Int = 0,
+        val appealTime: Long = 0,
         @Json(name = "withdraw_time")
-        val withdrawTime: Int = 0,
+        val withdrawTime: Long = 0,
         @Json(name = "wallet_address")
         val walletAddress: String? = null,
         @Json(name = "trancation_id")

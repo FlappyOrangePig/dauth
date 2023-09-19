@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
-import androidx.fragment.app.Fragment
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityKycSubmitBinding
+import com.infras.dauth.entity.KycDocumentInfo
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.fiat.transaction.fragment.VerifySetIdCardFragment
@@ -28,11 +28,6 @@ class KycSubmitActivity : BaseActivity(), VerifySetProfileFragment.ProfileConfir
 
     private var _binding: ActivityKycSubmitBinding? = null
     private val binding get() = _binding!!
-    private val createFragments: List<() -> Fragment> = listOf(
-        { VerifySetProfileFragment.newInstance() },
-        { VerifySetIdCardFragment.newInstance() },
-        { VerifyUploadIdCardFragment.newInstance() },
-    )
     private val isBound get() = intent.getBooleanExtra(EXTRA_IS_BOUND, false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,9 +38,9 @@ class KycSubmitActivity : BaseActivity(), VerifySetProfileFragment.ProfileConfir
             handleBackPress()
         }
         if (isBound) {
-            layFragment(1)
+            layFragment1()
         } else {
-            layFragment(0)
+            layFragment0()
         }
     }
 
@@ -67,23 +62,33 @@ class KycSubmitActivity : BaseActivity(), VerifySetProfileFragment.ProfileConfir
     }
 
     override fun onConfirmProfile() {
-        layFragment(1)
+        layFragment1()
     }
 
-    override fun onConfirmIdCard() {
-        layFragment(2)
+    override fun onConfirmIdCard(docInfo: KycDocumentInfo?) {
+        layFragment2(docInfo)
     }
 
-    private fun layFragment(index: Int) {
-        if (index < 0 || index >= createFragments.size) {
-            return
-        }
-        val f = createFragments[index].invoke()
+    private fun layFragment0() {
+        val f = VerifySetProfileFragment.newInstance()
         supportFragmentManager.beginTransaction().apply {
             add(R.id.fl_fragment_container, f, f.javaClass.simpleName)
-            if (index > 0) {
-                addToBackStack(null)
-            }
+        }.commit()
+    }
+
+    private fun layFragment1() {
+        val f = VerifySetIdCardFragment.newInstance()
+        supportFragmentManager.beginTransaction().apply {
+            add(R.id.fl_fragment_container, f, f.javaClass.simpleName)
+            addToBackStack(null)
+        }.commit()
+    }
+
+    private fun layFragment2(docInfo: KycDocumentInfo?) {
+        val f = VerifyUploadIdCardFragment.newInstance(docInfo)
+        supportFragmentManager.beginTransaction().apply {
+            add(R.id.fl_fragment_container, f, f.javaClass.simpleName)
+            addToBackStack(null)
         }.commit()
     }
 }

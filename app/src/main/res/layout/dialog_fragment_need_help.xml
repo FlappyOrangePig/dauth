@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <com.infras.dauth.widget.IFTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="22dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:text="Select your situation for help"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <com.infras.dauth.widget.IFTextView
+        android:id="@+id/tv_not_release"
+        android:layout_width="match_parent"
+        android:layout_height="37dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="22dp"
+        android:background="@drawable/bg_black_r5_s1"
+        android:gravity="center"
+        android:text="Seller do not release the Cryptos"
+        android:textSize="14sp" />
+
+    <com.infras.dauth.widget.IFTextView
+        android:id="@+id/tv_not_receive"
+        android:layout_width="match_parent"
+        android:layout_height="37dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="27dp"
+        android:layout_marginEnd="22dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/bg_black_r5_s1"
+        android:gravity="center"
+        android:text="I didn’t recieve the Cryptos"
+        android:textSize="14sp" />
+
+</LinearLayout>

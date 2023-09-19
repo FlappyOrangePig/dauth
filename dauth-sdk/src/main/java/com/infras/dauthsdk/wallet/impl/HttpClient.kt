@@ -39,7 +39,7 @@ object HttpClient {
     }.build()
 
     private fun getInterceptor(): Interceptor {
-        return if (false) {
+        return if (true) {
             HttpLoggingInterceptor2 { message ->
                 DAuthLogger.d(message, TAG)
             }.apply {

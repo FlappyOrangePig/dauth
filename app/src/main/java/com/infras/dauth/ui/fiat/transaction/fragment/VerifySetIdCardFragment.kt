@@ -6,28 +6,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
+import com.infras.dauth.app.BaseFragment
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.FragmentVerifySetIdCardBinding
 import com.infras.dauth.entity.DocumentType
 import com.infras.dauth.entity.KycDocumentInfo
 import com.infras.dauth.entity.KycName
 import com.infras.dauth.entity.KycOpenAccountMethod
 import com.infras.dauth.ext.setDebouncedOnClickListener
-import com.infras.dauth.ui.fiat.transaction.viewmodel.KycSubmitViewModel
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifySetIdCardViewModel
 import com.infras.dauth.util.ToastUtil
-import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.login.model.AccountDocumentationRequestRes
 import com.infras.dauthsdk.login.model.CountryListRes.CountryInfo
-import com.infras.dauthsdk.wallet.base.BaseFragment
-import kotlinx.coroutines.launch
 
 class VerifySetIdCardFragment : BaseFragment() {
 
     interface IdCardConfirmCallback {
-        fun onConfirmIdCard()
+        fun onConfirmIdCard(docInfo: KycDocumentInfo?)
     }
 
     companion object {
@@ -40,9 +37,7 @@ class VerifySetIdCardFragment : BaseFragment() {
 
     private var _binding: FragmentVerifySetIdCardBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: KycSubmitViewModel by activityViewModels()
     private val fVm: VerifySetIdCardViewModel by viewModels()
-    private val loadingDialog = LoadingDialogFragment.newInstance()
     private val checkViews by lazy {
         listOf(binding.ivCheckIdCard, binding.ivCheckPassport, binding.ivCheckDrive)
     }
@@ -70,7 +65,7 @@ class VerifySetIdCardFragment : BaseFragment() {
     private fun FragmentVerifySetIdCardBinding.initView() {
         tvContinue.setDebouncedOnClickListener {
             if (DEBUG_JUMP_DIRECTLY) {
-                (activity as? IdCardConfirmCallback)?.onConfirmIdCard()
+                (activity as? IdCardConfirmCallback)?.onConfirmIdCard(null)
             } else {
                 handleContinue()
             }
@@ -91,7 +86,12 @@ class VerifySetIdCardFragment : BaseFragment() {
         }
         checkViews.forEachIndexed { index, imageView ->
             imageView.setDebouncedOnClickListener {
-                fVm.selectOpenAccountType(index)
+                val list = listOf(
+                    AccountDocumentationRequestRes.IdTypeInfo.ID_CARD,
+                    AccountDocumentationRequestRes.IdTypeInfo.PASSPORT,
+                    AccountDocumentationRequestRes.IdTypeInfo.DRIVERS,
+                )
+                fVm.selectOpenAccountType(list[index])
             }
         }
     }
@@ -120,15 +120,10 @@ class VerifySetIdCardFragment : BaseFragment() {
         fVm.currentDocumentType.observe(viewLifecycleOwner) {
             updateCheckView(it)
         }
-        lifecycleScope.launch {
-            fVm.showLoading.observe(viewLifecycleOwner) {
-                if (it) {
-                    loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
-                } else {
-                    loadingDialog.dismissAllowingStateLoss()
-                }
-            }
-        }
+    }
+
+    override fun getDefaultViewModel(): BaseViewModel {
+        return fVm
     }
 
     private fun getCurrentCountryInfo(): CountryInfo? {
@@ -141,9 +136,15 @@ class VerifySetIdCardFragment : BaseFragment() {
         }
     }
 
-    private fun updateCheckView(currentDocumentType: Int?) {
+    private fun updateCheckView(currentDocumentType: String?) {
         checkViews.partition {
-            currentDocumentType == checkViews.indexOf(it)
+            val mapped = when(currentDocumentType) {
+                AccountDocumentationRequestRes.IdTypeInfo.ID_CARD -> 0
+                AccountDocumentationRequestRes.IdTypeInfo.PASSPORT -> 1
+                AccountDocumentationRequestRes.IdTypeInfo.DRIVERS -> 2
+                else -> null
+            }
+            mapped == checkViews.indexOf(it)
         }.let { partition ->
             partition.first.forEach { it.isSelected = true }
             partition.second.forEach { it.isSelected = false }
@@ -151,11 +152,27 @@ class VerifySetIdCardFragment : BaseFragment() {
     }
 
     private fun updateOpenAccountMethod(kycOpenAccountMethod: KycOpenAccountMethod) {
-        binding.clIdCard.visibility = if (kycOpenAccountMethod.idCard) View.VISIBLE else View.GONE
-        binding.clPassport.visibility =
-            if (kycOpenAccountMethod.passport) View.VISIBLE else View.GONE
-        binding.clDriver.visibility =
-            if (kycOpenAccountMethod.driverSLicence) View.VISIBLE else View.GONE
+        var idCard = false
+        var drivers = false
+        var passport = false
+        kycOpenAccountMethod.idTypeList.forEach {
+            when (it.idType) {
+                AccountDocumentationRequestRes.IdTypeInfo.ID_CARD -> {
+                    idCard = true
+                }
+
+                AccountDocumentationRequestRes.IdTypeInfo.DRIVERS -> {
+                    drivers = true
+                }
+
+                AccountDocumentationRequestRes.IdTypeInfo.PASSPORT -> {
+                    passport = true
+                }
+            }
+        }
+        binding.clIdCard.visibility = if (idCard) View.VISIBLE else View.GONE
+        binding.clPassport.visibility = if (passport) View.VISIBLE else View.GONE
+        binding.clDriver.visibility = if (drivers) View.VISIBLE else View.GONE
     }
 
     private fun handleContinue() {
@@ -205,24 +222,32 @@ class VerifySetIdCardFragment : BaseFragment() {
             }
         }
 
+        val pictureCount = fVm.getPictureCount()
+        if (pictureCount == null) {
+            ToastUtil.show(context, "picture count null")
+            return
+        }
+
         val documentType = when (fVm.currentDocumentType.value) {
-            0 -> {
+            AccountDocumentationRequestRes.IdTypeInfo.ID_CARD -> {
                 val id = binding.etIdCard.text?.toString().orEmpty()
                 if (id.isEmpty()) {
                     ToastUtil.show(context, "id card id is empty")
                     return
                 }
-                DocumentType.IDCard(id)
+                DocumentType.IDCard(pictureCount, id)
             }
 
-            1 -> {
-                ToastUtil.show(context, "passport id is empty")
-                return
+            AccountDocumentationRequestRes.IdTypeInfo.PASSPORT -> {
+                /*ToastUtil.show(context, "passport id is empty")
+                return*/
+                DocumentType.Passport(pictureCount)
             }
 
-            2 -> {
-                ToastUtil.show(context, "driver's licence id is empty")
-                return
+            AccountDocumentationRequestRes.IdTypeInfo.DRIVERS -> {
+                /*ToastUtil.show(context, "driver's licence id is empty")
+                return*/
+                DocumentType.DriverSLicence(pictureCount)
             }
 
             else -> {
@@ -232,12 +257,11 @@ class VerifySetIdCardFragment : BaseFragment() {
         }
 
         val documentInfo = KycDocumentInfo(
-            region = countryInfo.countryName,
+            countryCode = countryInfo.countryCode,
             kycName = kycName,
             documentType = documentType
         )
-        viewModel.document = documentInfo
 
-        (activity as? IdCardConfirmCallback)?.onConfirmIdCard()
+        (activity as? IdCardConfirmCallback)?.onConfirmIdCard(documentInfo)
     }
 }

@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.ActivityBuyWithBinding
 import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.ext.dp
@@ -37,7 +38,6 @@ class BuyWithActivity : BaseActivity() {
     private var _binding: ActivityBuyWithBinding? = null
     private val binding get() = _binding!!
     private val viewModel: BuyWithViewModel by viewModels()
-    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,20 +63,6 @@ class BuyWithActivity : BaseActivity() {
         viewModel.createdOrderIdState.observe(this) {
             OrderDetailActivity.launch(this, it)
         }
-        lifecycleScope.launch {
-            viewModel.toastEvent.collect {
-                ToastUtil.show(this@BuyWithActivity, it)
-            }
-        }
-        lifecycleScope.launch {
-            viewModel.showLoading.observe(this@BuyWithActivity) {
-                if (it) {
-                    loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                } else {
-                    loadingDialog.dismissAllowingStateLoss()
-                }
-            }
-        }
     }
 
     private fun ActivityBuyWithBinding.initView() {
@@ -98,5 +84,9 @@ class BuyWithActivity : BaseActivity() {
             adapter = PayMethodAdapter(onClickItem = { item -> viewModel.selectItem(item) })
             addItemDecoration(VerticalDividerItemDecoration(12.dp()))
         }
+    }
+
+    override fun getDefaultViewModel(): BaseViewModel {
+        return viewModel
     }
 }

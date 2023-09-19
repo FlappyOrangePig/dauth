@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import com.infras.dauth.R
 import com.infras.dauth.databinding.FragmentOrderDetailCompleteBinding
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
+import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.fiat.transaction.util.TimeUtil
+import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauthsdk.login.model.OrderDetailRes
 
 open class OrderDetailCompleteFragment : BaseOrderDetailFragment() {
@@ -23,6 +25,7 @@ open class OrderDetailCompleteFragment : BaseOrderDetailFragment() {
 
     private var _binding: FragmentOrderDetailCompleteBinding? = null
     val binding get() = _binding!!
+    private val dialog by lazy { NeedHelpDialogFragment.newInstance(getDialogStyle()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,6 +33,9 @@ open class OrderDetailCompleteFragment : BaseOrderDetailFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentOrderDetailCompleteBinding.inflate(inflater, container, false)
+        binding.tvPaid.setDebouncedOnClickListener {
+            dialog.show(childFragmentManager, NeedHelpDialogFragment.TAG)
+        }
         return binding.root
     }
 
@@ -40,4 +46,6 @@ open class OrderDetailCompleteFragment : BaseOrderDetailFragment() {
             "Pay within 19:59s"
         )
     }
+
+    open fun getDialogStyle() = 1
 }

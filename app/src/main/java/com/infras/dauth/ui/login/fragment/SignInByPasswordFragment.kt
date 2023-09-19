@@ -8,15 +8,14 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
+import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.databinding.FragmentSignInByPasswordBinding
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.login.viewmodel.SignInByPasswordViewModel
-import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
-import com.infras.dauthsdk.wallet.base.BaseFragment
 import kotlinx.coroutines.launch
 
 class SignInByPasswordFragment private constructor() : BaseFragment() {

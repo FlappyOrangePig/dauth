@@ -7,42 +7,38 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import coil.load
+import com.infras.dauth.app.BaseFragment
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.FragmentVerifyUploadIdCardBinding
-import com.infras.dauth.entity.DocumentType
-import com.infras.dauth.entity.KycName
+import com.infras.dauth.entity.KycDocumentInfo
 import com.infras.dauth.ext.setDebouncedOnClickListener
-import com.infras.dauth.ui.fiat.transaction.util.ImageBase64Util
 import com.infras.dauth.ui.fiat.transaction.util.UriUtil
-import com.infras.dauth.ui.fiat.transaction.viewmodel.KycSubmitViewModel
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifyUploadIdCardViewModel
-import com.infras.dauth.util.ToastUtil
-import com.infras.dauth.widget.LoadingDialogFragment
-import com.infras.dauthsdk.login.model.AccountOpenParam
-import com.infras.dauthsdk.wallet.base.BaseFragment
+import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 
 class VerifyUploadIdCardFragment : BaseFragment() {
 
     companion object {
-        const val TAG = "VerifyUploadIdCardFragment"
-        fun newInstance(): VerifyUploadIdCardFragment {
-            return VerifyUploadIdCardFragment()
+        const val EXTRA_DOC_INFO = "EXTRA_DOC_INFO"
+        fun newInstance(info: KycDocumentInfo?): VerifyUploadIdCardFragment {
+            return VerifyUploadIdCardFragment().also {
+                it.arguments = Bundle().apply {
+                    putParcelable(EXTRA_DOC_INFO, info)
+                }
+            }
         }
     }
 
     private var _binding: FragmentVerifyUploadIdCardBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: KycSubmitViewModel by activityViewModels()
     private val fVm: VerifyUploadIdCardViewModel by viewModels()
-    private val loadingDialog = LoadingDialogFragment.newInstance()
     private var _pickMediaSideA: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private val pickMediaSideA get() = _pickMediaSideA!!
     private var _pickMediaSideB: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private val pickMediaSideB get() = _pickMediaSideB!!
-    private var pathA: String? = null
-    private var pathB: String? = null
+    private val document get() = arguments?.getParcelableExtraCompat<KycDocumentInfo>(EXTRA_DOC_INFO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,14 +46,12 @@ class VerifyUploadIdCardFragment : BaseFragment() {
         _pickMediaSideA =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
                 val path = UriUtil.uriTransform(activity, uri) ?: return@registerForActivityResult
-                pathA = path
-                binding.ivSideA.load(path)
+                fVm.pathA.value = path
             }
         _pickMediaSideB =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
                 val path = UriUtil.uriTransform(activity, uri) ?: return@registerForActivityResult
-                pathB = path
-                binding.ivSideB.load(path)
+                fVm.pathB.value = path
             }
     }
 
@@ -74,7 +68,6 @@ class VerifyUploadIdCardFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViewModel()
-        fVm.fetchUploadRequirement()
     }
 
     private fun FragmentVerifyUploadIdCardBinding.initView() {
@@ -85,84 +78,30 @@ class VerifyUploadIdCardFragment : BaseFragment() {
             pickMediaSideB.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
         tvContinue.setDebouncedOnClickListener {
-            onSubmit()
+            this@VerifyUploadIdCardFragment.document?.let {
+                fVm.submit(it)
+            }
+        }
+        document?.let {
+            if (it.documentType.picCount == 1) {
+                flSideB.visibility = View.GONE
+            }
         }
     }
 
     private fun initViewModel() {
-        fVm.showLoading.observe(viewLifecycleOwner) {
-            if (it) {
-                loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
-            } else {
-                loadingDialog.dismissAllowingStateLoss()
-            }
+        fVm.pathA.observe(viewLifecycleOwner) {
+            binding.ivSideA.load(it)
+        }
+        fVm.pathB.observe(viewLifecycleOwner) {
+            binding.ivSideB.load(it)
+        }
+        fVm.createSuccessEvent.observe(viewLifecycleOwner) {
+            activity?.finish()
         }
     }
 
-    private fun onSubmit() {
-        val document = viewModel.document ?: return
-
-        val a = requireActivity()
-
-        var full: String? = null
-        var first: String? = null
-        var middle: String? = null
-        var last: String? = null
-        when (document.kycName) {
-            is KycName.FullName -> {
-                full = document.kycName.name
-            }
-
-            is KycName.PartsName -> {
-                first = document.kycName.first
-                middle = document.kycName.middle
-                last = document.kycName.last
-            }
-        }
-        var idNum: String? = null
-        val idType: Int = when (document.documentType) {
-            is DocumentType.DriverSLicence -> 2
-            is DocumentType.IDCard -> {
-                idNum = document.documentType.number
-                4
-            }
-
-            is DocumentType.Passport -> 1
-        }
-
-        val imageA = pathA.orEmpty()
-        if (imageA.isEmpty()) {
-            ToastUtil.show(a, "no image a")
-            return
-        }
-        val imageB = pathB.orEmpty()
-        if (imageB.isEmpty()) {
-            ToastUtil.show(a, "no image b")
-            return
-        }
-        val base64EncodedImageA = ImageBase64Util.getBase64EncodedImageFile(imageA)
-        if (base64EncodedImageA == null) {
-            ToastUtil.show(a, "image a base64 error")
-            return
-        }
-        val base64EncodedImageB = ImageBase64Util.getBase64EncodedImageFile(imageB)
-        if (base64EncodedImageB == null) {
-            ToastUtil.show(a, "image b base64 error")
-            return
-        }
-
-        val param = AccountOpenParam(
-            first_name = first,
-            middle_name = middle,
-            last_name = last,
-            full_name = full,
-            id_type = idType,
-            id_back_img = base64EncodedImageA,
-            id_front_img = base64EncodedImageB,
-            id_num = idNum,
-            issuing_country = document.region
-        )
-
-        fVm.accountOpen(param)
+    override fun getDefaultViewModel(): BaseViewModel {
+        return fVm
     }
 }

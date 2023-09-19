@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.infras.dauth.MyApplication
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseViewModel
+import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.SignInRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +14,7 @@ import kotlinx.coroutines.launch
 class VerifySetProfileViewModel : BaseViewModel() {
 
     private val repo = SignInRepository()
-    private val resourceManager get() = MyApplication.app.resourceManager
+    private val resourceManager get() = AppManagers.resourceManager
     private val _commonEvent = Channel<VerifySetProfileEvent>(capacity = Channel.UNLIMITED)
     val commonEvent: Flow<VerifySetProfileEvent> = _commonEvent.receiveAsFlow()
 

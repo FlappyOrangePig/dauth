@@ -18,14 +18,19 @@ sealed class KycProfileInfo : Parcelable {
     ) : KycProfileInfo()
 }
 
+@Parcelize
 class KycDocumentInfo(
-    val region: String,
+    val countryCode: String,
     val kycName: KycName,
     val documentType: DocumentType,
-)
+) : Parcelable
 
-sealed class KycName {
+@Parcelize
+sealed class KycName : Parcelable {
+    @Parcelize
     class FullName(val name: String) : KycName()
+
+    @Parcelize
     class PartsName(
         val first: String,
         val middle: String,
@@ -33,8 +38,16 @@ sealed class KycName {
     ) : KycName()
 }
 
-sealed class DocumentType {
-    class IDCard(val number: String) : DocumentType()
-    class Passport(val number: String) : DocumentType()
-    class DriverSLicence(val number: String) : DocumentType()
+@Parcelize
+sealed class DocumentType : Parcelable {
+    abstract val picCount: Int
+
+    @Parcelize
+    class IDCard(override val picCount: Int, val number: String) : DocumentType()
+
+    @Parcelize
+    class Passport(override val picCount: Int) : DocumentType()
+
+    @Parcelize
+    class DriverSLicence(override val picCount: Int) : DocumentType()
 }

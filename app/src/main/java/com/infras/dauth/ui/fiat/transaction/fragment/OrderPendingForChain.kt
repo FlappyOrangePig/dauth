@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import com.infras.dauth.R
 import com.infras.dauth.databinding.FragmentOrderDetailCompleteBinding
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
+import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.fiat.transaction.util.TimeUtil
+import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauthsdk.login.model.OrderDetailRes
 
 class OrderPendingForChain : OrderDetailCompleteFragment() {

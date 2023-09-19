@@ -17,12 +17,13 @@ import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailDisputeFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingPayFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderPendingForChain
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderPendingForSellerSReleaseFragment
+import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
 import kotlinx.coroutines.launch
 
-class OrderDetailActivity : BaseActivity() {
+class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCallback {
 
     companion object {
         private const val EXTRA_ORDER_ID = "EXTRA_ORDER_ID"
@@ -43,7 +44,16 @@ class OrderDetailActivity : BaseActivity() {
         _binding = ActivityOrderDetailBinding.inflate(LayoutInflater.from(this))
         binding.initView()
         setContentView(binding.root)
+        refresh()
+    }
 
+    private fun ActivityOrderDetailBinding.initView() {
+        ivBack.setDebouncedOnClickListener {
+            finish()
+        }
+    }
+
+    private fun refresh() {
         if (false) {
             replaceFragment(OrderDetailRes.Data())
         } else {
@@ -64,15 +74,9 @@ class OrderDetailActivity : BaseActivity() {
         }
     }
 
-    private fun ActivityOrderDetailBinding.initView() {
-        ivBack.setDebouncedOnClickListener {
-            finish()
-        }
-    }
-
     private fun replaceFragment(data: OrderDetailRes.Data) {
-        val state = if (false) {
-            FiatOrderState.COMPLETED
+        val state = if (true) {
+            FiatOrderState.PAID
         } else {
             data.state ?: return
         }
@@ -116,5 +120,9 @@ class OrderDetailActivity : BaseActivity() {
                 f
             )
         }.commitAllowingStateLoss()
+    }
+
+    override fun onHelpItemClick(index: Int) {
+        refresh()
     }
 }

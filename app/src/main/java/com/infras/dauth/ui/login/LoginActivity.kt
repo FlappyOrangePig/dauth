@@ -10,10 +10,10 @@ import com.infras.dauth.databinding.ActivityLoginLayoutBinding
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.repository.SignInRepository
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.ui.login.fragment.SignInByCodeFragment
 import com.infras.dauth.ui.login.fragment.SignInByPasswordFragment
-import com.infras.dauth.repository.SignInRepository
 import com.infras.dauth.ui.main.WalletTestActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.HideApiUtil

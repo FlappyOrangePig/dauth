@@ -4,10 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.drakeet.multitype.MultiTypeAdapter
+import com.infras.dauth.R
+import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.databinding.FragmentPendingOrdersBinding
 import com.infras.dauth.entity.FiatOrderListItemEntity
 import com.infras.dauth.entity.FiatOrderState
@@ -17,14 +20,12 @@ import com.infras.dauth.ui.fiat.transaction.OrderDetailActivity
 import com.infras.dauth.ui.fiat.transaction.adapter.OrderListItemBinder
 import com.infras.dauth.ui.fiat.transaction.viewmodel.PendingOrdersViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.VerticalDividerItemDecoration
-import com.infras.dauthsdk.wallet.base.BaseFragment
 
-open class PendingOrdersFragment : BaseFragment() {
+open class OrdersPendingFragment : BaseFragment() {
 
     companion object {
-        const val TAG = "PendingOrdersFragment"
-        fun newInstance(): PendingOrdersFragment {
-            return PendingOrdersFragment()
+        fun newInstance(): OrdersPendingFragment {
+            return OrdersPendingFragment()
         }
     }
 
@@ -94,7 +95,11 @@ open class PendingOrdersFragment : BaseFragment() {
     }
 
     open fun getStateTags(): List<FiatOrderState> {
-        return listOf(FiatOrderState.Pending.All, FiatOrderState.Pending.InProgress, FiatOrderState.Pending.InDispute)
+        return listOf(
+            FiatOrderState.Pending.All,
+            FiatOrderState.Pending.InProgress,
+            FiatOrderState.Pending.InDispute
+        )
     }
 
     private fun currentTag(): Int {

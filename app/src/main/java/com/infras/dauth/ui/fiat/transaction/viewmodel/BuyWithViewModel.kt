@@ -9,6 +9,7 @@ import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.entity.PayMethodChooseListEntity
 import com.infras.dauth.ext.addressForShort
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.util.awaitLite
 import com.infras.dauthsdk.login.model.OrderCreateParam
@@ -20,7 +21,7 @@ class BuyWithViewModel : BaseViewModel() {
 
     lateinit var input: BuyWithPageInputEntity
         private set
-    private val resourceManager get() = MyApplication.app.resourceManager
+    private val resourceManager get() = AppManagers.resourceManager
 
     private val _address = MutableLiveData<String>()
     val address: LiveData<String> = _address

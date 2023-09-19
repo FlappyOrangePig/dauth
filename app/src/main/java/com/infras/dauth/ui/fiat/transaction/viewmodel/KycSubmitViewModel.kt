@@ -6,8 +6,4 @@ import com.infras.dauth.entity.KycProfileInfo
 
 class KycSubmitViewModel : BaseViewModel() {
 
-    @Deprecated("can be submit alone")
-    var profile: KycProfileInfo? = null
-
-    var document: KycDocumentInfo? = null
 }

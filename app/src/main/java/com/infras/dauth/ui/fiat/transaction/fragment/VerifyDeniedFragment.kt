@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.databinding.FragmentVerifyDeniedBinding
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifyDeniedViewModel
-import com.infras.dauthsdk.wallet.base.BaseFragment
 
 class VerifyDeniedFragment : BaseFragment() {
 

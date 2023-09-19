@@ -20,7 +20,7 @@ private const val GOOGLE_REQUEST_CODE = 9004
 private const val GOOGLE_OPEN_SERVICE_REQUEST_CODE = 9005
 private const val TWITTER_REQUEST_CODE = 140
 
-class ThirdPartyResultActivity : BaseActivity() {
+internal class ThirdPartyResultActivity : BaseActivity() {
     companion object {
         private var callback: ThirdPartyCallback? = null
         private const val LAUNCH_TYPE = "LAUNCH_TYPE"

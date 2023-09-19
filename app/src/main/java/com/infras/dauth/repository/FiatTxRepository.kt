@@ -8,7 +8,6 @@ import com.infras.dauthsdk.login.model.CountryListParam
 import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderDetailParam
-import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 

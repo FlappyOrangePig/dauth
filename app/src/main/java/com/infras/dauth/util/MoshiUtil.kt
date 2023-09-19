@@ -1,6 +1,5 @@
-package com.infras.dauthsdk.mpc.util
+package com.infras.dauth.util
 
-import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
@@ -9,7 +8,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.IOException
 import java.math.BigInteger
 
-internal object MoshiUtil {
+object MoshiUtil {
+    private const val TAG = "MoshiUtil"
     val moshi: Moshi by lazy {
         Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
@@ -22,7 +22,7 @@ internal object MoshiUtil {
         adapter.toJson(obj)
     } catch (t: Throwable) {
         if (throws) {
-            DAuthLogger.e(t.stackTraceToString())
+            LogUtil.e(TAG, t.stackTraceToString())
         }
         null
     }.orEmpty()
@@ -32,7 +32,7 @@ internal object MoshiUtil {
         adapter.fromJson(json)
     } catch (t: Throwable) {
         if (throws) {
-            DAuthLogger.e(t.stackTraceToString())
+            LogUtil.e(TAG, t.stackTraceToString())
         }
         null
     }

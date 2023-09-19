@@ -7,6 +7,8 @@ import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.FiatOrderListItemEntity
 import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.test.OrderListMockData
+import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil
+import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauth.ui.fiat.transaction.util.TimeUtil
 import com.infras.dauthsdk.login.model.OrderListParam
 import kotlinx.coroutines.launch
@@ -43,22 +45,26 @@ class PendingOrdersViewModel : BaseViewModel() {
                     } else {
                         list.map {
                             val d = TimeUtil.getOrderTime(it.create_time)
+                            val fiatInfo = CurrencyCalcUtil.getFiatInfo(it.fiat_code)
+                            val cryptoInfo = CurrencyCalcUtil.getCryptoInfo(it.crypto_code)
+                            val fiatPrecision = fiatInfo?.fiatPrecision?.toInt()
+
                             FiatOrderListItemEntity(
                                 orderId = it.out_order_id.toString(),
                                 title = "Buy ${it.crypto_code}",
-                                unitPrice = "${it.price.orEmpty()} ${it.fiat_code}",
-                                quantity = "${it.quantity.orEmpty()} ${it.crypto_code}",
-                                totalPrice = "${it.amount.orEmpty()} ${it.fiat_code}",
+                                unitPrice = "Unit Price ${it.price.scale(fiatPrecision)} ${it.fiat_code}",
+                                quantity = "Quantity ${it.quantity.scale(cryptoInfo?.cryptoPrecision)} ${it.crypto_code}",
+                                totalPrice = "${it.amount.scale(fiatPrecision)} ${it.fiat_code}",
                                 time = d,
-                                state = it.state.orEmpty(),
+                                state = "${it.state.orEmpty()} >",
                             )
                         }
                     }
                     _list.value = newValue
-                }else{
+                } else {
                     _list.value = listOf()
                 }
             }
         }
     }
-}//订单状态 CREATE_FAIL：订单创建失败,UNPAID：未⽀付,PAID：已⽀付,CANCEL：已取消,COMPLETED：已完成,APPEAL：申诉中,WITHDRAW_FAIL：提现失败,WITHDRAW_SUCCESS：提现成功
+}

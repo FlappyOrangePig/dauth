@@ -3,6 +3,7 @@ package com.infras.dauth.ext
 import com.infras.dauth.MyApplication
 import com.infras.dauth.R
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.WalletBalanceData
@@ -25,7 +26,7 @@ fun WalletBalanceData.tokenIds() = (this as? WalletBalanceData.ERC721)?.tokenIds
 
 fun BaseResponse?.handleByToast() {
     val context = MyApplication.app
-    ToastUtil.show(context, MyApplication.app.resourceManager.getResponseDigest(this))
+    ToastUtil.show(context, AppManagers.resourceManager.getResponseDigest(this))
 }
 
 internal fun String.addressForShort(): String {

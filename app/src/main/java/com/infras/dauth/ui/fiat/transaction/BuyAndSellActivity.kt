@@ -45,10 +45,10 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.Visibility
-import androidx.lifecycle.lifecycleScope
 import coil.compose.rememberAsyncImagePainter
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.BuyAndSellPageEntity.TagsEntity
 import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfo
 import com.infras.dauth.entity.BuyAndSellPageEntity.TokenInfoOfTag
@@ -61,7 +61,6 @@ import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyAndSellViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.UnverifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifyFailedDialogFragment
-import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
 import com.infras.dauth.widget.compose.DViewPager.ViewPagerContent
@@ -69,7 +68,6 @@ import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicatorsWithUnderLi
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
-import kotlinx.coroutines.launch
 
 class BuyAndSellActivity : BaseActivity() {
 
@@ -80,7 +78,6 @@ class BuyAndSellActivity : BaseActivity() {
     }
 
     private val viewModel: BuyAndSellViewModel by viewModels()
-    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +86,10 @@ class BuyAndSellActivity : BaseActivity() {
         }
         initViewModel()
         fetchData()
+    }
+
+    override fun getDefaultViewModel(): BaseViewModel {
+        return viewModel
     }
 
     private fun initViewModel() {
@@ -112,15 +113,6 @@ class BuyAndSellActivity : BaseActivity() {
                     VerifyFailedDialogFragment.newInstance(
                         authId, it.isBound
                     ).show(fm, VerifyFailedDialogFragment.TAG)
-                }
-            }
-        }
-        lifecycleScope.launch {
-            viewModel.showLoading.observe(this@BuyAndSellActivity) {
-                if (it) {
-                    loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                } else {
-                    loadingDialog.dismissAllowingStateLoss()
                 }
             }
         }

@@ -5,23 +5,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
+import com.infras.dauth.app.BaseFragment
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.FragmentVerifySetProfileBinding
-import com.infras.dauth.entity.KycProfileInfo
 import com.infras.dauth.ext.isAreaCode
 import com.infras.dauth.ext.isMail
 import com.infras.dauth.ext.isPhone
 import com.infras.dauth.ext.isVerifyCode
 import com.infras.dauth.ext.setDebouncedOnClickListener
-import com.infras.dauth.ui.fiat.transaction.viewmodel.KycSubmitViewModel
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifySetProfileEvent
 import com.infras.dauth.ui.fiat.transaction.viewmodel.VerifySetProfileViewModel
 import com.infras.dauth.util.ToastUtil
-import com.infras.dauth.widget.LoadingDialogFragment
-import com.infras.dauthsdk.wallet.base.BaseFragment
 import kotlinx.coroutines.launch
 
 class VerifySetProfileFragment : BaseFragment() {
@@ -42,9 +39,7 @@ class VerifySetProfileFragment : BaseFragment() {
     private val binding get() = _binding!!
     private var showTab = 0
     private val areaCodes = arrayOf("+86")
-    private val viewModel: KycSubmitViewModel by activityViewModels()
     private val fVm: VerifySetProfileViewModel by viewModels()
-    private val loadingDialog = LoadingDialogFragment.newInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,18 +84,6 @@ class VerifySetProfileFragment : BaseFragment() {
     }
 
     private fun initViewModel() {
-        fVm.showLoading.observe(viewLifecycleOwner) {
-            if (it) {
-                loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
-            } else {
-                loadingDialog.dismissAllowingStateLoss()
-            }
-        }
-        lifecycleScope.launch {
-            fVm.toastEvent.collect { toast ->
-                activity?.let { a -> ToastUtil.show(a, toast) }
-            }
-        }
         lifecycleScope.launch {
             fVm.commonEvent.collect { event ->
                 when (event) {
@@ -114,6 +97,10 @@ class VerifySetProfileFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    override fun getDefaultViewModel(): BaseViewModel {
+        return fVm
     }
 
     private fun updateTab() {
@@ -144,11 +131,6 @@ class VerifySetProfileFragment : BaseFragment() {
                 return
             }
 
-            viewModel.profile = KycProfileInfo.Email(
-                email = email,
-                verifyCode = verifyCode
-            )
-
             fVm.bindEmail(email = email, code = verifyCode)
         } else {
             val phone = binding.etPhone.text?.toString().orEmpty()
@@ -171,12 +153,6 @@ class VerifySetProfileFragment : BaseFragment() {
                 ToastUtil.show(context, "area code format error")
                 return
             }
-
-            viewModel.profile = KycProfileInfo.Phone(
-                phone = phone,
-                verifyCode = verifyCode,
-                areaCode = areaCode
-            )
 
             fVm.bindPhone(phone, areaCode, verifyCode)
         }

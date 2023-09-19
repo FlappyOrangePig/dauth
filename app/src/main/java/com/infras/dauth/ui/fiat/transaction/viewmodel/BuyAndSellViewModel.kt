@@ -8,12 +8,19 @@ import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.BuyAndSellPageEntity
 import com.infras.dauth.entity.KycBundledState
+import com.infras.dauth.manager.AppManagers
+import com.infras.dauth.manager.StorageDir
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil
+import com.infras.dauth.util.MoshiUtil
 import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.CurrencyPriceRes
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray
+import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -45,10 +52,18 @@ class BuyAndSellViewModel : BaseViewModel() {
         }
     }
 
+
     fun fetchCurrencyList() = viewModelScope.launch {
         val r = showLoading { repo.currencyList() }
         if (r != null && r.isSuccess()) {
-            val cryptoList = r.data?.cryptoList ?: listOf()
+            val data = r.data ?: return@launch
+
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                CurrencyCalcUtil.setCurrencyList(data)
+            }
+
+            val cryptoList = data.cryptoList ?: listOf()
             tokenInfoList = cryptoList.map {
                 BuyAndSellPageEntity.TokenInfo(
                     name = it.cryptoCode.orEmpty(),
@@ -59,7 +74,7 @@ class BuyAndSellViewModel : BaseViewModel() {
                     it
                 )
             }
-            fiatList = r.data?.fiatList ?: listOf()
+            fiatList = data.fiatList ?: listOf()
             _pageEntity.value = generatePageEntity()
 
             fetchPrice(fiatList, cryptoList)

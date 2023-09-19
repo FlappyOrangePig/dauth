@@ -2,12 +2,11 @@ package com.infras.dauth.ui.fiat.transaction.fragment
 
 import com.infras.dauth.entity.FiatOrderState
 
-class CompletedOrdersFragment : PendingOrdersFragment() {
+class OrdersCompletedFragment : OrdersPendingFragment() {
 
     companion object {
-        const val TAG = "CompletedOrdersFragment"
-        fun newInstance(): CompletedOrdersFragment {
-            return CompletedOrdersFragment()
+        fun newInstance(): OrdersCompletedFragment {
+            return OrdersCompletedFragment()
         }
     }
 

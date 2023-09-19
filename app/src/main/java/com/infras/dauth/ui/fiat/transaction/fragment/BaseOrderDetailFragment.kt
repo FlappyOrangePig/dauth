@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.infras.dauth.R
+import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
 import com.infras.dauth.ui.fiat.transaction.util.OrderDetailListComposeUtil
 import com.infras.dauth.ui.fiat.transaction.widget.OrderDetailListView
 import com.infras.dauthsdk.login.model.OrderDetailRes
-import com.infras.dauthsdk.wallet.base.BaseFragment
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 
 abstract class BaseOrderDetailFragment : BaseFragment() {

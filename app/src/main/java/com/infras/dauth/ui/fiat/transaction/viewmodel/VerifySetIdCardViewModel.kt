@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.KycOpenAccountMethod
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauthsdk.login.model.AccountDocumentationRequestParam
+import com.infras.dauthsdk.login.model.AccountDocumentationRequestRes
 import com.infras.dauthsdk.login.model.CountryListParam
 import com.infras.dauthsdk.login.model.CountryListRes
 import kotlinx.coroutines.Dispatchers
@@ -22,8 +24,8 @@ class VerifySetIdCardViewModel : BaseViewModel() {
     val openAccountMethod: LiveData<KycOpenAccountMethod> = _openAccountMethod
     private val _fullName = MutableLiveData<Boolean>()
     val fullName: LiveData<Boolean> = _fullName
-    private val _currentDocumentType = MutableLiveData<Int?>()
-    val currentDocumentType: LiveData<Int?> = _currentDocumentType
+    private val _currentDocumentType = MutableLiveData<String?>()
+    val currentDocumentType: LiveData<String?> = _currentDocumentType
 
     fun fetchCountry() {
         viewModelScope.launch {
@@ -42,15 +44,17 @@ class VerifySetIdCardViewModel : BaseViewModel() {
     }
 
     fun selectCountry(pos: Int) {
-        val kycOpenAccountMethod = KycOpenAccountMethod(
-            idCard = false,
-            passport = false,
-            driverSLicence = false
-        )
+        // 国家变更，清空认证方式，等接口返回
+        val kycOpenAccountMethod = KycOpenAccountMethod(listOf())
         _openAccountMethod.value = kycOpenAccountMethod
 
         val countriesNotNull = countries.value ?: return
-        val countryCode = countriesNotNull[pos].countryCode
+        val country = countriesNotNull[pos]
+
+        // 国家变更，名字模式变更
+        _fullName.value = country.useFullName
+
+        val countryCode = country.countryCode
         fetchOpenAccountMethod(countryCode)
     }
 
@@ -65,41 +69,47 @@ class VerifySetIdCardViewModel : BaseViewModel() {
                     var idCard = false
                     var passport = false
                     var driverSLicence = false
-                    when (data.idType) {
-                        4 -> {
-                            idCard = true
-                        }
 
-                        1 -> {
-                            passport = true
-                        }
+                    data.idTypeList.forEach {
+                        when (it.idType) {
+                            "ID_CARD" -> {
+                                idCard = true
+                            }
 
-                        2 -> {
-                            driverSLicence = true
+                            "PASSPORT" -> {
+                                passport = true
+                            }
+
+                            "DRIVERS" -> {
+                                driverSLicence = true
+                            }
                         }
                     }
+
+
                     val kycOpenAccountMethod = KycOpenAccountMethod(
-                        idCard = idCard,
-                        passport = passport,
-                        driverSLicence = driverSLicence
+                        data.idTypeList
                     )
                     _openAccountMethod.value = kycOpenAccountMethod
 
-                    _currentDocumentType.value = when {
-                        idCard -> 0
-                        passport -> 1
-                        driverSLicence -> 2
+                    val type = when {
+                        idCard -> AccountDocumentationRequestRes.IdTypeInfo.ID_CARD
+                        passport -> AccountDocumentationRequestRes.IdTypeInfo.PASSPORT
+                        driverSLicence -> AccountDocumentationRequestRes.IdTypeInfo.DRIVERS
                         else -> null
                     }
-
-                    // 应该是拉回来的但是现在服务端还没有
-                    _fullName.value = true
+                    selectOpenAccountType(type)
                 }
             }
         }
     }
 
-    fun selectOpenAccountType(type: Int) {
+    fun selectOpenAccountType(type: String?) {
         _currentDocumentType.value = type
+    }
+
+    fun getPictureCount(): Int? {
+        val methods = openAccountMethod.value ?: return null
+        return methods.idTypeList.find { it.idType == currentDocumentType.value }?.sideNum
     }
 }

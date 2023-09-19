@@ -2,7 +2,9 @@ package com.infras.dauth
 
 import android.app.Application
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.manager.ResourceManager
+import com.infras.dauth.manager.StorageManager
 import com.infras.dauth.util.DAuthEnv
 import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.api.DAuthSDK
@@ -48,7 +50,10 @@ class MyApplication : Application() {
             val sdk = DAuthSDK.instance
             sdk.initSDK(this, config = config)
             AccountManager.attachSdk(sdk)
-            resourceManager = ResourceManager(this)
+            AppManagers.attach(
+                resourceManager = ResourceManager(this),
+                storageManager = StorageManager(this),
+            )
         }
     }
 }

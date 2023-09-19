@@ -3,7 +3,10 @@ package com.infras.dauth.ui.fiat.transaction.util
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.infras.dauth.manager.AppManagers
+import com.infras.dauth.manager.StorageDir
 import com.infras.dauth.util.LogUtil
+import com.infras.dauth.manager.StorageManager
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -14,7 +17,7 @@ object CacheFileUtil {
 
     fun saveUriToCacheFile(context: Context, uri: Uri): File? {
         return try {
-            val dir = StorageUtil.getCacheImageDir(context = context)
+            val dir = AppManagers.storageManager.getDir(StorageDir.ImageCache)
             if (!dir.exists()) {
                 dir.mkdirs()
             }

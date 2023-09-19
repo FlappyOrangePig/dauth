@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.parcelize'
+    id 'org.jetbrains.kotlin.kapt'
 }
 
 android {
@@ -86,6 +87,10 @@ dependencies {
 
     // tools
     implementation 'com.drakeet.multitype:multitype:4.3.0'
+
+    // moshi
+    implementation libraries.moshi
+    kapt libraries.moshi_kotlin_code_gen
 
     // dauth-sdk
     //implementation "com.infras.dauthsdk:dauth-sdk:${versions.version_name}"
