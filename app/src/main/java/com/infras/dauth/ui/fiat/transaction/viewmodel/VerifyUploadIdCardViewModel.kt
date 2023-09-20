@@ -1,5 +1,6 @@
 package com.infras.dauth.ui.fiat.transaction.viewmodel
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
@@ -7,12 +8,15 @@ import com.infras.dauth.entity.DocumentType
 import com.infras.dauth.entity.KycDocumentInfo
 import com.infras.dauth.entity.KycName
 import com.infras.dauth.manager.AppManagers
+import com.infras.dauth.manager.StorageDir
 import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.util.ImageBase64Util
 import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.login.model.AccountDocumentationRequestRes
 import com.infras.dauthsdk.login.model.AccountOpenParam
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.Base64
 
 class VerifyUploadIdCardViewModel : BaseViewModel() {
 
@@ -73,6 +77,16 @@ class VerifyUploadIdCardViewModel : BaseViewModel() {
         if (base64EncodedImageA == null) {
             toast("image a base64 error")
             return@launch
+        }
+
+        // 验证android.util.Base64，与java后台联调需要使用NO_WRAP
+        @SuppressLint("NewApi")
+        if (false) {
+            val t = Base64.getDecoder().decode(base64EncodedImageA)
+            LogUtil.d("haha", "${t.size}")
+            val d = AppManagers.storageManager.getDir(StorageDir.ImageCache)
+            val f = File(d, "haha.jpg")
+            f.writeBytes(t)
         }
 
         val base64EncodedImageB = if (document.documentType.picCount == 2) {

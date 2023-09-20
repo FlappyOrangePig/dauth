@@ -15,6 +15,6 @@ object ImageBase64Util {
             LogUtil.e(TAG, e.stackTraceToString())
             null
         } ?: return null
-        return Base64.encodeToString(bytes, Base64.DEFAULT)
+        return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 }
