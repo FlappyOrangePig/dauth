@@ -31,11 +31,9 @@ import com.infras.dauthsdk.login.model.LogReportParam
 import com.infras.dauthsdk.login.model.LoginParam
 import com.infras.dauthsdk.login.model.LoginRes
 import com.infras.dauthsdk.login.model.LogoutParam
-import com.infras.dauthsdk.login.model.MiniAccountRealInfoRes
 import com.infras.dauthsdk.login.model.QueryByAuthIdParam
 import com.infras.dauthsdk.login.model.QueryByEMailParam
 import com.infras.dauthsdk.login.model.QueryByPhoneParam
-import com.infras.dauthsdk.login.model.QueryRealInfoParam
 import com.infras.dauthsdk.login.model.QueryWalletParam
 import com.infras.dauthsdk.login.model.QueryWalletRes
 import com.infras.dauthsdk.login.model.RefreshTokenParam
@@ -244,18 +242,6 @@ internal class RequestApi internal constructor() : ApiClient() {
     suspend fun queryByPhone(body: QueryByPhoneParam): AccountRes? {
         val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/userinfo/phone/query"))
         return request<AccountRes>(localVariableConfig, body)
-    }
-
-    /**
-     * 获取用户真实信息
-     *
-     * @param body
-     * @return MiniAccountRealInfoRes
-     */
-
-    suspend fun queryRealInfo(body: QueryRealInfoParam): MiniAccountRealInfoRes? {
-        val localVariableConfig = RequestConfig(ReqUrl.PathUrl("/account/v1/realinfo/query"))
-        return request<MiniAccountRealInfoRes>(localVariableConfig, body)
     }
 
     /**

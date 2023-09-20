@@ -1,22 +1,15 @@
 package com.infras.dauth.ui.fiat.transaction.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.infras.dauth.R
-import com.infras.dauth.databinding.FragmentOrderDetailCompleteBinding
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
-import com.infras.dauth.ext.setDebouncedOnClickListener
-import com.infras.dauth.ui.fiat.transaction.util.TimeUtil
-import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauthsdk.login.model.OrderDetailRes
 
-class OrderPendingForChain : OrderDetailCompleteFragment() {
+class OrderDetailPendingChainFragment : OrderDetailCompleteFragment() {
 
     companion object {
-        fun newInstance(data: OrderDetailRes.Data): OrderPendingForChain {
-            return OrderPendingForChain().also {
+        fun newInstance(data: OrderDetailRes.Data): OrderDetailPendingChainFragment {
+            return OrderDetailPendingChainFragment().also {
                 it.arguments = Bundle().apply { putParcelable(EXTRA_DATA, data) }
             }
         }

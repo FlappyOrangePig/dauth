@@ -10,12 +10,20 @@ import com.infras.dauthsdk.login.model.CountryListRes
 import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.CurrencyPriceRes
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
+import com.infras.dauthsdk.login.model.OrderAppealParam
+import com.infras.dauthsdk.login.model.OrderAppealRes
+import com.infras.dauthsdk.login.model.OrderCancelAppealParam
+import com.infras.dauthsdk.login.model.OrderCancelAppealRes
+import com.infras.dauthsdk.login.model.OrderCancelParam
+import com.infras.dauthsdk.login.model.OrderCancelRes
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderCreateRes
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.OrderListRes
+import com.infras.dauthsdk.login.model.OrderPaidParam
+import com.infras.dauthsdk.login.model.OrderPaidRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import com.infras.dauthsdk.login.model.PaymentQuoteRes
 
@@ -102,4 +110,36 @@ interface IFiatApi {
      * @return
      */
     suspend fun orderDetail(p: OrderDetailParam): OrderDetailRes?
+
+    /**
+     * 我已支付
+     *
+     * @param p
+     * @return
+     */
+    suspend fun orderPaid(p: OrderPaidParam): OrderPaidRes?
+
+    /**
+     * 订单申诉
+     *
+     * @param p
+     * @return
+     */
+    suspend fun orderAppeal(p: OrderAppealParam): OrderAppealRes?
+
+    /**
+     * 订单取消
+     *
+     * @param p
+     * @return
+     */
+    suspend fun orderCancel(p: OrderCancelParam): OrderCancelRes?
+
+    /**
+     * 取消申诉
+     *
+     * @param p
+     * @return
+     */
+    suspend fun orderCancelAppeal(p: OrderCancelAppealParam): OrderCancelAppealRes?
 }

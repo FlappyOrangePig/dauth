@@ -3,7 +3,6 @@ package com.infras.dauth.ui.fiat.transaction.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.infras.dauth.MyApplication
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.entity.PayMethodChooseListEntity
@@ -36,6 +35,14 @@ class BuyWithViewModel : BaseViewModel() {
 
     fun attachInput(input: BuyWithPageInputEntity) {
         this.input = input
+    }
+
+    fun getTokenCode(): String {
+        return if (input.isAmount) {
+            input.fiat_info.fiatCode.orEmpty()
+        } else {
+            input.crypto_info.cryptoCode.orEmpty()
+        }
     }
 
     private fun fetchAddress() {
@@ -105,10 +112,10 @@ class BuyWithViewModel : BaseViewModel() {
                 repo.orderCreate(
                     OrderCreateParam(
                         trade_model = "FAST",
-                        quote_type = "QUANTITY",
+                        quote_type = if (input.isAmount) "AMOUNT" else "QUANTITY",
                         fiat_code = input.fiat_info.fiatCode.orEmpty(),
                         crypto_code = token,
-                        amount = input.buyAmount,
+                        amount = input.buyCount,
                         paymethod_id = method.payMethodInfo.payMethodId.orEmpty(),
                         withdraw_address = walletAddress,
                         chain_id = chainId.toString(),

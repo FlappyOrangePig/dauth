@@ -16,8 +16,8 @@ import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCancelFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCompleteFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailDisputeFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingPayFragment
-import com.infras.dauth.ui.fiat.transaction.fragment.OrderPendingForChain
-import com.infras.dauth.ui.fiat.transaction.fragment.OrderPendingForSellerSReleaseFragment
+import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingChainFragment
+import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingReleaseFragment
 import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
@@ -96,11 +96,11 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
             }
 
             FiatOrderState.PAID -> {
-                OrderPendingForSellerSReleaseFragment.newInstance(data)
+                OrderDetailPendingReleaseFragment.newInstance(data)
             }
 
             FiatOrderState.COMPLETED -> {
-                OrderPendingForChain.newInstance(data)
+                OrderDetailPendingChainFragment.newInstance(data)
             }
 
             FiatOrderState.WITHDRAW_FAIL, FiatOrderState.WITHDRAW_SUCCESS -> {

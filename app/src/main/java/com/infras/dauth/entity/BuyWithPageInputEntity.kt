@@ -8,5 +8,6 @@ import kotlinx.parcelize.Parcelize
 class BuyWithPageInputEntity(
     val crypto_info: DigitalCurrencyListRes.CryptoInfo,
     val fiat_info: DigitalCurrencyListRes.FiatInfo,
-    val buyAmount: String
+    val buyCount: String,
+    val isAmount: Boolean
 ) : Parcelable

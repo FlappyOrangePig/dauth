@@ -6,8 +6,8 @@ sealed class FiatOrderDetailItemEntity {
 
     data class Text(
         val title: String,
-        val content: String,
-        val displayContent: String = content,
+        val content: CharSequence,
+        val displayContent: CharSequence = content,
         val boldContent: Boolean = false,
         val canCopy: Boolean = false,
     ) : FiatOrderDetailItemEntity() {

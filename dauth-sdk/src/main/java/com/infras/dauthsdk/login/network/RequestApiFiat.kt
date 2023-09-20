@@ -16,12 +16,20 @@ import com.infras.dauthsdk.login.model.CurrencyPriceParam
 import com.infras.dauthsdk.login.model.CurrencyPriceRes
 import com.infras.dauthsdk.login.model.DigitalCurrencyListParam
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
+import com.infras.dauthsdk.login.model.OrderAppealParam
+import com.infras.dauthsdk.login.model.OrderAppealRes
+import com.infras.dauthsdk.login.model.OrderCancelAppealParam
+import com.infras.dauthsdk.login.model.OrderCancelAppealRes
+import com.infras.dauthsdk.login.model.OrderCancelParam
+import com.infras.dauthsdk.login.model.OrderCancelRes
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderCreateRes
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.OrderListRes
+import com.infras.dauthsdk.login.model.OrderPaidParam
+import com.infras.dauthsdk.login.model.OrderPaidRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import com.infras.dauthsdk.login.model.PaymentQuoteRes
 
@@ -74,6 +82,26 @@ internal class RequestApiFiat internal constructor() : ApiClient(), IFiatApi {
 
     override suspend fun orderDetail(p: OrderDetailParam): OrderDetailRes? {
         val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/detail"))
+        return request(c, p)
+    }
+
+    override suspend fun orderPaid(p: OrderPaidParam): OrderPaidRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/paid"))
+        return request(c, p)
+    }
+
+    override suspend fun orderAppeal(p: OrderAppealParam): OrderAppealRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/appeal"))
+        return request(c, p)
+    }
+
+    override suspend fun orderCancel(p: OrderCancelParam): OrderCancelRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/cancel"))
+        return request(c, p)
+    }
+
+    override suspend fun orderCancelAppeal(p: OrderCancelAppealParam): OrderCancelAppealRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/cancel_appeal"))
         return request(c, p)
     }
 }

@@ -9,11 +9,11 @@ import com.infras.dauth.entity.FiatOrderDetailItemEntity
 import com.infras.dauthsdk.login.model.OrderDetailRes
 import java.util.Date
 
-class OrderPendingForSellerSReleaseFragment : OrderDetailCompleteFragment() {
+class OrderDetailPendingReleaseFragment : OrderDetailCompleteFragment() {
 
     companion object {
-        fun newInstance(data: OrderDetailRes.Data): OrderPendingForSellerSReleaseFragment {
-            return OrderPendingForSellerSReleaseFragment().also {
+        fun newInstance(data: OrderDetailRes.Data): OrderDetailPendingReleaseFragment {
+            return OrderDetailPendingReleaseFragment().also {
                 it.arguments = Bundle().apply { putParcelable(EXTRA_DATA, data) }
             }
         }

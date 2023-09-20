@@ -1,11 +1,27 @@
 package com.infras.dauth.ui.fiat.transaction.util
 
+import android.graphics.Color
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
 import com.infras.dauth.entity.FiatOrderState
 import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauthsdk.login.model.OrderDetailRes
 
 object OrderDetailListComposeUtil {
+
+    private const val RELEASED_TXS = "Released Txs"
+    private const val STATUS = "Status"
+    private const val TXS_INFO = "Txs info"
+    private const val UNIT_PRICE = "Unit Price"
+    private const val QUANTITY = "Quantity"
+    private const val ORDER_AMOUNT = "Order amount"
+    private const val PAYMENT_METHOD = "Payment method"
+    private const val ORDER_INFORMATION = "Order information"
+    private const val ORDER_ID = "Order ID"
+    private const val ORDER_TIME = "Order time"
+    private const val ACCOUNT_NUMBER = "Account number"
 
     fun all(title: FiatOrderDetailItemEntity.Title, data: OrderDetailRes.Data) =
         listOf(title) + publicInfo(data) + txInfo(data)
@@ -18,22 +34,31 @@ object OrderDetailListComposeUtil {
 
         return mutableListOf(
             FiatOrderDetailItemEntity.Group("Buy ${data.cryptoCode}"),
-            FiatOrderDetailItemEntity.Text("Unit Price", "$fiatSymbol ${data.price.scale(fiatPrecision)}"),
-            FiatOrderDetailItemEntity.Text("Quantity", "${data.quantity.scale(cryptoPrecision)} ${data.cryptoCode}"),
-            FiatOrderDetailItemEntity.Text("Order amount", "$fiatSymbol ${data.amount.scale(fiatPrecision)}"),
             FiatOrderDetailItemEntity.Text(
-                "Payment method",
+                UNIT_PRICE,
+                "$fiatSymbol ${data.price.scale(fiatPrecision)}"
+            ),
+            FiatOrderDetailItemEntity.Text(
+                QUANTITY,
+                "${data.quantity.scale(cryptoPrecision)} ${data.cryptoCode}"
+            ),
+            FiatOrderDetailItemEntity.Text(
+                ORDER_AMOUNT,
+                "$fiatSymbol ${data.amount.scale(fiatPrecision)}"
+            ),
+            FiatOrderDetailItemEntity.Text(
+                PAYMENT_METHOD,
                 data.payMethodInfo?.payMethodName.orEmpty()
             ),
             FiatOrderDetailItemEntity.Split,
-            FiatOrderDetailItemEntity.Group("Order information"),
-            FiatOrderDetailItemEntity.Text("Order ID", data.orderId.orEmpty(), canCopy = true),
+            FiatOrderDetailItemEntity.Group(ORDER_INFORMATION),
+            FiatOrderDetailItemEntity.Text(ORDER_ID, data.orderId.orEmpty(), canCopy = true),
             FiatOrderDetailItemEntity.Text(
-                "Order time",
+                ORDER_TIME,
                 TimeUtil.getOrderTime(data.createTime),
                 canCopy = false
             ),
-            FiatOrderDetailItemEntity.Text("Account number", "?", canCopy = true),
+            FiatOrderDetailItemEntity.Text(ACCOUNT_NUMBER, "?", canCopy = true),
             FiatOrderDetailItemEntity.Split,
         )
     }
@@ -45,24 +70,84 @@ object OrderDetailListComposeUtil {
         }
         val state = data.state.orEmpty()
 
-        return mutableListOf(
-            FiatOrderDetailItemEntity.Group("Txs info"),
-            FiatOrderDetailItemEntity.Text("Released Txs", txId),
-            FiatOrderDetailItemEntity.Text("Status", data.state.orEmpty()),
-        ).also {
-            when (state) {
-                FiatOrderState.COMPLETED -> {
-                    FiatOrderDetailItemEntity.Text("Status", "Pending")
-                }
+        val r = mutableListOf<FiatOrderDetailItemEntity>(
+            FiatOrderDetailItemEntity.Group(TXS_INFO),
+        )
 
-                FiatOrderState.WITHDRAW_SUCCESS -> {
-                    FiatOrderDetailItemEntity.Text("Status", "Success")
-                }
-
-                FiatOrderState.WITHDRAW_FAIL -> {
-                    FiatOrderDetailItemEntity.Text("Status", "Failure")
-                }
+        when (state) {
+            FiatOrderState.PAID -> {
+                r.add(
+                    FiatOrderDetailItemEntity.Text(
+                        STATUS,
+                        SpannableStringBuilder("Pending for seller’s release").also {
+                            it.setSpan(
+                                ForegroundColorSpan(Color.parseColor("#D88100")),
+                                0,
+                                it.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                        }
+                    )
+                )
             }
+
+            FiatOrderState.COMPLETED -> {
+                r.addAll(
+                    listOf(
+                        FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId),
+                        FiatOrderDetailItemEntity.Text(
+                            STATUS,
+                            SpannableStringBuilder("Pending").also {
+                                it.setSpan(
+                                    ForegroundColorSpan(Color.parseColor("#D88100")),
+                                    0,
+                                    it.length,
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                            })
+                    )
+                )
+            }
+
+            FiatOrderState.WITHDRAW_SUCCESS -> {
+                r.addAll(
+                    listOf(
+                        FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId),
+                        FiatOrderDetailItemEntity.Text(
+                            STATUS,
+                            SpannableStringBuilder("Success").also {
+                                it.setSpan(
+                                    ForegroundColorSpan(Color.parseColor("#03A600")),
+                                    0,
+                                    it.length,
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                            })
+                    )
+                )
+            }
+
+            FiatOrderState.WITHDRAW_FAIL -> {
+                r.addAll(
+                    listOf(
+                        FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId),
+                        FiatOrderDetailItemEntity.Text(
+                            STATUS,
+                            SpannableStringBuilder("Failure").also {
+                                it.setSpan(
+                                    ForegroundColorSpan(Color.parseColor("#ff0000")),
+                                    0,
+                                    it.length,
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                            })
+                    )
+                )
+            }
+
+            else -> {}
         }
+
+        return r
     }
 }

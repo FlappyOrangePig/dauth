@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.infras.dauth.app.BaseActivity
@@ -18,10 +17,7 @@ import com.infras.dauth.ui.fiat.transaction.adapter.PayMethodAdapter
 import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyWithViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.VerticalDividerItemDecoration
 import com.infras.dauth.util.ConvertUtil
-import com.infras.dauth.util.ToastUtil
-import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
-import kotlinx.coroutines.launch
 
 
 class BuyWithActivity : BaseActivity() {
@@ -73,8 +69,8 @@ class BuyWithActivity : BaseActivity() {
             viewModel.buy()
         }
 
-        val amount = ConvertUtil.addCommasToNumber(viewModel.input.buyAmount)
-        val token = viewModel.input.crypto_info.cryptoCode.orEmpty()
+        val amount = ConvertUtil.addCommasToNumber(viewModel.input.buyCount)
+        val token = viewModel.getTokenCode()
         val text = "$amount $token"
         tvTokenAmount.text = text
 

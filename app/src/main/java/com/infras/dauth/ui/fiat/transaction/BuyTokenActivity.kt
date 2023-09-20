@@ -19,6 +19,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,11 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.entity.BuyTokenPageEntity
 import com.infras.dauth.entity.BuyTokenPageInputEntity
 import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyTokenViewModel
 import com.infras.dauth.util.ConvertUtil
+import com.infras.dauth.util.LogUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.titleWith1Icon
@@ -60,6 +63,9 @@ class BuyTokenActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.attachInput(intent.getParcelableExtraCompat(EXTRA_INPUT)!!)
+        viewModel.selectPayMethodEvent.observe(this) {
+            BuyWithActivity.launch(this, it)
+        }
         setContent {
             BuyTokenScreenWithViewModel()
         }
@@ -67,40 +73,24 @@ class BuyTokenActivity : BaseActivity() {
 
     @Composable
     private fun BuyTokenScreenWithViewModel() {
-        val inputAmount by remember {
-            viewModel.amount
-        }
-        val estimatedPrice by remember {
-            viewModel.estimatedPrice
+        val pageData by remember {
+            viewModel.pageData
         }
 
-        val fiat = viewModel.getCurrentFiatInfo()
         BuyTokenScreen(
-            selectPayMethod = { amount ->
-                val fiat = viewModel.getCurrentFiatInfo()
-                if (amount >= BigInteger("10")) {
-                    BuyWithActivity.launch(
-                        this, BuyWithPageInputEntity(
-                            crypto_info = viewModel.input.crypto_info,
-                            fiat_info = fiat,
-                            buyAmount = amount.toString()
-                        )
-                    )
-                } else {
-                    val toast = "Enter a minimum of 10 ${fiat.fiatCode}(${fiat.fiatSymbol})"
-                    ToastUtil.show(this, toast)
-                }
+            selectPayMethod = { count ->
+                viewModel.selectPayMethod(count)
             },
             onClickOrders = {
                 OrdersActivity.launch(this@BuyTokenActivity)
             },
-            onAmountChanged = { amount ->
-                viewModel.updateAmount(amount)
+            onSwitchMethod = {
+                viewModel.switchMethod()
             },
-            crypto = viewModel.input.crypto_info.cryptoCode.orEmpty(),
-            fiat = "${fiat.fiatCode}",
-            priceQuote = estimatedPrice,
-            amount = inputAmount
+            onInputValueChanged = { inputValue ->
+                viewModel.updateInputValue(inputValue)
+            },
+            pageData = pageData
         )
     }
 
@@ -109,11 +99,15 @@ class BuyTokenActivity : BaseActivity() {
     private fun BuyTokenScreen(
         selectPayMethod: (BigInteger) -> Unit = {},
         onClickOrders: () -> Unit = {},
-        onAmountChanged: (String) -> Unit = {},
-        crypto: String = "USDT",
-        fiat: String = "CNY",
-        priceQuote: String = "Enter a minimum of 10 $crypto",
-        amount: String = "1234",
+        onInputValueChanged: (String) -> Unit = {},
+        onSwitchMethod: () -> Unit = {},
+        pageData: BuyTokenPageEntity = BuyTokenPageEntity(
+            estimatedPrice = "Enter a minimum of 10 USDT",
+            inputValue = "1234",
+            isAmountMode = false,
+            cryptoCode = "USDT",
+            fiatCode = "CNY",
+        )
     ) {
         Scaffold(
             topBar = {
@@ -126,26 +120,35 @@ class BuyTokenActivity : BaseActivity() {
                         .fillMaxWidth()
                         .fillMaxHeight()
                 ) {
-                    val amountWithSeparator = ConvertUtil.addCommasToNumber(amount)
+                    val isAmountMode = pageData.isAmountMode
+                    val inputValue = pageData.inputValue
+                    val priceQuote = pageData.estimatedPrice
+                    val fiatCode = pageData.fiatCode
+                    val cryptoCode = pageData.cryptoCode
+                    LogUtil.d(logTag, "inputValue=$inputValue")
+                    val amountWithSeparator = ConvertUtil.addCommasToNumber(inputValue)
 
                     titleWith1Icon(
-                        title = "Buy $crypto",
+                        title = "Buy $cryptoCode",
                         onClickBack = { finish() },
                         onClickRightIcon = { onClickOrders.invoke() },
                     )
 
+                    val dstUnit = if (!isAmountMode) fiatCode else cryptoCode
                     Text(
-                        text = "↑↓\n$fiat",
+                        text = "↑↓\n$dstUnit",
                         color = Color.Black,
                         fontSize = 16.sp,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = 90.dp),
+                            .padding(top = 90.dp)
+                            .clickable { onSwitchMethod.invoke() },
                         textAlign = TextAlign.Center
                     )
 
+                    val inputValueUnit = if (!isAmountMode) cryptoCode else fiatCode
                     Text(
-                        text = "$amountWithSeparator $crypto",
+                        text = "$amountWithSeparator $inputValueUnit",
                         color = Color.Black,
                         maxLines = 1,
                         fontSize = 30.sp,
@@ -172,7 +175,7 @@ class BuyTokenActivity : BaseActivity() {
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 360.dp)
                             .background(color = DColors.GRAY, shape = RoundedCornerShape(10.dp))
-                            .clickable { selectPayMethod.invoke(BigInteger(amount)) }
+                            .clickable { selectPayMethod.invoke(BigInteger(inputValue)) }
                             .padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 10.dp)
                     )
 
@@ -180,10 +183,10 @@ class BuyTokenActivity : BaseActivity() {
                         onItemClick = { str ->
                             val newAmount = when (str) {
                                 "⬅" -> {
-                                    if (amount.length == 1) {
+                                    if (inputValue.length == 1) {
                                         "0"
                                     } else {
-                                        amount.substring(0, amount.length - 1)
+                                        inputValue.substring(0, inputValue.length - 1)
                                     }
                                 }
 
@@ -199,16 +202,16 @@ class BuyTokenActivity : BaseActivity() {
                                     "9",
                                     "0",
                                 ) -> {
-                                    if (amount == "0") {
+                                    if (inputValue == "0") {
                                         str
                                     } else {
-                                        amount.plus(str)
+                                        inputValue.plus(str)
                                     }
                                 }
 
-                                else -> amount
+                                else -> inputValue
                             }
-                            onAmountChanged.invoke(newAmount)
+                            onInputValueChanged.invoke(newAmount)
                         }
                     )
                 }

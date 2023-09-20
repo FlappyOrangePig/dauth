@@ -7,11 +7,16 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.databinding.FragmentOrderDetailPendingPayBinding
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
+import com.infras.dauth.ext.setDebouncedOnClickListener
+import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.test.OrderDetailMockData
 import com.infras.dauth.ui.fiat.transaction.util.UriUtil
 import com.infras.dauthsdk.login.model.OrderDetailRes
+import com.infras.dauthsdk.login.model.OrderPaidParam
+import kotlinx.coroutines.launch
 
 class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
 
@@ -30,6 +35,7 @@ class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
     private var _pickMedia: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private val pickMedia get() = _pickMedia!!
     private var mediaPath: String? = null
+    private val repo = FiatTxRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +53,9 @@ class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentOrderDetailPendingPayBinding.inflate(inflater, container, false)
+        binding.tvPaid.setDebouncedOnClickListener {
+            requestPaid()
+        }
         return binding.root
     }
 
@@ -62,5 +71,17 @@ class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
 
     override fun onClickProof() {
         pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
+    private fun requestPaid() {
+        lifecycleScope.launch {
+            val r = repo.orderPaid(OrderPaidParam(""))
+            if (r != null && r.isSuccess()) {
+                val data = r.data
+                if (data != null) {
+
+                }
+            }
+        }
     }
 }

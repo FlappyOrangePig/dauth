@@ -106,7 +106,7 @@ class OrderDetailTextItemBinder :
             if (item.canCopy) {
                 bd.ivCopy.visibility = View.VISIBLE
                 bd.root.setDebouncedOnClickListener {
-                    ClipBoardUtil.copyToClipboard(it.context, item.content)
+                    ClipBoardUtil.copyToClipboard(it.context, item.content.toString())
                 }
             } else {
                 bd.ivCopy.visibility = View.GONE
@@ -116,7 +116,7 @@ class OrderDetailTextItemBinder :
             bd.ivCopy.visibility = if (item.canCopy) View.VISIBLE else View.GONE
             bd.root.setDebouncedOnClickListener {
                 if (item.canCopy) {
-                    ClipBoardUtil.copyToClipboard(it.context, item.content)
+                    ClipBoardUtil.copyToClipboard(it.context, item.content.toString())
                 }
             }
         }

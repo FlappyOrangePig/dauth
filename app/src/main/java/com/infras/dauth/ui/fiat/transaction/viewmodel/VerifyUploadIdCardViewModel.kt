@@ -9,11 +9,16 @@ import com.infras.dauth.entity.KycName
 import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.util.ImageBase64Util
+import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.login.model.AccountDocumentationRequestRes
 import com.infras.dauthsdk.login.model.AccountOpenParam
 import kotlinx.coroutines.launch
 
 class VerifyUploadIdCardViewModel : BaseViewModel() {
+
+    companion object {
+        private const val TAG = "VerifyUploadIdCardViewModel"
+    }
 
     private val repo = FiatTxRepository()
 
@@ -64,6 +69,7 @@ class VerifyUploadIdCardViewModel : BaseViewModel() {
             return@launch
         }
         val base64EncodedImageA = ImageBase64Util.getBase64EncodedImageFile(imageA)
+        LogUtil.d(TAG, "base64EncodedImageA=$base64EncodedImageA")
         if (base64EncodedImageA == null) {
             toast("image a base64 error")
             return@launch
