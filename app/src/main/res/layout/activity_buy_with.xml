@@ -16,13 +16,13 @@
             android:id="@+id/iv_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
             android:contentDescription="@null"
             android:paddingStart="10dp"
             android:paddingTop="8dp"
             android:paddingEnd="10dp"
             android:paddingBottom="8dp"
-            app:srcCompat="@drawable/svg_ic_back_arrow" />
+            app:srcCompat="@drawable/svg_ic_back_arrow"
+            android:layout_gravity="center_vertical"/>
 
         <com.infras.dauth.widget.IFTextView
             android:id="@+id/tv_title"

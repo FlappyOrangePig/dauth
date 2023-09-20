@@ -1,7 +1,5 @@
 package com.infras.dauth.ui.home
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -16,23 +14,31 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,12 +46,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewModelScope
@@ -65,8 +74,9 @@ import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
-import com.infras.dauth.widget.compose.DViewPager.ViewPagerContent
-import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicators
+import com.infras.dauth.widget.compose.ViewPagerContent
+import com.infras.dauth.widget.compose.ViewPagerIndicators
+import com.infras.dauth.widget.compose.ViewPagerIndicatorsPacked
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauthsdk.api.entity.DAuthResult
@@ -292,6 +302,8 @@ class HomeActivity : BaseActivity() {
                 ListItem(text = {
                     Text(
                         text = t.getText(),
+                        fontSize = 14.sp,
+                        maxLines = 1,
                         modifier = Modifier.clickable {
                             t.getClipInfo()?.let { copyToClipboard(it) }
                         })
@@ -306,7 +318,7 @@ class HomeActivity : BaseActivity() {
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    @Preview
+    //@Preview
     @Composable
     fun ProfileTab(
         account: String = "DAuth User",
@@ -339,6 +351,13 @@ class HomeActivity : BaseActivity() {
         ) {
             val (tvAccount, ivAvatar, rIndicators, vpTabs, ivSettings) = createRefs()
 
+            val fiatList = listOf("sign out", "set email password")
+            /*var fiatText =
+                if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiatCode.orEmpty()*/
+
+            var showPopup by remember {
+                mutableStateOf(false)
+            }
             Box(modifier = Modifier
                 .constrainAs(ivSettings) {
                     top.linkTo(parent.top)
@@ -356,6 +375,29 @@ class HomeActivity : BaseActivity() {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(15.dp)
                 )
+
+                DropdownMenu(
+                    expanded = showPopup,
+                    onDismissRequest = { showPopup = false },
+                    properties = PopupProperties(
+                        focusable = true,
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true
+                    ),
+                    modifier = Modifier
+                        .width(IntrinsicSize.Min)
+                        .height(IntrinsicSize.Min)
+                ) {
+                    fiatList.forEachIndexed { index, fiatList ->
+                        val fiatCode = fiatList
+                        DropdownMenuItem(onClick = {
+                            showPopup = false
+
+                        }) {
+                            Text(text = fiatCode)
+                        }
+                    }
+                }
             }
 
             Box(
@@ -451,7 +493,8 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    //@Preview
+    @OptIn(ExperimentalFoundationApi::class)
+    @Preview
     @Composable
     fun WalletTab(
         balance: String = "$1929.54",
@@ -462,27 +505,46 @@ class HomeActivity : BaseActivity() {
         onClickBuy: () -> Unit = {},
         onClickSwap: () -> Unit = {},
         onClickProperty: () -> Unit = {},
+        pagerEntities: List<PagerEntity> = listOf(
+            PagerEntity("Tokens") { ComingSoonLayout() },
+            PagerEntity("Collections") { ComingSoonLayout() },
+            PagerEntity("Txs") { ComingSoonLayout() },
+        )
     ) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
-            val (tvWalletIndex, tvBalance, tvAddress, ivCopy, rButtons, ivProperty) = createRefs()
-            Box(modifier = Modifier
-                .constrainAs(ivProperty) {
-                    end.linkTo(parent.end, 0.dp)
-                    top.linkTo(parent.top, 0.dp)
-                }
-                .clickable { onClickProperty.invoke() }
-                .padding(19.dp)
-                .background(Color.Transparent))
+            val (
+                tvWalletIndex,
+                tvBalance,
+                tvAddress,
+                ivCopy,
+                rButtons,
+                ivProperty,
+                vSplit,
+                rIndicator,
+                vpContainer,
+            ) = createRefs()
+            Box(
+                modifier = Modifier
+                    .constrainAs(ivProperty) {
+                        end.linkTo(parent.end, 0.dp)
+                        top.linkTo(parent.top, 0.dp)
+                    }
+                    .width(44.dp)
+                    .height(44.dp)
+                    .clickable { onClickProperty.invoke() }
+                    .background(Color.Transparent))
             {
                 Image(
                     painterResource(R.drawable.svg_ic_property),
                     contentDescription = "",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(15.dp)
+                    modifier = Modifier
+                        .size(15.dp)
+                        .align(Alignment.Center)
                 )
             }
 
@@ -501,8 +563,9 @@ class HomeActivity : BaseActivity() {
                 text = balance,
                 color = Color.Black,
                 fontSize = TextUnit(30F, TextUnitType.Sp),
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.constrainAs(tvBalance) {
-                    top.linkTo(tvWalletIndex.bottom, margin = 16.dp, goneMargin = 0.dp)
+                    top.linkTo(tvWalletIndex.bottom, margin = 8.dp, goneMargin = 0.dp)
                     start.linkTo(tvWalletIndex.start)
                     end.linkTo(tvWalletIndex.end)
                 }
@@ -514,7 +577,7 @@ class HomeActivity : BaseActivity() {
                 modifier = Modifier
                     .constrainAs(tvAddress)
                     {
-                        top.linkTo(tvBalance.bottom, margin = 24.dp, goneMargin = 0.dp)
+                        top.linkTo(tvBalance.bottom, margin = 12.dp, goneMargin = 0.dp)
                         start.linkTo(tvBalance.start)
                         end.linkTo(tvBalance.end)
                     }
@@ -553,7 +616,7 @@ class HomeActivity : BaseActivity() {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
-                .padding(top = 40.dp)
+                .padding(top = 25.dp)
             ) {
 
                 listOf(
@@ -565,11 +628,59 @@ class HomeActivity : BaseActivity() {
                     HomePageFunctionButton(it.first, it.second)
                 }
             }
+
+            Box(
+                modifier = Modifier
+                    .constrainAs(vSplit) {
+                        top.linkTo(rButtons.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+                    .padding(top = 25.dp)
+                    .height(0.5.dp)
+                    .padding(
+                        start = 15.dp, end = 15.dp
+                    )
+                    .background(Color.Gray)
+            )
+
+            val pageCount = pagerEntities.size
+            val pagerState = rememberPagerState(
+                initialPage = 0,
+                pageCount = { pageCount }
+            )
+            Column(modifier = Modifier
+                .constrainAs(rIndicator) {
+                    top.linkTo(vSplit.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(parent.bottom)
+                    width = Dimension.matchParent
+                    height = Dimension.fillToConstraints
+                }
+                .height(IntrinsicSize.Min)) {
+                ViewPagerIndicatorsPacked(
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 20.dp)
+                        .width(IntrinsicSize.Min)
+                        .height(IntrinsicSize.Min),
+                    pagerState = pagerState,
+                    pagerEntities = pagerEntities,
+                )
+                ViewPagerContent(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp) // 不加就崩溃，为什么？
+                        .weight(1F, true),
+                    pagerState = pagerState, pagerEntities = pagerEntities
+                )
+            }
         }
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    @Preview
+    //@Preview
     @Composable
     fun HomePageViewPager(
         pagerEntities: List<PagerEntity> = listOf(
@@ -591,7 +702,14 @@ class HomeActivity : BaseActivity() {
                 pageCount = { pageCount }
             )
 
-            ViewPagerContent(pagerState = pagerState, pagerEntities = pagerEntities)
+            ViewPagerContent(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, true),
+                pagerState = pagerState,
+                pagerEntities = pagerEntities,
+                userScrollEnabled = false
+            )
             ViewPagerIndicators(pagerState = pagerState, pagerEntities = pagerEntities)
         }
     }

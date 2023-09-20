@@ -63,8 +63,8 @@ import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifyFailedDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
-import com.infras.dauth.widget.compose.DViewPager.ViewPagerContent
-import com.infras.dauth.widget.compose.DViewPager.ViewPagerIndicatorsWithUnderLine
+import com.infras.dauth.widget.compose.ViewPagerContent
+import com.infras.dauth.widget.compose.ViewPagerIndicatorsWithUnderLine
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
@@ -316,7 +316,6 @@ class BuyAndSellActivity : BaseActivity() {
         onClickCurrencyToggle: (Int) -> Unit = {},
         fiatSelectIndex: Int? = null,
     ) {
-        print(fiatSelectIndex)
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
@@ -338,12 +337,18 @@ class BuyAndSellActivity : BaseActivity() {
                 ViewPagerIndicatorsWithUnderLine(
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
-                        .height(IntrinsicSize.Min)
+                        .height(44.dp)
                         .align(Alignment.CenterHorizontally),
                     pagerState = pagerState,
                     pagerEntities = pagerEntities
                 )
-                ViewPagerContent(pagerState = pagerState, pagerEntities = pagerEntities)
+                ViewPagerContent(
+                    pagerState = pagerState,
+                    pagerEntities = pagerEntities,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, true)
+                )
             }
 
             Image(
@@ -355,9 +360,8 @@ class BuyAndSellActivity : BaseActivity() {
                         top.linkTo(parent.top)
                         start.linkTo(parent.start)
                     }
-                    .padding(start = 10.dp)
                     .clickable { finish() }
-                    .padding(top = 8.dp, bottom = 8.dp, start = 10.dp, end = 10.dp)
+                    .padding(top = 12.dp, bottom = 12.dp, start = 10.dp, end = 10.dp)
                     .width(IntrinsicSize.Min)
                     .height(IntrinsicSize.Min)
             )
@@ -368,18 +372,23 @@ class BuyAndSellActivity : BaseActivity() {
             var fiatText =
                 if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiatCode.orEmpty()
 
-            Text(
-                text = fiatText,
+            Box(
                 modifier = Modifier
                     .constrainAs(cbCurrencySelector) {
                         top.linkTo(parent.top)
                         end.linkTo(parent.end)
                     }
+                    .height(44.dp)
                     .clickable {
                         showPopup = !showPopup
                     }
-                    .padding(start = 15.dp, end = 15.dp, top = 8.dp, bottom = 8.dp)
-            )
+                    .padding(start = 20.dp, end = 20.dp)
+            ) {
+                Text(
+                    text = fiatText,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
 
             Box(
                 modifier = Modifier.constrainAs(pwCurrencyMenu) {
