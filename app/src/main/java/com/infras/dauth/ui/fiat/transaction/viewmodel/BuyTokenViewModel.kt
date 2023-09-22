@@ -128,29 +128,22 @@ class BuyTokenViewModel : BaseViewModel() {
     }
 
     private fun updatePageData(newValue: BuyTokenPageEntity, quote: Boolean = false) {
-        val isNewValueAmountMode = newValue.isAmountMode
-        val minCount = if (isNewValueAmountMode) {
-            "${fiatInfo.orderMinLimit}"
+        val (valid, tips) = isInputValueValid(newValue.inputValue, newValue.isAmountMode)
+        _pageData.value = if (!valid) {
+            newValue.copy(estimatedPrice = tips)
         } else {
-            "${cryptoInfo.orderMinLimit}"
+            newValue
         }
-        val (dst, tooSmall) = if (BigDecimal(newValue.inputValue) < BigDecimal(minCount)) {
-            newValue.copy(
-                estimatedPrice = getMinimumText(isNewValueAmountMode)
-            ) to true
-        } else {
-            newValue to false
-        }
-        _pageData.value = dst
 
-        if (quote && !tooSmall) {
+        if (quote && valid) {
             quotePrice()
         }
     }
 
     fun selectPayMethod(count: BigInteger) {
         val fiat = fiatInfo
-        if (count >= BigInteger("10")) {
+        val (valid, tips) = isInputValueValid(count.toString(), pageData.value.isAmountMode)
+        if (valid) {
             _selectPayMethodEvent.value = BuyWithPageInputEntity(
                 crypto_info = cryptoInfo,
                 fiat_info = fiat,
@@ -158,9 +151,8 @@ class BuyTokenViewModel : BaseViewModel() {
                 isAmount = pageData.value.isAmountMode
             )
         } else {
-            val toast = getMinimumText(pageData.value.isAmountMode)
             viewModelScope.launch {
-                toast(toast)
+                toast(tips)
             }
         }
     }
@@ -185,5 +177,34 @@ class BuyTokenViewModel : BaseViewModel() {
             "${cryptoInfo.orderMinLimit} ${cryptoInfo.cryptoCode}"
         }
         return "Enter a minimum of $unit"
+    }
+
+    private fun getMaximumText(isAmountMode: Boolean): String {
+        val unit = if (isAmountMode) {
+            "${fiatInfo.orderMaxLimit} ${fiatInfo.fiatCode}"
+        } else {
+            "${cryptoInfo.orderMaxLimit} ${cryptoInfo.cryptoCode}"
+        }
+        return "Enter a maximum of $unit"
+    }
+
+    private fun isInputValueValid(input: String, isAmountMode: Boolean): Pair<Boolean, String> {
+        val minCount = if (isAmountMode) {
+            "${fiatInfo.orderMinLimit}"
+        } else {
+            "${cryptoInfo.orderMinLimit}"
+        }
+        val maxCount = if (isAmountMode) {
+            "${fiatInfo.orderMaxLimit}"
+        } else {
+            "${cryptoInfo.orderMaxLimit}"
+        }
+        return if (BigDecimal(input) < BigDecimal(minCount)) {
+            false to getMinimumText(isAmountMode)
+        } else if (BigDecimal(input) > BigDecimal(maxCount)) {
+            false to getMaximumText(isAmountMode)
+        } else {
+            true to ""
+        }
     }
 }

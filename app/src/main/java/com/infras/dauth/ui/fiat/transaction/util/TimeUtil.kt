@@ -6,9 +6,9 @@ import java.util.Locale
 
 object TimeUtil {
 
-    fun getOrderTime(tickInS: Long): String {
+    fun getOrderTime(tickInMs: Long): String {
         return SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(
-            Date(tickInS * 1000L)
+            Date(tickInMs)
         )
     }
 }

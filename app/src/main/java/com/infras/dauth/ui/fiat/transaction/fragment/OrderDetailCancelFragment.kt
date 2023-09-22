@@ -1,9 +1,9 @@
 package com.infras.dauth.ui.fiat.transaction.fragment
 
 import android.os.Bundle
+import android.view.View
 import com.infras.dauth.R
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
-import com.infras.dauth.ui.fiat.transaction.util.OrderDetailListComposeUtil
 import com.infras.dauthsdk.login.model.OrderDetailRes
 
 class OrderDetailCancelFragment : OrderDetailCompleteFragment() {
@@ -15,6 +15,11 @@ class OrderDetailCancelFragment : OrderDetailCompleteFragment() {
                 it.arguments = Bundle().apply { putParcelable(EXTRA_DATA, data) }
             }
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.tvPaid.visibility = View.GONE
     }
 
     override fun getTitleListData(): FiatOrderDetailItemEntity.Title? {

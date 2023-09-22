@@ -62,6 +62,7 @@ import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyAndSellViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.UnverifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifyFailedDialogFragment
+import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
 import com.infras.dauth.widget.compose.TokenListItem
@@ -219,6 +220,11 @@ class BuyAndSellActivity : BaseActivity() {
                 PagerEntity("Buy") {
                     BuyTab(data.buyTab) { tokenInfo ->
                         val fiatIndex = data.fiatSelectIndex ?: return@BuyTab
+                        val verified = viewModel.kycBundledState.value?.kycState == 1
+                        if (!verified) {
+                            ToastUtil.show(this, "kyc not verified")
+                            return@BuyTab
+                        }
                         BuyTokenActivity.launch(
                             this, BuyTokenPageInputEntity(
                                 crypto_info = tokenInfo.crypto,

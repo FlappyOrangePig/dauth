@@ -3,6 +3,7 @@ package com.infras.dauth.ui.fiat.transaction
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
@@ -21,6 +22,8 @@ import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingReleaseFr
 import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
+import com.infras.dauthsdk.login.model.OrderAppealParam
+import com.infras.dauthsdk.login.model.OrderCancelParam
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
 import kotlinx.coroutines.launch
@@ -40,6 +43,7 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
     private val orderId get() = intent.getStringExtra(EXTRA_ORDER_ID).orEmpty()
     private val repo = FiatTxRepository()
     private val loadingDialog = LoadingDialogFragment.newInstance()
+    private val resourceManager get() = AppManagers.resourceManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +56,17 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
     private fun ActivityOrderDetailBinding.initView() {
         ivBack.setDebouncedOnClickListener {
             finish()
+        }
+        binding.tvCancel.setDebouncedOnClickListener {
+            lifecycleScope.launch {
+                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                val r = repo.orderCancel(OrderCancelParam(orderId))
+                loadingDialog.dismissAllowingStateLoss()
+                ToastUtil.show(this@OrderDetailActivity, resourceManager.getResponseDigest(r))
+                if (r != null && r.isSuccess()) {
+                    refresh()
+                }
+            }
         }
     }
 
@@ -74,7 +89,7 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                 } else {
                     ToastUtil.show(
                         this@OrderDetailActivity,
-                        AppManagers.resourceManager.getResponseDigest(r)
+                        resourceManager.getResponseDigest(r)
                     )
                 }
             }
@@ -87,12 +102,14 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
         } else {
             data.state ?: return
         }
+        binding.tvCancel.visibility = View.GONE
         val f = when (state) {
             FiatOrderState.APPEAL -> {
                 OrderDetailDisputeFragment.newInstance(data)
             }
 
             FiatOrderState.UNPAID -> {
+                binding.tvCancel.visibility = View.VISIBLE
                 OrderDetailPendingPayFragment.newInstance(data)
             }
 
@@ -130,6 +147,17 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
     }
 
     override fun onHelpItemClick(index: Int) {
-        refresh()
+        lifecycleScope.launch {
+            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+            val r = repo.orderAppeal(OrderAppealParam(orderId))
+            loadingDialog.dismissAllowingStateLoss()
+            ToastUtil.show(
+                this@OrderDetailActivity,
+                resourceManager.getResponseDigest(r)
+            )
+            if (r != null && r.isSuccess()) {
+                refresh()
+            }
+        }
     }
 }
