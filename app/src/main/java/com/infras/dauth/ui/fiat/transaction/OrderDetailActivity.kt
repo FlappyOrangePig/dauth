@@ -15,8 +15,8 @@ import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCancelFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCompleteFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailDisputeFragment
-import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingPayFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingChainFragment
+import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingPayFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailPendingReleaseFragment
 import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauth.util.ToastUtil
@@ -71,17 +71,18 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                     if (data != null) {
                         replaceFragment(data)
                     }
+                } else {
+                    ToastUtil.show(
+                        this@OrderDetailActivity,
+                        AppManagers.resourceManager.getResponseDigest(r)
+                    )
                 }
-                ToastUtil.show(
-                    this@OrderDetailActivity,
-                    AppManagers.resourceManager.getResponseDigest(r)
-                )
             }
         }
     }
 
     private fun replaceFragment(data: OrderDetailRes.Data) {
-        val state = if (true) {
+        val state = if (false) {
             FiatOrderState.PAID
         } else {
             data.state ?: return

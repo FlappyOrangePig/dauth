@@ -1,19 +1,21 @@
 package com.infras.dauth.ui.home
 
-import android.app.Activity
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.infras.dauth.app.BaseViewModel
+import com.infras.dauth.entity.BuyAndSellPageEntity
 import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.util.GasUtil
+import com.infras.dauth.util.getEnv
 import com.infras.dauthsdk.api.annotation.DAuthAccountType
 import com.infras.dauthsdk.api.entity.CreateUserOpAndEstimateGasData
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.TokenType
 import com.infras.dauthsdk.api.entity.WalletBalanceData
 import com.infras.dauthsdk.login.model.AccountRes
+import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 import kotlinx.coroutines.launch
 import java.math.BigInteger
 
@@ -24,6 +26,8 @@ class HomeViewModel : BaseViewModel() {
     val balance: State<String> = _balance
     private val _address = mutableStateOf("")
     val address: State<String> = _address
+    private val _tokenInfoList = mutableStateOf(listOf<BuyAndSellPageEntity.TokenInfo>())
+    val tokenInfoList: State<List<BuyAndSellPageEntity.TokenInfo>> = _tokenInfoList
     private val _account = mutableStateOf("")
     val account: State<String> = _account
     private val _avatarUrl = mutableStateOf("")
@@ -56,10 +60,10 @@ class HomeViewModel : BaseViewModel() {
                 .invoke(loginApi) as String
         }.getOrNull()
 
-
+        fetchErc20Tokens()
     }
 
-    fun fetchBalance(){
+    fun fetchBalance() {
         viewModelScope.launch {
             val address = fetchAddress()
             if (address != null) {
@@ -130,10 +134,6 @@ class HomeViewModel : BaseViewModel() {
         return null
     }
 
-    fun logout(activity: Activity) {
-        AccountManager.logout(activity)
-    }
-
     suspend fun createUserOpAndEstimateGas(
         to: String,
         amount: BigInteger
@@ -143,5 +143,38 @@ class HomeViewModel : BaseViewModel() {
             amount,
             byteArrayOf()
         )
+    }
+
+    private fun fetchErc20Tokens() {
+        viewModelScope.launch {
+            val addressResult = sdk.queryWalletAddress()
+            if (addressResult is DAuthResult.Success) {
+                val address = addressResult.data.aaAddress
+                val erc20Tokens = getEnv().erc20Tokens
+                val results = mutableListOf<Pair<String,String>>()
+                erc20Tokens.forEachIndexed { _, pair ->
+                    val tokenName = pair.first
+                    val contractAddress = pair.second
+                    val erc20Result =
+                        sdk.queryWalletBalance(address, TokenType.ERC20(contractAddress))
+                    if (erc20Result is DAuthResult.Success) {
+                        val erc20 = erc20Result.data as WalletBalanceData.ERC20
+                        results.add(tokenName to erc20.amount.toString())
+                    }
+                }
+                if (results.isNotEmpty()) {
+                    _tokenInfoList.value = results.map {
+                        BuyAndSellPageEntity.TokenInfo(
+                            it.first,
+                            it.second,
+                            "",
+                            "",
+                            "",
+                            DigitalCurrencyListRes.CryptoInfo()
+                        )
+                    }
+                }
+            }
+        }
     }
 }

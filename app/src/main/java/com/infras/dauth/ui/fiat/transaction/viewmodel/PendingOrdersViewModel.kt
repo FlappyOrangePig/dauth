@@ -50,7 +50,7 @@ class PendingOrdersViewModel : BaseViewModel() {
                             val fiatPrecision = fiatInfo?.fiatPrecision?.toInt()
 
                             FiatOrderListItemEntity(
-                                orderId = it.out_order_id.toString(),
+                                orderId = it.order_id.toString(),
                                 title = "Buy ${it.crypto_code}",
                                 unitPrice = "Unit Price ${it.price.scale(fiatPrecision)} ${it.fiat_code}",
                                 quantity = "Quantity ${it.quantity.scale(cryptoInfo?.cryptoPrecision)} ${it.crypto_code}",

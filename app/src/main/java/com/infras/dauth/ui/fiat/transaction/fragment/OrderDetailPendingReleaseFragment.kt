@@ -1,8 +1,6 @@
 package com.infras.dauth.ui.fiat.transaction.fragment
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import com.infras.dauth.R
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
@@ -19,24 +17,12 @@ class OrderDetailPendingReleaseFragment : OrderDetailCompleteFragment() {
         }
     }
 
-    private val handle = Handler(Looper.getMainLooper())
-    private val runnable = Runnable {
-        updatePage()
-        scheduleNextOnTimer()
-    }
-
     override fun getTitleListData(): FiatOrderDetailItemEntity.Title? {
-        val now = Date()
-        val payTime = Date(data.payTime)
-        val deltaMs = /*if (now.time - payTime.time < 5 * 60L * 1000L) {
-            now.time - payTime.time
-        } else {
-            0L
-        } / 1000L*/
-            now.time - payTime.time
-
-        val minutes = deltaMs / (1000 * 60)
-        val seconds = (deltaMs / 1000) % 60
+        val offTickInS = data.createTime + 60L * 5L
+        val nowInS = Date().time / 1000L
+        val deltaS = (offTickInS - nowInS).takeIf { it > 0 } ?: 0
+        val minutes = deltaS / 60
+        val seconds = deltaS % 60
         val formattedTime = String.format("%02d:%02d", minutes, seconds)
 
         return FiatOrderDetailItemEntity.Title(
@@ -51,15 +37,5 @@ class OrderDetailPendingReleaseFragment : OrderDetailCompleteFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         scheduleNextOnTimer()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        handle.removeCallbacksAndMessages(null)
-    }
-
-    private fun scheduleNextOnTimer() {
-        handle.removeCallbacks(runnable)
-        handle.postDelayed(runnable, 1000L)
     }
 }

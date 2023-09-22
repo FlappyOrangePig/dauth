@@ -14,14 +14,6 @@ class OrderDetailRes(
         @Json(name = "order_id")
         val orderId: String? = null,
         val channel: String? = null,
-        @Json(name = "quote_asset_name")
-        val quoteAssetName: String? = null,
-        @Json(name = "quote_asset_type")
-        val quoteAssetType: String? = null,
-        @Json(name = "asset_name")
-        val assetName: String? = null,
-        @Json(name = "asset_type")
-        val assetType: String? = null,
         val amount: String? = null,
         val quantity: String? = null,
         val price: String? = null,
@@ -49,12 +41,15 @@ class OrderDetailRes(
         val fiatCode: String? = null,
         @Json(name = "crypto_code")
         val cryptoCode: String? = null,
+        @Json(name = "pay_timeout_time")
+        val payTimeoutTime: Long = 0,
     ) : Parcelable
 
     @Parcelize
     class PayMethodValueInfo(
-        val account: String? = null,
+        val type: String? = null,
         val name: String? = null,
+        val value: String? = null,
     ) : Parcelable
 
     @Parcelize
@@ -64,6 +59,6 @@ class OrderDetailRes(
         @Json(name = "paymethod_username")
         val payMethodUsername: String? = null,
         @Json(name = "paymethod_value_info")
-        val payMethodValueInfo: PayMethodValueInfo? = null,
+        val payMethodValueInfo: List<PayMethodValueInfo>? = null,
     ) : Parcelable
 }

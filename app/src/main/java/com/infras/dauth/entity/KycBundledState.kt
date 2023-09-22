@@ -1,10 +1,18 @@
 package com.infras.dauth.entity
 
 import android.os.Parcelable
+import com.infras.dauthsdk.login.model.AccountDetailRes
 import kotlinx.parcelize.Parcelize
 
+/**
+ * Kyc bundled state
+ *
+ * @property isBound 是否绑定邮箱、手机号
+ * @property kycState 参考[AccountDetailRes.Detail.state]
+ * @constructor Create empty Kyc bundled state
+ */
 @Parcelize
 data class KycBundledState(
-    val isBound: Boolean,// 是否绑定邮箱、手机号
-    val kycState: Int?,// 开⼾状态 0000：开⼾成功 0001：开⼾处理中 0002：开⼾失败
+    val isBound: Boolean,
+    val kycState: Int?,
 ) : Parcelable

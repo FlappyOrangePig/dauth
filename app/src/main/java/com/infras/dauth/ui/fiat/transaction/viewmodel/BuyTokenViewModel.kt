@@ -13,10 +13,8 @@ import com.infras.dauth.entity.BuyTokenPageEntity
 import com.infras.dauth.entity.BuyTokenPageInputEntity
 import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.repository.FiatTxRepository
-import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil
 import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -37,7 +35,6 @@ class BuyTokenViewModel : BaseViewModel() {
     private val fiatCode get() = fiatInfo.fiatCode.orEmpty()
     private val _selectPayMethodEvent = MutableLiveData<BuyWithPageInputEntity>()
     val selectPayMethodEvent: LiveData<BuyWithPageInputEntity> = _selectPayMethodEvent
-
     private var lastQuoteTick: Long = 0L
     private var pendingQuote: Boolean = false
     private val handler = Handler(Looper.getMainLooper())
@@ -68,13 +65,8 @@ class BuyTokenViewModel : BaseViewModel() {
     }
 
     private fun quotePrice() {
-        val curPageData = pageData.value
-        if (BigDecimal(curPageData.inputValue) < BigDecimal("10")) {
-            return
-        }
-
-        synchronized(this){
-            if (pendingQuote){
+        synchronized(this) {
+            if (pendingQuote) {
                 return
             }
             val l = lastQuoteTick
@@ -98,24 +90,22 @@ class BuyTokenViewModel : BaseViewModel() {
 
         val curPageData = pageData.value
         viewModelScope.launch {
-            val r = showLoading {
-                val p = if (curPageData.isAmountMode) {
-                    PaymentQuoteParam(
-                        fiat_code = curPageData.fiatCode,
-                        crypto_code = curPageData.cryptoCode,
-                        crypto_amount = null,
-                        fiat_amount = curPageData.inputValue,
-                    )
-                } else {
-                    PaymentQuoteParam(
-                        fiat_code = curPageData.fiatCode,
-                        crypto_code = curPageData.cryptoCode,
-                        crypto_amount = curPageData.inputValue,
-                        fiat_amount = null,
-                    )
-                }
-                repo.paymentQuote(p)
+            val p = if (curPageData.isAmountMode) {
+                PaymentQuoteParam(
+                    fiat_code = curPageData.fiatCode,
+                    crypto_code = curPageData.cryptoCode,
+                    crypto_amount = null,
+                    fiat_amount = curPageData.inputValue,
+                )
+            } else {
+                PaymentQuoteParam(
+                    fiat_code = curPageData.fiatCode,
+                    crypto_code = curPageData.cryptoCode,
+                    crypto_amount = curPageData.inputValue,
+                    fiat_amount = null,
+                )
             }
+            val r = repo.paymentQuote(p)
             if (r != null && r.isSuccess()) {
                 val d = r.data
                 if (d != null) {
@@ -138,21 +128,22 @@ class BuyTokenViewModel : BaseViewModel() {
     }
 
     private fun updatePageData(newValue: BuyTokenPageEntity, quote: Boolean = false) {
-        val dst = if (BigDecimal(newValue.inputValue) < BigDecimal("10")) {
-            val unit = if (!newValue.isAmountMode) {
-                newValue.cryptoCode
-            } else {
-                newValue.fiatCode
-            }
-            newValue.copy(
-                estimatedPrice = "Enter a minimum of 10 $unit"
-            )
+        val isNewValueAmountMode = newValue.isAmountMode
+        val minCount = if (isNewValueAmountMode) {
+            "${fiatInfo.orderMinLimit}"
         } else {
-            newValue
+            "${cryptoInfo.orderMinLimit}"
+        }
+        val (dst, tooSmall) = if (BigDecimal(newValue.inputValue) < BigDecimal(minCount)) {
+            newValue.copy(
+                estimatedPrice = getMinimumText(isNewValueAmountMode)
+            ) to true
+        } else {
+            newValue to false
         }
         _pageData.value = dst
 
-        if (quote) {
+        if (quote && !tooSmall) {
             quotePrice()
         }
     }
@@ -167,7 +158,7 @@ class BuyTokenViewModel : BaseViewModel() {
                 isAmount = pageData.value.isAmountMode
             )
         } else {
-            val toast = "Enter a minimum of 10 ${fiat.fiatCode}(${fiat.fiatSymbol})"
+            val toast = getMinimumText(pageData.value.isAmountMode)
             viewModelScope.launch {
                 toast(toast)
             }
@@ -185,5 +176,14 @@ class BuyTokenViewModel : BaseViewModel() {
     private fun restartQuoteTimer(delayMs: Long) {
         handler.removeCallbacks(runnable)
         handler.postDelayed(runnable, delayMs)
+    }
+
+    private fun getMinimumText(isAmountMode: Boolean): String {
+        val unit = if (isAmountMode) {
+            "${fiatInfo.orderMinLimit} ${fiatInfo.fiatCode}"
+        } else {
+            "${cryptoInfo.orderMinLimit} ${cryptoInfo.cryptoCode}"
+        }
+        return "Enter a minimum of $unit"
     }
 }

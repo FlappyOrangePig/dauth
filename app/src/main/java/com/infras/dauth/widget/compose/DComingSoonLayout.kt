@@ -14,14 +14,14 @@ import com.infras.dauth.widget.compose.constant.DStrings
 object DComingSoonLayout {
 
     @Composable
-    fun ComingSoonLayout() {
+    fun ComingSoonLayout(text: String? = null) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .background(Color.Transparent)
         ) {
-            Text(text = DStrings.COMING_SOON, modifier = Modifier.align(Alignment.Center))
+            Text(text = text ?: DStrings.COMING_SOON, modifier = Modifier.align(Alignment.Center))
         }
     }
 }

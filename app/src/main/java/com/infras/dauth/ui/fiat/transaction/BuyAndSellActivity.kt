@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -63,6 +64,7 @@ import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifyFailedDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
+import com.infras.dauth.widget.compose.TokenListItem
 import com.infras.dauth.widget.compose.ViewPagerContent
 import com.infras.dauth.widget.compose.ViewPagerIndicatorsWithUnderLine
 import com.infras.dauth.widget.compose.constant.DColors
@@ -99,19 +101,19 @@ class BuyAndSellActivity : BaseActivity() {
             val state = it.kycState
             val isBound = it.isBound
             when (state) {
-                null -> {
+                null, 0 -> {
                     UnverifiedDialogFragment.newInstance(
                         authId, isBound
                     ).show(fm, UnverifiedDialogFragment.TAG)
                 }
 
-                0 -> {
+                1 -> {
                     VerifiedDialogFragment.newInstance(
                         authId
                     ).show(fm, VerifiedDialogFragment.TAG)
                 }
 
-                2 -> {
+                3 -> {
                     VerifyFailedDialogFragment.newInstance(
                         authId, isBound
                     ).show(fm, VerifyFailedDialogFragment.TAG)
@@ -134,81 +136,12 @@ class BuyAndSellActivity : BaseActivity() {
         onClickItem: (TokenInfo) -> Unit = {}
     ) {
         LazyColumn(
-            modifier = modifier
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             itemsIndexed(tokens) { index, t ->
                 ListItem(text = {
-                    ConstraintLayout(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(37.dp)
-                            .clickable { onClickItem.invoke(t) }
-                    ) {
-                        val (ivAvatar, tvName, tvIssuer, tvPrice, tvChangeRange, vSpace) = createRefs()
-
-                        val placeHolder = ColorPainter(DColors.GRAY)
-                        val painter: Painter = rememberAsyncImagePainter(
-                            model = t.avatarUrl,
-                            placeholder = placeHolder,
-                            fallback = placeHolder,
-                            error = placeHolder,
-                        )
-                        Image(
-                            painter = painter,
-                            contentDescription = DStrings.IMAGE_DEFAULT_CONTENT_DESCRIPTION,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .constrainAs(ivAvatar) {
-                                    start.linkTo(parent.start)
-                                }
-                                .width(37.dp)
-                                .height(37.dp)
-                                .clip(CircleShape)
-                        )
-                        Text(text = t.name,
-                            color = Color.Black,
-                            fontSize = 13.sp,
-                            modifier = Modifier.constrainAs(tvName) {
-                                start.linkTo(ivAvatar.end, 10.dp)
-                                top.linkTo(parent.top)
-                            }
-                        )
-                        Text(text = t.issuer,
-                            color = Color.Black,
-                            fontSize = 11.sp,
-                            modifier = Modifier.constrainAs(tvIssuer) {
-                                start.linkTo(ivAvatar.end, 10.dp)
-                                bottom.linkTo(parent.bottom)
-                            }
-                        )
-                        val color = if (t.changeRange.startsWith("-")) Color.Red else DColors.GRAY
-                        Text(text = t.changeRange,
-                            color = color,
-                            fontSize = 11.sp,
-                            modifier = Modifier.constrainAs(tvChangeRange) {
-                                end.linkTo(parent.end, 15.dp)
-                                bottom.linkTo(parent.bottom)
-                                visibility = Visibility.Invisible
-                            }
-                        )
-                        Text(text = t.price,
-                            color = Color.Black,
-                            fontSize = 11.sp,
-                            modifier = Modifier.constrainAs(tvPrice) {
-                                end.linkTo(parent.end, 15.dp)
-                                top.linkTo(parent.top)
-                            }
-                        )
-                        Box(modifier = Modifier
-                            .constrainAs(vSpace) {
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(ivAvatar.end, 10.dp)
-                                end.linkTo(parent.end)
-                                width = Dimension.fillToConstraints
-                            }
-                            .background(Color(0xffdcdcdc))
-                            .height(0.2.dp))
-                    }
+                    TokenListItem(t = t, onClickItem = onClickItem)
                 })
             }
         }
@@ -248,10 +181,10 @@ class BuyAndSellActivity : BaseActivity() {
             DFlowRow.DFlowRow(
                 modifier = Modifier
                     .constrainAs(flTags) {
-                        start.linkTo(parent.start, 20.dp)
-                        top.linkTo(tvTokens.bottom, 20.dp)
+                        start.linkTo(parent.start, 10.dp)
+                        top.linkTo(tvTokens.bottom, 25.dp)
                     }
-                    .padding(8.dp),
+                    .padding(start = 10.dp),
 
                 entities = entities,
             )
@@ -259,7 +192,7 @@ class BuyAndSellActivity : BaseActivity() {
             val tokenListOfCurrentTag = tokenInfoOfTag[tagIndex].tokenInfoList
             TokenListView(modifier = Modifier
                 .constrainAs(rvTokens) {
-                    top.linkTo(flTags.bottom)
+                    top.linkTo(flTags.bottom, 25.dp)
                     bottom.linkTo(parent.bottom)
                     height = Dimension.fillToConstraints
                 }

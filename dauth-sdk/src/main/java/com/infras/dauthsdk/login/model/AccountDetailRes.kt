@@ -21,6 +21,6 @@ class AccountDetailRes(
         val id_num: String, // 证件号码
         val id_front_img: String,
         val id_back_img: String,
-        val state: Int,// 开⼾状态 0000：开⼾成功 0001：开⼾处理中 0002：开⼾失败
+        val state: Int,// 开⼾状态 0-未开户 1：开⼾成功 2：开⼾处理中 3：开⼾失败
     )
 }

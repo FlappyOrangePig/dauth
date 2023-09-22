@@ -59,6 +59,9 @@ class BuyWithActivity : BaseActivity() {
         viewModel.createdOrderIdState.observe(this) {
             OrderDetailActivity.launch(this, it)
         }
+        viewModel.quoteState.observe(this) {
+            binding.tvWillPay.text = it
+        }
     }
 
     private fun ActivityBuyWithBinding.initView() {

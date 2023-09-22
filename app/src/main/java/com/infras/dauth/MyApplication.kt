@@ -7,6 +7,7 @@ import com.infras.dauth.manager.ResourceManager
 import com.infras.dauth.manager.StorageManager
 import com.infras.dauth.util.DAuthEnv
 import com.infras.dauth.util.LogUtil
+import com.infras.dauth.util.getEnv
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.SdkConfig
 import com.infras.dauthsdk.api.annotation.DAuthLogLevel
@@ -24,16 +25,10 @@ class MyApplication : Application() {
             private set
     }
 
-    lateinit var resourceManager: ResourceManager
-        private set
-
     override fun onCreate() {
         super.onCreate()
 
-        val env = when (BuildConfig.IS_LIVE) {
-            true -> DAuthEnv.EnvProd
-            false -> DAuthEnv.EnvDev
-        }
+        val env = getEnv()
 
         runSpending(TAG, "启动耗时") {
             app = this

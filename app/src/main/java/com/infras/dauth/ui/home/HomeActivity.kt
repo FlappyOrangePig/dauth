@@ -10,6 +10,7 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -46,9 +47,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import coil.compose.rememberAsyncImagePainter
 import com.infras.dauth.R
@@ -64,22 +66,27 @@ import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.entity.PagerEntity
 import com.infras.dauth.entity.PersonalInfoEntity
 import com.infras.dauth.ext.addressForShort
+import com.infras.dauth.ext.handleByToast
 import com.infras.dauth.ext.launch
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity
 import com.infras.dauth.ui.fiat.transaction.OrdersActivity
 import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.util.ClipBoardUtil
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.GasUtil
 import com.infras.dauth.util.ToastUtil
+import com.infras.dauth.util.getEnv
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauth.widget.compose.DComingSoonLayout
+import com.infras.dauth.widget.compose.TokenListItem
 import com.infras.dauth.widget.compose.ViewPagerContent
 import com.infras.dauth.widget.compose.ViewPagerIndicators
 import com.infras.dauth.widget.compose.ViewPagerIndicatorsPacked
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauthsdk.api.entity.DAuthResult
+import com.infras.dauthsdk.login.model.SetPasswordParam
 import kotlinx.coroutines.launch
 import java.math.BigInteger
 
@@ -204,22 +211,23 @@ class HomeActivity : BaseActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun PageWithViewModel(viewModel: HomeViewModel = this.viewModel) {
         val blockShowComingSoon = {
             ToastUtil.show(this, DStrings.COMING_SOON)
         }
+
+        val copyAddressBlock = { copyToClipboard(viewModel.address.value) }
+
         val walletTab: @Composable () -> Unit = {
             WalletTab(
                 viewModel.balance.value,
                 viewModel.address.value.addressForShort(),
-                onClickCopy = {
-                    val address = viewModel.address.value
-                    copyToClipboard(address)
-                },
-                onClickReceive = blockShowComingSoon,
+                onClickCopy = copyAddressBlock,
+                onClickReceive = copyAddressBlock,
                 onClickBuy = {
-                    com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity.launch(this)
+                    BuyAndSellActivity.launch(this)
                 },
                 onClickSwap = {
                     blockShowComingSoon.invoke()
@@ -231,6 +239,23 @@ class HomeActivity : BaseActivity() {
                         onSend()
                     }
                 },
+                pagerEntities = listOf(
+                    PagerEntity("Tokens") {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                        ) {
+                            itemsIndexed(viewModel.tokenInfoList.value) { _, t ->
+                                ListItem(text = {
+                                    TokenListItem(t = t, onClickItem = {})
+                                })
+                            }
+                        }
+                    },
+                    PagerEntity("Collections") { ComingSoonLayout("no data") },
+                    PagerEntity("Txs") { ComingSoonLayout("no data") },
+                )
             )
         }
         val profileTab: @Composable () -> Unit = {
@@ -243,10 +268,22 @@ class HomeActivity : BaseActivity() {
                         this@HomeActivity,
                         "sign out?"
                     ) {
-                        viewModel.logout(this@HomeActivity)
+                        AccountManager.logout(this@HomeActivity)
                     }
                 },
-                onClickDebug = { MainActivity.launch(this) }
+                onClickDebug = { MainActivity.launch(this) },
+                onClickSetEmailPassword = {
+                    DialogHelper.showInputDialogMayHaveLeak(this, "Enter Password") { password ->
+                        lifecycleScope.launch {
+                            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                            val result = AccountManager.sdk.setPassword(SetPasswordParam().apply {
+                                this.password = password
+                            })
+                            loadingDialog.dismissAllowingStateLoss()
+                            result.handleByToast()
+                        }
+                    }
+                }
             )
         }
 
@@ -260,7 +297,7 @@ class HomeActivity : BaseActivity() {
     }
 
     @Composable
-    fun ComingSoonLayout() = DComingSoonLayout.ComingSoonLayout()
+    fun ComingSoonLayout(text: String? = null) = DComingSoonLayout.ComingSoonLayout(text)
 
     @Composable
     fun HomePageFunctionButton(title: String, onClick: () -> Unit) {
@@ -318,7 +355,7 @@ class HomeActivity : BaseActivity() {
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    //@Preview
+    @Preview
     @Composable
     fun ProfileTab(
         account: String = "DAuth User",
@@ -342,6 +379,7 @@ class HomeActivity : BaseActivity() {
         ),
         onClickLogout: () -> Unit = {},
         onClickDebug: () -> Unit = {},
+        onClickSetEmailPassword: () -> Unit = {}
     ) {
         ConstraintLayout(
             modifier = Modifier
@@ -349,11 +387,16 @@ class HomeActivity : BaseActivity() {
                 .fillMaxHeight()
                 .background(Color.Transparent)
         ) {
-            val (tvAccount, ivAvatar, rIndicators, vpTabs, ivSettings) = createRefs()
+            val (tvAccount, ivAvatar, rIndicators, vpTabs, ivSettings, pwSettingsMenu) = createRefs()
 
-            val fiatList = listOf("sign out", "set email password")
-            /*var fiatText =
-                if (fiatList.isEmpty()) "" else fiatList[fiatSelectIndex!!].fiatCode.orEmpty()*/
+            val settingMenuItems = listOf(
+                "Sign out" to {
+                    onClickLogout.invoke()
+                },
+                "Set email password" to {
+                    onClickSetEmailPassword.invoke()
+                }
+            )
 
             var showPopup by remember {
                 mutableStateOf(false)
@@ -364,7 +407,9 @@ class HomeActivity : BaseActivity() {
                     end.linkTo(parent.end)
                 }
                 .combinedClickable(
-                    onClick = onClickLogout,
+                    onClick = {
+                        showPopup = !showPopup
+                    },
                     onLongClick = onClickDebug
                 )
                 .padding(19.dp)
@@ -375,7 +420,14 @@ class HomeActivity : BaseActivity() {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(15.dp)
                 )
+            }
 
+            Box(
+                modifier = Modifier.constrainAs(pwSettingsMenu) {
+                    top.linkTo(ivSettings.bottom)
+                    end.linkTo(parent.end)
+                }
+            ) {
                 DropdownMenu(
                     expanded = showPopup,
                     onDismissRequest = { showPopup = false },
@@ -388,13 +440,12 @@ class HomeActivity : BaseActivity() {
                         .width(IntrinsicSize.Min)
                         .height(IntrinsicSize.Min)
                 ) {
-                    fiatList.forEachIndexed { index, fiatList ->
-                        val fiatCode = fiatList
+                    settingMenuItems.forEachIndexed { _, item ->
                         DropdownMenuItem(onClick = {
                             showPopup = false
-
+                            item.second.invoke()
                         }) {
-                            Text(text = fiatCode)
+                            Text(text = item.first)
                         }
                     }
                 }
@@ -517,6 +568,7 @@ class HomeActivity : BaseActivity() {
                 .fillMaxHeight()
         ) {
             val (
+                tvChains,
                 tvWalletIndex,
                 tvBalance,
                 tvAddress,
@@ -524,9 +576,39 @@ class HomeActivity : BaseActivity() {
                 rButtons,
                 ivProperty,
                 vSplit,
-                rIndicator,
-                vpContainer,
+                vpContent,
             ) = createRefs()
+
+            Box(
+                modifier = Modifier
+                    .constrainAs(tvChains) {
+                        start.linkTo(parent.start, 13.dp)
+                        top.linkTo(parent.top, 0.dp)
+                        width = Dimension.wrapContent
+                    }
+                    .height(44.dp)
+                    .padding(top = 9.dp, bottom = 9.dp)
+                    .border(1.dp, Color.Black, shape = RoundedCornerShape(2.5.dp))
+                    .clickable {
+                        ToastUtil.show(
+                            this@HomeActivity,
+                            "not supported"
+                        )
+                    }
+                    .padding(start = 8.dp, end = 8.dp)
+            ) {
+                Text(
+                    text = "${getEnv().chainName} ◢",
+                    fontSize = 10.sp,
+                    modifier = Modifier
+                        .width(IntrinsicSize.Max)
+                        .height(IntrinsicSize.Min)
+                        .align(Alignment.Center),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .constrainAs(ivProperty) {
@@ -651,7 +733,7 @@ class HomeActivity : BaseActivity() {
                 pageCount = { pageCount }
             )
             Column(modifier = Modifier
-                .constrainAs(rIndicator) {
+                .constrainAs(vpContent) {
                     top.linkTo(vSplit.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)

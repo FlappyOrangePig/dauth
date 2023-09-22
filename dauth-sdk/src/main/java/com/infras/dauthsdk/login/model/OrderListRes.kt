@@ -13,7 +13,6 @@ class OrderListRes(
 
     class Order(
         val order_id: String?,
-        val out_order_id: Long,
         val fiat_code: String?,
         val crypto_code: String?,
         val price: String?,

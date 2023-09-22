@@ -1,6 +1,8 @@
 package com.infras.dauth.ui.fiat.transaction.fragment
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.infras.dauth.R
@@ -18,6 +20,15 @@ abstract class BaseOrderDetailFragment : BaseFragment() {
 
     val data get() = arguments?.getParcelableExtraCompat<OrderDetailRes.Data>(EXTRA_DATA)!!
     private lateinit var listView: OrderDetailListView
+    private val handle = Handler(Looper.getMainLooper())
+    private val runnable = Runnable {
+        updatePage()
+        scheduleNextOnTimer()
+    }
+    protected fun scheduleNextOnTimer() {
+        handle.removeCallbacks(runnable)
+        handle.postDelayed(runnable, 1000L)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -26,6 +37,11 @@ abstract class BaseOrderDetailFragment : BaseFragment() {
             onClickProof()
         }
         updatePage()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handle.removeCallbacksAndMessages(null)
     }
 
     open fun onClickProof() {}

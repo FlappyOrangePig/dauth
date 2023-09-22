@@ -10,9 +10,12 @@ import com.infras.dauth.ext.addressForShort
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauth.util.awaitLite
 import com.infras.dauthsdk.login.model.OrderCreateParam
+import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import kotlinx.coroutines.launch
+import java.math.BigInteger
 
 class BuyWithViewModel : BaseViewModel() {
 
@@ -30,6 +33,9 @@ class BuyWithViewModel : BaseViewModel() {
 
     private val _createdOrderIdState = MutableLiveData<String>()
     val createdOrderIdState: LiveData<String> = _createdOrderIdState
+
+    private val _quoteState = MutableLiveData<String>()
+    val quoteState: LiveData<String> = _quoteState
 
     var selectMethod: Int? = null
 
@@ -58,7 +64,7 @@ class BuyWithViewModel : BaseViewModel() {
         input.fiat_info.payMethodInfoList.orEmpty().map {
             PayMethodChooseListEntity(
                 it,
-                "???"
+                ""
             )
         }.let { data ->
             data.forEachIndexed { index, payMethodChooseListEntity ->
@@ -71,6 +77,7 @@ class BuyWithViewModel : BaseViewModel() {
     fun updateUI() {
         fetchAddress()
         updateList()
+        realQuote()
     }
 
     fun selectItem(item: PayMethodChooseListEntity) {
@@ -94,39 +101,79 @@ class BuyWithViewModel : BaseViewModel() {
 
             val method = payMethods.value.orEmpty()[sel]
             val token = input.crypto_info.cryptoCode.orEmpty()
-            val walletAddress = AccountManager.getAccountAddress()
-            if (walletAddress.isNullOrEmpty()) {
-                toast("address error")
-                return@launch
+            showLoading {
+                val walletAddress = AccountManager.getAccountAddress()
+                if (walletAddress.isNullOrEmpty()) {
+                    toast("address error")
+                } else {
+                    val chainId = if (false) {
+                        AccountManager.sdk.getWeb3j().ethChainId().awaitLite {
+                            it.chainId
+                        }
+                    } else {
+                        BigInteger("1000")
+                    }
+                    if (chainId == null) {
+                        toast("get chainId error")
+                    } else {
+                        val r = repo.orderCreate(
+                            OrderCreateParam(
+                                trade_model = "FAST",
+                                quote_type = if (input.isAmount) "AMOUNT" else "QUANTITY",
+                                fiat_code = input.fiat_info.fiatCode.orEmpty(),
+                                crypto_code = token,
+                                amount = input.buyCount,
+                                paymethod_id = method.payMethodInfo.payMethodId.orEmpty(),
+                                withdraw_address = walletAddress,
+                                chain_id = chainId.toString(),
+                            )
+                        )
+                        toast(resourceManager.getResponseDigest(r))
+                        if (r != null && r.isSuccess()) {
+                            val orderId = r.data?.orderId.orEmpty()
+                            if (orderId.isNotEmpty()) {
+                                _createdOrderIdState.value = orderId
+                            }
+                        }
+                    }
+                }
             }
+        }
+    }
 
-            val chainId = AccountManager.sdk.getWeb3j().ethChainId().awaitLite {
-                it.chainId
-            }
-            if (chainId == null) {
-                toast("get chainId error")
-                return@launch
-            }
+    private fun realQuote() {
+        val fiatInfo = input.fiat_info
+        val cryptoInfo = input.crypto_info
 
-            val r = showLoading {
-                repo.orderCreate(
-                    OrderCreateParam(
-                        trade_model = "FAST",
-                        quote_type = if (input.isAmount) "AMOUNT" else "QUANTITY",
-                        fiat_code = input.fiat_info.fiatCode.orEmpty(),
-                        crypto_code = token,
-                        amount = input.buyCount,
-                        paymethod_id = method.payMethodInfo.payMethodId.orEmpty(),
-                        withdraw_address = walletAddress,
-                        chain_id = chainId.toString(),
-                    )
+        viewModelScope.launch {
+            val p = if (input.isAmount) {
+                PaymentQuoteParam(
+                    fiat_code = fiatInfo.fiatCode.orEmpty(),
+                    crypto_code = cryptoInfo.cryptoCode.orEmpty(),
+                    crypto_amount = null,
+                    fiat_amount = input.buyCount,
+                )
+            } else {
+                PaymentQuoteParam(
+                    fiat_code = fiatInfo.fiatCode.orEmpty(),
+                    crypto_code = cryptoInfo.cryptoCode.orEmpty(),
+                    crypto_amount = input.buyCount,
+                    fiat_amount = null,
                 )
             }
-            toast(resourceManager.getResponseDigest(r))
-            if (r != null && r.isSuccess()){
-                val orderId = r.data?.orderId.orEmpty()
-                if (orderId.isNotEmpty()){
-                    _createdOrderIdState.value = orderId
+            val r = repo.paymentQuote(p)
+            if (r != null && r.isSuccess()) {
+                val d = r.data
+                if (d != null) {
+                    val fiatAmount = d.fiatAmount
+                    val cryptoAmount = d.cryptoAmount
+
+                    val quoteText = if (input.isAmount) {
+                        "You'll receive ${cryptoAmount.scale(cryptoInfo.cryptoPrecision)} ${cryptoInfo.cryptoCode}"
+                    } else {
+                        "You'll pay ${fiatAmount.scale(fiatInfo.fiatPrecision.toInt())} ${fiatInfo.fiatCode}"
+                    }
+                    _quoteState.value = quoteText
                 }
             }
         }

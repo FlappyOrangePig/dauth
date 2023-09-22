@@ -19,7 +19,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,14 +30,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infras.dauth.app.BaseActivity
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.entity.BuyTokenPageEntity
 import com.infras.dauth.entity.BuyTokenPageInputEntity
-import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.ext.launch
 import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyTokenViewModel
 import com.infras.dauth.util.ConvertUtil
 import com.infras.dauth.util.LogUtil
-import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.titleWith1Icon
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
@@ -69,6 +67,10 @@ class BuyTokenActivity : BaseActivity() {
         setContent {
             BuyTokenScreenWithViewModel()
         }
+    }
+
+    override fun getDefaultViewModel(): BaseViewModel? {
+        return viewModel
     }
 
     @Composable
