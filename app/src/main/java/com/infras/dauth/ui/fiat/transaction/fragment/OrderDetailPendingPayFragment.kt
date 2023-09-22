@@ -95,8 +95,8 @@ class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
                 FiatOrderDetailItemEntity.Split,
                 FiatOrderDetailItemEntity.Tips(
                     cost = "Enter the payment amount of \$${data.amount}",
-                    accountName = "John Wick",
-                    accountNumber = "456638747627",
+                    accountName = "?",
+                    accountNumber = "?",
                     imagePath = mediaPath.orEmpty(),
                 ),
             )
