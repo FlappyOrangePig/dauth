@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="This should match your passport or ID card. Please use the same language as your document"
+                android:text="Please use the same language as your goverment issued ID document in order to being matched."
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 app:layout_constrainedWidth="true"

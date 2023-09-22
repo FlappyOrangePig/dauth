@@ -12,6 +12,7 @@ import coil.load
 import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.FragmentVerifyUploadIdCardBinding
+import com.infras.dauth.entity.DocumentType
 import com.infras.dauth.entity.KycDocumentInfo
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.fiat.transaction.util.UriUtil
@@ -85,6 +86,23 @@ class VerifyUploadIdCardFragment : BaseFragment() {
         document?.let {
             if (it.documentType.picCount == 1) {
                 flSideB.visibility = View.GONE
+            }
+
+            when (it.documentType) {
+                is DocumentType.IDCard -> {
+                    tvSideATips.text = "+\nUpload the front of your ID card"
+                    tvSideBTips.text = "+\nUpload the back of your ID card"
+                }
+
+                is DocumentType.Passport -> {
+                    tvSideATips.text = "+\nUpload the index of your Passport"
+                    tvSideBTips.text = "+\nUpload the deputy of your Passport"
+                }
+
+                is DocumentType.DriverSLicence -> {
+                    tvSideATips.text = "+\nUpload the index of your Driver’s License"
+                    tvSideBTips.text = "+\nUpload the deputy of your Driver’s License"
+                }
             }
         }
     }

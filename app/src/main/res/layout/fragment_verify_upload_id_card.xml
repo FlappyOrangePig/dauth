@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Take pictures of both sides of your goverment issued ID card"
+            android:text="Take pictures of your goverment issued ID document"
             android:textColor="@color/black"
             android:textSize="12sp"
             app:layout_constrainedWidth="true"
@@ -110,6 +110,7 @@
                 android:scaleType="centerCrop" />
 
             <com.infras.dauth.widget.IFTextView
+                android:id="@+id/tv_side_a_tips"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -137,6 +138,7 @@
                 android:scaleType="centerCrop" />
 
             <com.infras.dauth.widget.IFTextView
+                android:id="@+id/tv_side_b_tips"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

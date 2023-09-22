@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="The current DAuth ID need to bind your valid contact information to confirm your unique user identity."
+        android:text="Please use the same language as your goverment issued ID document in order to being matched."
         android:textColor="@color/black"
         android:textSize="12sp"
         app:layout_constrainedWidth="true"
