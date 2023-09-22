@@ -62,6 +62,7 @@ import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyAndSellViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.UnverifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifiedDialogFragment
 import com.infras.dauth.ui.fiat.transaction.widget.VerifyFailedDialogFragment
+import com.infras.dauth.ui.fiat.transaction.widget.VerifyProcessingDialogFragment
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.compose.DComingSoonLayout
 import com.infras.dauth.widget.compose.DFlowRow
@@ -112,6 +113,12 @@ class BuyAndSellActivity : BaseActivity() {
                     VerifiedDialogFragment.newInstance(
                         authId
                     ).show(fm, VerifiedDialogFragment.TAG)
+                }
+
+                2 -> {
+                    VerifyProcessingDialogFragment.newInstance(
+                        authId, isBound
+                    ).show(fm, VerifyFailedDialogFragment.TAG)
                 }
 
                 3 -> {

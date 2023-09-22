@@ -23,6 +23,7 @@ import com.infras.dauth.ui.fiat.transaction.widget.NeedHelpDialogFragment
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.login.model.OrderAppealParam
+import com.infras.dauthsdk.login.model.OrderCancelAppealParam
 import com.infras.dauthsdk.login.model.OrderCancelParam
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
@@ -105,15 +106,21 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
         binding.tvCancel.visibility = View.GONE
         val f = when (state) {
             FiatOrderState.APPEAL -> {
+                binding.tvCancel.visibility = View.VISIBLE
+                binding.tvCancel.text = "Cancel appeal"
+                binding.tvCancel.setDebouncedOnClickListener(onClickCancelAppeal)
                 OrderDetailDisputeFragment.newInstance(data)
             }
 
             FiatOrderState.UNPAID -> {
                 binding.tvCancel.visibility = View.VISIBLE
+                binding.tvCancel.setDebouncedOnClickListener(onClickCancel)
                 OrderDetailPendingPayFragment.newInstance(data)
             }
 
             FiatOrderState.PAID -> {
+                binding.tvCancel.visibility = View.VISIBLE
+                binding.tvCancel.setDebouncedOnClickListener(onClickCancel)
                 OrderDetailPendingReleaseFragment.newInstance(data)
             }
 
@@ -155,6 +162,30 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                 this@OrderDetailActivity,
                 resourceManager.getResponseDigest(r)
             )
+            if (r != null && r.isSuccess()) {
+                refresh()
+            }
+        }
+    }
+
+    private val onClickCancel = View.OnClickListener { v ->
+        lifecycleScope.launch {
+            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+            val r = repo.orderCancel(OrderCancelParam(orderId))
+            loadingDialog.dismissAllowingStateLoss()
+            ToastUtil.show(v.context, resourceManager.getResponseDigest(r))
+            if (r != null && r.isSuccess()) {
+                refresh()
+            }
+        }
+    }
+
+    private val onClickCancelAppeal = View.OnClickListener { v ->
+        lifecycleScope.launch {
+            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+            val r = repo.orderCancelAppeal(OrderCancelAppealParam(orderId))
+            loadingDialog.dismissAllowingStateLoss()
+            ToastUtil.show(v.context, resourceManager.getResponseDigest(r))
             if (r != null && r.isSuccess()) {
                 refresh()
             }

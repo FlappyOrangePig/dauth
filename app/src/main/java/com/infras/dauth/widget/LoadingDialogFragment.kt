@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import androidx.fragment.app.FragmentManager
 import com.infras.dauth.ext.dp
+import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.dialog.BaseDialogFragment
 
 class LoadingDialogFragment : BaseDialogFragment() {
@@ -69,6 +71,20 @@ class LoadingDialogFragment : BaseDialogFragment() {
     }
 
     override fun dismissAllowingStateLoss() {
-        super.dismissAllowingStateLoss()
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (t: Throwable) {
+            LogUtil.d(TAG, t.stackTraceToString())
+        }
+    }
+
+    override fun show(manager: FragmentManager, tag: String?) {
+        try {
+            if (!isAdded) {
+                super.show(manager, tag)
+            }
+        } catch (t: Throwable) {
+            LogUtil.d(TAG, t.stackTraceToString())
+        }
     }
 }

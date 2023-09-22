@@ -231,7 +231,6 @@ class HomeActivity : BaseActivity() {
                 },
                 onClickSwap = {
                     blockShowComingSoon.invoke()
-                    OrdersActivity.launch(this)
                 },
                 onClickProperty = blockShowComingSoon,
                 onClickSend = {
