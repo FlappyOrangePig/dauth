@@ -13,8 +13,13 @@ import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauth.util.awaitLite
 import com.infras.dauthsdk.login.model.OrderCreateParam
+import com.infras.dauthsdk.login.model.OrderDetailParam
+import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.math.BigInteger
 
 class BuyWithViewModel : BaseViewModel() {
@@ -106,7 +111,7 @@ class BuyWithViewModel : BaseViewModel() {
                 if (walletAddress.isNullOrEmpty()) {
                     toast("address error")
                 } else {
-                    val chainId = if (false) {
+                    val chainId = if (true) {
                         AccountManager.sdk.getWeb3j().ethChainId().awaitLite {
                             it.chainId
                         }
@@ -132,6 +137,23 @@ class BuyWithViewModel : BaseViewModel() {
                         if (r != null && r.isSuccess()) {
                             val orderId = r.data?.orderId.orEmpty()
                             if (orderId.isNotEmpty()) {
+                                // 等到订单OK才跳转
+                                showLoading {
+                                    var retry = 0
+                                    while (true) {
+                                        val detailRes = repo.orderDetail(OrderDetailParam(orderId))
+                                        if (detailRes?.isSuccess() == true) {
+                                            break
+                                        } else {
+                                            if (retry++ >= 5) {
+                                                break
+                                            }
+                                            withContext(Dispatchers.IO) {
+                                                delay(1000L)
+                                            }
+                                        }
+                                    }
+                                }
                                 _createdOrderIdState.value = orderId
                             }
                         }
