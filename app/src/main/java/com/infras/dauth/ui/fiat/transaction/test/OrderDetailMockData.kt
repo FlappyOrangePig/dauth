@@ -2,6 +2,7 @@ package com.infras.dauth.ui.fiat.transaction.test
 
 import com.infras.dauth.R
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
+import com.infras.dauthsdk.login.model.OrderDetailRes
 
 object OrderDetailMockData {
 
@@ -17,8 +18,10 @@ object OrderDetailMockData {
             FiatOrderDetailItemEntity.Split,
             FiatOrderDetailItemEntity.Tips(
                 cost = "\$1,906.86",
-                accountName = "John Wick",
-                accountNumber = "456638747627",
+                list = listOf(
+                    OrderDetailRes.PayMethodValueInfo("accountName", "John Wick"),
+                    OrderDetailRes.PayMethodValueInfo("accountNumber", "456638747627")
+                ),
                 imagePath = "",
             ),
         )

@@ -26,7 +26,7 @@ sealed class DAuthEnv {
             )
     }
 
-    object EnvDev : DAuthEnv() {
+    object EnvDevArbitrumGoerli : DAuthEnv() {
         override val stage: Int
             get() = DAuthStageEnum.STAGE_TEST
         override val chain: Int
@@ -40,11 +40,24 @@ sealed class DAuthEnv {
                 "USDC" to "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291"
             )
     }
+
+    object EnvDevGoerli : DAuthEnv() {
+        override val stage: Int
+            get() = DAuthStageEnum.STAGE_TEST
+        override val chain: Int
+            get() = DAuthChainEnum.CHAIN_GOERLI
+        override val clientId: String
+            get() = "b86df4abc13f3bba4d4b2057bc6df910"
+        override val chainName: String
+            get() = "Goerli"
+        override val erc20Tokens: List<Pair<String, String>>
+            get() = listOf()
+    }
 }
 
 internal fun getEnv(): DAuthEnv {
     return when (BuildConfig.IS_LIVE) {
         true -> DAuthEnv.EnvProd
-        false -> DAuthEnv.EnvDev
+        false -> DAuthEnv.EnvDevGoerli
     }
 }

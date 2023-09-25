@@ -4,11 +4,15 @@ import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import com.drakeet.multitype.ItemViewBinder
+import com.drakeet.multitype.MultiTypeAdapter
+import com.infras.dauth.R
 import com.infras.dauth.databinding.ItemFiatOrderDetailGroupBinding
+import com.infras.dauth.databinding.ItemFiatOrderDetailImageBinding
 import com.infras.dauth.databinding.ItemFiatOrderDetailSplitBinding
 import com.infras.dauth.databinding.ItemFiatOrderDetailTextBinding
 import com.infras.dauth.databinding.ItemFiatOrderDetailTipsBinding
@@ -16,6 +20,7 @@ import com.infras.dauth.databinding.ItemFiatOrderDetailTitleBinding
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
 import com.infras.dauth.ext.dp
 import com.infras.dauth.ext.setDebouncedOnClickListener
+import com.infras.dauth.ui.fiat.transaction.util.OrderDetailListComposeUtil
 import com.infras.dauth.util.ClipBoardUtil
 
 class OrderDetailGroupItemBinder(
@@ -60,8 +65,6 @@ class OrderDetailTipsItemBinder(
         RecyclerView.ViewHolder(bd.root) {
         fun bind(item: FiatOrderDetailItemEntity.Tips) {
             bd.tvCost.text = item.cost
-            bd.tvAccountNameContent.text = item.accountName
-            bd.tvAccountNumberContent.text = item.accountNumber
             val r = 5.dp().toFloat()
             bd.ivProof.load(item.imagePath) {
                 transformations(
@@ -76,11 +79,17 @@ class OrderDetailTipsItemBinder(
             bd.ivProof.setDebouncedOnClickListener {
                 onClickProof.invoke()
             }
-            bd.llAccountName.setDebouncedOnClickListener {
-                ClipBoardUtil.copyToClipboard(it.context, item.accountName)
-            }
-            bd.llAccountNumber.setDebouncedOnClickListener {
-                ClipBoardUtil.copyToClipboard(it.context, item.accountNumber)
+
+            val mapped = OrderDetailListComposeUtil.getMappedPayMethodInfo(item.list)
+            val rv = bd.llAccountInfo
+            rv.layoutManager = LinearLayoutManager(bd.root.context, RecyclerView.VERTICAL, false)
+            bd.llAccountInfo.adapter = MultiTypeAdapter().also { a ->
+                a.register(FiatOrderDetailItemEntity.Text::class.java, OrderDetailTextItemBinder())
+                a.register(
+                    FiatOrderDetailItemEntity.Image::class.java,
+                    OrderDetailImageItemBinder()
+                )
+                a.items = mapped
             }
         }
     }
@@ -149,5 +158,37 @@ class OrderDetailTitleItemBinder :
 
     override fun onCreateViewHolder(inflater: LayoutInflater, parent: ViewGroup): ViewHolder {
         return ViewHolder(ItemFiatOrderDetailTitleBinding.inflate(inflater, parent, false))
+    }
+}
+
+class OrderDetailImageItemBinder : ItemViewBinder<FiatOrderDetailItemEntity.Image, OrderDetailImageItemBinder.ViewHolder>() {
+
+    inner class ViewHolder(private val bd: ItemFiatOrderDetailImageBinding) :
+        RecyclerView.ViewHolder(bd.root) {
+        fun bind(item: FiatOrderDetailItemEntity.Image) {
+            bd.ivImage.load(item.url) {
+                transformations(
+                    RoundedCornersTransformation(
+                        8.dp().toFloat(),
+                        8.dp().toFloat(),
+                        8.dp().toFloat(),
+                        8.dp().toFloat()
+                    )
+                )
+                // 可选：设置占位符
+                placeholder(R.drawable.bg_grayd9_r5)
+                // 可选：设置错误占位符
+                error(R.drawable.bg_grayd9_r5)
+            }
+            bd.tvTitle.text = item.title
+        }
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, item: FiatOrderDetailItemEntity.Image) {
+        holder.bind(item)
+    }
+
+    override fun onCreateViewHolder(inflater: LayoutInflater, parent: ViewGroup): ViewHolder {
+        return ViewHolder(ItemFiatOrderDetailImageBinding.inflate(inflater, parent, false))
     }
 }

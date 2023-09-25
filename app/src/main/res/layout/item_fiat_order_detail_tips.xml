@@ -74,13 +74,13 @@
         app:layout_constraintTop_toTopOf="@id/tv_title_cost"
         tools:text="$1,906.86" />
 
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ll_account_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
         android:layout_marginEnd="22dp"
-        android:background="@color/gray_d9"
+        android:background="@color/gray_f0"
         android:orientation="vertical"
         android:paddingTop="7.5dp"
         android:paddingBottom="7.5dp"
@@ -88,99 +88,7 @@
         app:layout_constraintStart_toStartOf="@id/tv_title_cost"
         app:layout_constraintTop_toBottomOf="@id/tv_title_cost">
 
-        <LinearLayout
-            android:id="@+id/ll_account_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="7.5dp"
-            android:layout_marginEnd="9dp"
-            android:layout_marginBottom="7.5dp"
-            android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.infras.dauth.widget.IFTextView
-                android:id="@+id/tv_account_name_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_grayd9_r999"
-                android:gravity="center"
-                android:text="Account Name"
-                android:textColor="@color/gray_60"
-                android:textSize="11sp" />
-
-            <com.infras.dauth.widget.IFTextView
-                android:id="@+id/tv_account_name_content"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="9dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_grayd9_r999"
-                android:gravity="end"
-                android:textColor="@color/black"
-                android:textSize="11sp"
-                tools:text="John Wick" />
-
-            <ImageView
-                android:layout_width="11dp"
-                android:layout_height="11dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/svg_ic_copy"
-                app:layout_constraintBottom_toBottomOf="@id/tv_section1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_section1" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_account_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="7.5dp"
-            android:layout_marginEnd="9dp"
-            android:layout_marginBottom="7.5dp"
-            android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.infras.dauth.widget.IFTextView
-                android:id="@+id/tv_account_number_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_grayd9_r999"
-                android:gravity="center"
-                android:text="Account Number"
-                android:textColor="@color/gray_60"
-                android:textSize="11sp" />
-
-            <com.infras.dauth.widget.IFTextView
-                android:id="@+id/tv_account_number_content"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="9dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_grayd9_r999"
-                android:gravity="end"
-                android:textColor="@color/black"
-                android:textSize="11sp"
-                tools:text="456638747627" />
-
-            <ImageView
-                android:layout_width="11dp"
-                android:layout_height="11dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/svg_ic_copy"
-                app:layout_constraintBottom_toBottomOf="@id/tv_section1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_section1" />
-
-        </LinearLayout>
-
-    </LinearLayout>
+    </androidx.recyclerview.widget.RecyclerView>
 
     <com.infras.dauth.widget.IFTextView
         android:id="@+id/tv_section3"

@@ -15,6 +15,7 @@ internal object ConfigurationManager {
     internal fun chain(): DAuthChain = when (config.chain) {
         DAuthChainEnum.CHAIN_ARBITRUM_GOERLI -> DAuthChain.ArbitrumGoerli
         DAuthChainEnum.CHAIN_ARBITRUM -> DAuthChain.Arbitrum
+        DAuthChainEnum.CHAIN_GOERLI -> DAuthChain.Goerli
         else -> throw RuntimeException()
     }
 
@@ -57,6 +58,18 @@ internal sealed class DAuthChain {
             get() = "0x9c3A6789EA865438eD3abb46dB28040b5352Bc3d"
         override val entryPointAddress: String
             get() = "0x337B92C0e068ec853660811159f16077D86E5Ef6"
+    }
+
+    internal object Goerli: DAuthChain() {
+        override val chain: Int
+            get() = DAuthChainEnum.CHAIN_GOERLI
+        override val rpcUrl: String
+            get() = "https://eth-goerli.g.alchemy.com/v2/Ut6n0P3ltpRhzmVCeJRm7GNdyZozMl73"
+        override val factoryAddress: String
+            get() = Arbitrum.factoryAddress
+        override val entryPointAddress: String
+            get() = Arbitrum.entryPointAddress
+
     }
 }
 

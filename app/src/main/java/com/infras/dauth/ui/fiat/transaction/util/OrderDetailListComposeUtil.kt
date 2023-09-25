@@ -21,19 +21,40 @@ object OrderDetailListComposeUtil {
     private const val ORDER_INFORMATION = "Order information"
     private const val ORDER_ID = "Order ID"
     private const val ORDER_TIME = "Order time"
-    private const val ACCOUNT_NUMBER = "Account number"
 
     fun all(title: FiatOrderDetailItemEntity.Title, data: OrderDetailRes.Data) =
         listOf(title) + publicInfo(data) + txInfo(data)
 
     private fun publicInfo(data: OrderDetailRes.Data): MutableList<FiatOrderDetailItemEntity> {
+        val payMethodInfo = data.payMethodInfo?.payMethodValueInfo.orEmpty()
+        val mapped = getMappedPayMethodInfo(payMethodInfo)
+
+        val list = mutableListOf<FiatOrderDetailItemEntity>().apply {
+            add(FiatOrderDetailItemEntity.Group("Buy ${data.cryptoCode}"))
+            addAll(priceInfo(data))
+            add(FiatOrderDetailItemEntity.Split)
+
+            add(FiatOrderDetailItemEntity.Group(ORDER_INFORMATION))
+            add(FiatOrderDetailItemEntity.Text(ORDER_ID, data.orderId.orEmpty(), canCopy = true))
+            add(
+                FiatOrderDetailItemEntity.Text(
+                    ORDER_TIME,
+                    TimeUtil.getOrderTime(data.createTime),
+                    canCopy = false
+                )
+            )
+            addAll(mapped)
+            add(FiatOrderDetailItemEntity.Split)
+        }
+        return list
+    }
+
+    fun priceInfo(data: OrderDetailRes.Data): List<FiatOrderDetailItemEntity> {
         val fiatInfo = CurrencyCalcUtil.getFiatInfo(data.fiatCode)
         val fiatPrecision: Int? = fiatInfo?.fiatPrecision?.toInt()
         val fiatSymbol: String? = fiatInfo?.fiatSymbol ?: data.fiatCode
         val cryptoPrecision: Int? = CurrencyCalcUtil.getCryptoInfo(data.cryptoCode)?.cryptoPrecision
-
-        return mutableListOf(
-            FiatOrderDetailItemEntity.Group("Buy ${data.cryptoCode}"),
+        return listOf(
             FiatOrderDetailItemEntity.Text(
                 UNIT_PRICE,
                 "$fiatSymbol ${data.price.scale(fiatPrecision)}"
@@ -50,16 +71,6 @@ object OrderDetailListComposeUtil {
                 PAYMENT_METHOD,
                 data.payMethodInfo?.payMethodName.orEmpty()
             ),
-            FiatOrderDetailItemEntity.Split,
-            FiatOrderDetailItemEntity.Group(ORDER_INFORMATION),
-            FiatOrderDetailItemEntity.Text(ORDER_ID, data.orderId.orEmpty(), canCopy = true),
-            FiatOrderDetailItemEntity.Text(
-                ORDER_TIME,
-                TimeUtil.getOrderTime(data.createTime),
-                canCopy = false
-            ),
-            FiatOrderDetailItemEntity.Text(ACCOUNT_NUMBER, "?", canCopy = true),
-            FiatOrderDetailItemEntity.Split,
         )
     }
 
@@ -149,5 +160,36 @@ object OrderDetailListComposeUtil {
         }
 
         return r
+    }
+
+    fun getMappedPayMethodInfo(payMethodInfo: List<OrderDetailRes.PayMethodValueInfo>): List<FiatOrderDetailItemEntity> {
+        return payMethodInfo.mapNotNull {
+            when (it.type) {
+                "file" -> {
+                    FiatOrderDetailItemEntity.Image(
+                        it.name.orEmpty(),
+                        it.value.orEmpty()
+                    )
+                }
+
+                "number" -> {
+                    FiatOrderDetailItemEntity.Text(
+                        it.name.orEmpty(),
+                        it.value.orEmpty(),
+                        it.value.orEmpty()
+                    )
+                }
+
+                "txt" -> {
+                    FiatOrderDetailItemEntity.Text(
+                        it.name.orEmpty(),
+                        it.value.orEmpty(),
+                        it.value.orEmpty()
+                    )
+                }
+
+                else -> null
+            }
+        }
     }
 }

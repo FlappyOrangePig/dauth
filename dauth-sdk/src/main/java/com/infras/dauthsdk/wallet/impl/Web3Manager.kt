@@ -683,7 +683,7 @@ internal class Web3Manager {
             return DAuthResult.Success(CommitTransactionData(transactionHash))
         } else {
             val sendResult = context.runSpending("commitOp") { rh ->
-                Managers.requestApiMpc.commitOp(userOpCopy)
+                Managers.requestApiMpc.commitOp(userOpCopy, chainId.toString())
                     .also {
                         it.traceResult(TAG, "commitOp")
                         rh.result = (it != null)

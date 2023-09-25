@@ -13,11 +13,12 @@ annotation class DAuthStageEnum {
 }
 
 @Retention(AnnotationRetention.SOURCE)
-@IntDef(DAuthChainEnum.CHAIN_ARBITRUM_GOERLI, DAuthChainEnum.CHAIN_ARBITRUM)
+@IntDef(DAuthChainEnum.CHAIN_ARBITRUM_GOERLI, DAuthChainEnum.CHAIN_ARBITRUM, DAuthChainEnum.CHAIN_GOERLI)
 annotation class DAuthChainEnum {
     companion object {
         const val CHAIN_ARBITRUM_GOERLI = 1
         const val CHAIN_ARBITRUM = 2
+        const val CHAIN_GOERLI = 3
     }
 }
 

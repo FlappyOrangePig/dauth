@@ -1,5 +1,7 @@
 package com.infras.dauth.entity
 
+import com.infras.dauthsdk.login.model.OrderDetailRes
+
 sealed class FiatOrderDetailItemEntity {
 
     open fun getKey(): String = javaClass.simpleName
@@ -26,12 +28,11 @@ sealed class FiatOrderDetailItemEntity {
 
     data class Tips(
         val cost: String,
-        val accountName: String,
-        val accountNumber: String,
+        val list: List<OrderDetailRes.PayMethodValueInfo>,
         var imagePath: String,
     ) : FiatOrderDetailItemEntity() {
         override fun getKey(): String {
-            return accountName
+            return cost
         }
     }
 
@@ -39,6 +40,15 @@ sealed class FiatOrderDetailItemEntity {
         val icon: Int,
         val title: String,
         val desc: CharSequence,
+    ) : FiatOrderDetailItemEntity() {
+        override fun getKey(): String {
+            return title
+        }
+    }
+
+    data class Image(
+        val title: String,
+        val url: String,
     ) : FiatOrderDetailItemEntity() {
         override fun getKey(): String {
             return title

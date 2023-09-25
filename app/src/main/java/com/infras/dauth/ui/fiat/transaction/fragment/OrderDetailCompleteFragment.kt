@@ -42,8 +42,8 @@ open class OrderDetailCompleteFragment : BaseOrderDetailFragment() {
     override fun getTitleListData(): FiatOrderDetailItemEntity.Title? {
         return FiatOrderDetailItemEntity.Title(
             R.drawable.svg_ic_order_complete,
-            "Pending for your payment",
-            "Pay within 19:59s"
+            "Order is complete",
+            "The crypto has been transferred to your wallet."
         )
     }
 

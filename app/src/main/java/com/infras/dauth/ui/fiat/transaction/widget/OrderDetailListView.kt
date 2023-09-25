@@ -7,6 +7,7 @@ import com.drakeet.multitype.MultiTypeAdapter
 import com.infras.dauth.entity.FiatOrderDetailItemEntity
 import com.infras.dauth.ext.dp
 import com.infras.dauth.ui.fiat.transaction.adapter.OrderDetailGroupItemBinder
+import com.infras.dauth.ui.fiat.transaction.adapter.OrderDetailImageItemBinder
 import com.infras.dauth.ui.fiat.transaction.adapter.OrderDetailSplitItemBinder
 import com.infras.dauth.ui.fiat.transaction.adapter.OrderDetailTextItemBinder
 import com.infras.dauth.ui.fiat.transaction.adapter.OrderDetailTipsItemBinder
@@ -38,6 +39,10 @@ class OrderDetailListView(
                 a.register(
                     FiatOrderDetailItemEntity.Title::class.java,
                     OrderDetailTitleItemBinder()
+                )
+                a.register(
+                    FiatOrderDetailItemEntity.Image::class.java,
+                    OrderDetailImageItemBinder()
                 )
             }
         }
