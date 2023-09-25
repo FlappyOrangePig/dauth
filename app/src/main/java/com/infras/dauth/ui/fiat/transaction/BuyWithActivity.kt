@@ -17,6 +17,7 @@ import com.infras.dauth.ui.fiat.transaction.adapter.PayMethodAdapter
 import com.infras.dauth.ui.fiat.transaction.viewmodel.BuyWithViewModel
 import com.infras.dauth.ui.fiat.transaction.widget.VerticalDividerItemDecoration
 import com.infras.dauth.util.ConvertUtil
+import com.infras.dauth.util.DialogHelper
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
 
 
@@ -69,7 +70,9 @@ class BuyWithActivity : BaseActivity() {
             finish()
         }
         tvBuy.setDebouncedOnClickListener {
-            viewModel.buy()
+            DialogHelper.showInputDialogMayHaveLeak(this@BuyWithActivity, "Enter ChainId") { chainId ->
+                viewModel.buy(chainId)
+            }
         }
 
         val amount = ConvertUtil.addCommasToNumber(viewModel.input.buyCount)

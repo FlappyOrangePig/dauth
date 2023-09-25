@@ -96,7 +96,7 @@ class BuyWithViewModel : BaseViewModel() {
         updateList()
     }
 
-    fun buy() {
+    fun buy(chainId: String?) {
         viewModelScope.launch {
             val sel = selectMethod
             if (sel == null) {
@@ -111,14 +111,11 @@ class BuyWithViewModel : BaseViewModel() {
                 if (walletAddress.isNullOrEmpty()) {
                     toast("address error")
                 } else {
-                    val chainId = if (true) {
-                        AccountManager.sdk.getWeb3j().ethChainId().awaitLite {
+                    val curChainId = chainId
+                        ?: AccountManager.sdk.getWeb3j().ethChainId().awaitLite {
                             it.chainId
-                        }
-                    } else {
-                        BigInteger("1000")
-                    }
-                    if (chainId == null) {
+                        }?.toString()
+                    if (curChainId == null) {
                         toast("get chainId error")
                     } else {
                         val r = repo.orderCreate(
@@ -130,7 +127,7 @@ class BuyWithViewModel : BaseViewModel() {
                                 amount = input.buyCount,
                                 paymethod_id = method.payMethodInfo.payMethodId.orEmpty(),
                                 withdraw_address = walletAddress,
-                                chain_id = chainId.toString(),
+                                chain_id = curChainId.toString(),
                             )
                         )
                         toast(resourceManager.getResponseDigest(r))
