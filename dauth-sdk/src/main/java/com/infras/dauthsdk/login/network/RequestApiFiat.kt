@@ -32,6 +32,8 @@ import com.infras.dauthsdk.login.model.OrderPaidParam
 import com.infras.dauthsdk.login.model.OrderPaidRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import com.infras.dauthsdk.login.model.PaymentQuoteRes
+import com.infras.dauthsdk.login.model.QueryWithdrawConfParam
+import com.infras.dauthsdk.login.model.QueryWithdrawConfRes
 
 internal class RequestApiFiat internal constructor() : ApiClient(), IFiatApi {
 
@@ -102,6 +104,11 @@ internal class RequestApiFiat internal constructor() : ApiClient(), IFiatApi {
 
     override suspend fun orderCancelAppeal(p: OrderCancelAppealParam): OrderCancelAppealRes? {
         val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/order/cancel_appeal"))
+        return request(c, p)
+    }
+
+    override suspend fun queryWithdrawConf(p: QueryWithdrawConfParam): QueryWithdrawConfRes? {
+        val c = RequestConfig(ReqUrl.PathUrl("/deposit/v1/withdraw_conf/query"))
         return request(c, p)
     }
 }

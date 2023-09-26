@@ -14,6 +14,8 @@ import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderListParam
 import com.infras.dauthsdk.login.model.OrderPaidParam
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
+import com.infras.dauthsdk.login.model.QueryWithdrawConfParam
+import com.infras.dauthsdk.login.model.QueryWithdrawConfRes
 
 class FiatTxRepository : IFiatApi {
 
@@ -22,7 +24,7 @@ class FiatTxRepository : IFiatApi {
         const val PAGE_SIZE = 100
     }
 
-    val api get() = AccountManager.sdk.getFiatApi()
+    private val api get() = AccountManager.sdk.getFiatApi()
 
     override suspend fun accountDetail() = api.accountDetail()
 
@@ -52,4 +54,6 @@ class FiatTxRepository : IFiatApi {
     override suspend fun orderCancel(p: OrderCancelParam) = api.orderCancel(p)
 
     override suspend fun orderCancelAppeal(p: OrderCancelAppealParam) = api.orderCancelAppeal(p)
+
+    override suspend fun queryWithdrawConf(p: QueryWithdrawConfParam) = api.queryWithdrawConf(p)
 }

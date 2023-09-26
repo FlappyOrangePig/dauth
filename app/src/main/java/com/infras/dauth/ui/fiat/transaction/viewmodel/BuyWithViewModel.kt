@@ -16,6 +16,7 @@ import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
+import com.infras.dauthsdk.login.model.QueryWithdrawConfParam
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,6 +84,13 @@ class BuyWithViewModel : BaseViewModel() {
         fetchAddress()
         updateList()
         realQuote()
+        viewModelScope.launch {
+            val cryptoCode = input.crypto_info.cryptoCode.orEmpty()
+            val r = repo.queryWithdrawConf(QueryWithdrawConfParam(cryptoCode))
+            if (r != null && r.isSuccess()) {
+
+            }
+        }
     }
 
     fun selectItem(item: PayMethodChooseListEntity) {
@@ -103,6 +111,18 @@ class BuyWithViewModel : BaseViewModel() {
                 toast("select pay method")
                 return@launch
             }
+
+            /*val queryConfResult = showLoading {
+                val cryptoCode = input.crypto_info.cryptoCode.orEmpty()
+                repo.queryWithdrawConf(QueryWithdrawConfParam(cryptoCode))
+            }
+            toast(resourceManager.getResponseDigest(queryConfResult))
+            val skyPayChainId = if (queryConfResult != null && queryConfResult.isSuccess()) {
+                val data = queryConfResult.data
+
+            } else {
+                return@launch
+            }*/
 
             val method = payMethods.value.orEmpty()[sel]
             val token = input.crypto_info.cryptoCode.orEmpty()
@@ -195,6 +215,14 @@ class BuyWithViewModel : BaseViewModel() {
                     _quoteState.value = quoteText
                 }
             }
+        }
+    }
+
+    private suspend fun fetchWithdrawConf(){
+        val cryptoCode = input.crypto_info.cryptoCode.orEmpty()
+        val r = repo.queryWithdrawConf(QueryWithdrawConfParam(cryptoCode))
+        if (r != null && r.isSuccess()) {
+
         }
     }
 }

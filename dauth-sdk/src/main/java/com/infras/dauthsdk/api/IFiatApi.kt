@@ -26,6 +26,8 @@ import com.infras.dauthsdk.login.model.OrderPaidParam
 import com.infras.dauthsdk.login.model.OrderPaidRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import com.infras.dauthsdk.login.model.PaymentQuoteRes
+import com.infras.dauthsdk.login.model.QueryWithdrawConfParam
+import com.infras.dauthsdk.login.model.QueryWithdrawConfRes
 
 /**
  * I fiat api
@@ -142,4 +144,12 @@ interface IFiatApi {
      * @return
      */
     suspend fun orderCancelAppeal(p: OrderCancelAppealParam): OrderCancelAppealRes?
+
+    /**
+     * 查询提币配置
+     *
+     * @param p
+     * @return
+     */
+    suspend fun queryWithdrawConf(p: QueryWithdrawConfParam): QueryWithdrawConfRes?
 }
