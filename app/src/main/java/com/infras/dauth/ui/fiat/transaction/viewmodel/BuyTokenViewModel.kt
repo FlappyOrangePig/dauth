@@ -13,11 +13,11 @@ import com.infras.dauth.entity.BuyTokenPageEntity
 import com.infras.dauth.entity.BuyTokenPageInputEntity
 import com.infras.dauth.entity.BuyWithPageInputEntity
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauth.ui.fiat.transaction.util.AmountModeHolder
 import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
-import java.math.BigInteger
 
 class BuyTokenViewModel : BaseViewModel() {
 
@@ -95,13 +95,13 @@ class BuyTokenViewModel : BaseViewModel() {
                     fiat_code = curPageData.fiatCode,
                     crypto_code = curPageData.cryptoCode,
                     crypto_amount = null,
-                    fiat_amount = curPageData.inputValue,
+                    fiat_amount = curPageData.inputValue.removeSuffix("."),
                 )
             } else {
                 PaymentQuoteParam(
                     fiat_code = curPageData.fiatCode,
                     crypto_code = curPageData.cryptoCode,
-                    crypto_amount = curPageData.inputValue,
+                    crypto_amount = curPageData.inputValue.removeSuffix("."),
                     fiat_amount = null,
                 )
             }
@@ -128,22 +128,29 @@ class BuyTokenViewModel : BaseViewModel() {
     }
 
     private fun updatePageData(newValue: BuyTokenPageEntity, quote: Boolean = false) {
-        val (valid, tips) = isInputValueValid(newValue.inputValue, newValue.isAmountMode)
-        _pageData.value = if (!valid) {
-            newValue.copy(estimatedPrice = tips)
+        val mh = modeHolder(newValue.isAmountMode)
+        val keepX = mh.keepXDecimalPlace(newValue.inputValue)
+
+        val (valid, tips) = mh.isInputValueValid(keepX)
+        _pageData.value = if (valid < 0) {
+            newValue.copy(inputValue = keepX, estimatedPrice = tips)
+        } else if (valid > 0) {
+            val max = mh.getMaxLimit()
+            newValue.copy(inputValue = max, estimatedPrice = "")
         } else {
-            newValue
+            newValue.copy(inputValue = keepX, estimatedPrice = "")
         }
 
-        if (quote && valid) {
+        if (quote && valid == 0) {
             quotePrice()
         }
     }
 
-    fun selectPayMethod(count: BigInteger) {
+    fun selectPayMethod(count: BigDecimal) {
         val fiat = fiatInfo
-        val (valid, tips) = isInputValueValid(count.toString(), pageData.value.isAmountMode)
-        if (valid) {
+        val mh = modeHolder()
+        val (valid, tips) = mh.isInputValueValid(count.toString())
+        if (valid == 0) {
             _selectPayMethodEvent.value = BuyWithPageInputEntity(
                 crypto_info = cryptoInfo,
                 fiat_info = fiat,
@@ -170,41 +177,10 @@ class BuyTokenViewModel : BaseViewModel() {
         handler.postDelayed(runnable, delayMs)
     }
 
-    private fun getMinimumText(isAmountMode: Boolean): String {
-        val unit = if (isAmountMode) {
-            "${fiatInfo.orderMinLimit} ${fiatInfo.fiatCode}"
-        } else {
-            "${cryptoInfo.orderMinLimit} ${cryptoInfo.cryptoCode}"
-        }
-        return "Enter a minimum of $unit"
-    }
-
-    private fun getMaximumText(isAmountMode: Boolean): String {
-        val unit = if (isAmountMode) {
-            "${fiatInfo.orderMaxLimit} ${fiatInfo.fiatCode}"
-        } else {
-            "${cryptoInfo.orderMaxLimit} ${cryptoInfo.cryptoCode}"
-        }
-        return "Enter a maximum of $unit"
-    }
-
-    private fun isInputValueValid(input: String, isAmountMode: Boolean): Pair<Boolean, String> {
-        val minCount = if (isAmountMode) {
-            "${fiatInfo.orderMinLimit}"
-        } else {
-            "${cryptoInfo.orderMinLimit}"
-        }
-        val maxCount = if (isAmountMode) {
-            "${fiatInfo.orderMaxLimit}"
-        } else {
-            "${cryptoInfo.orderMaxLimit}"
-        }
-        return if (BigDecimal(input) < BigDecimal(minCount)) {
-            false to getMinimumText(isAmountMode)
-        } else if (BigDecimal(input) > BigDecimal(maxCount)) {
-            false to getMaximumText(isAmountMode)
-        } else {
-            true to ""
-        }
+    private fun modeHolder(isAmountMode: Boolean = pageData.value.isAmountMode): AmountModeHolder {
+        return AmountModeHolder(isAmountMode = isAmountMode,
+            fiatInfo = fiatInfo,
+            cryptoInfo = cryptoInfo,
+        )
     }
 }

@@ -32,8 +32,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_copy"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="7.5dp"
+        android:layout_marginBottom="7.5dp"
         app:layout_goneMarginEnd="22dp"
-        tools:text="230817151844605" />
+        tools:text="asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/tv_title"
+        app:layout_constrainedWidth="true"
+        android:layout_marginStart="15dp"/>
 
     <ImageView
         android:id="@+id/iv_copy"

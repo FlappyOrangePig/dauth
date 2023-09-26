@@ -75,19 +75,24 @@ object OrderDetailListComposeUtil {
     }
 
     private fun txInfo(data: OrderDetailRes.Data): List<FiatOrderDetailItemEntity> {
-        val txId = data.transactionId.orEmpty()
-        if (txId.isEmpty()) {
-            return listOf()
-        }
         val state = data.state.orEmpty()
 
-        val r = mutableListOf<FiatOrderDetailItemEntity>(
+        val groupTitle = mutableListOf<FiatOrderDetailItemEntity>(
             FiatOrderDetailItemEntity.Group(TXS_INFO),
         )
 
-        when (state) {
+        val createTxId = {
+            val txId = data.transactionId.orEmpty()
+            if (txId.isEmpty()) {
+                FiatOrderDetailItemEntity.Text(RELEASED_TXS, "-", canCopy = false)
+            } else {
+                FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId, canCopy = true)
+            }
+        }
+
+        val contentList = when (state) {
             FiatOrderState.PAID -> {
-                r.add(
+                listOf(
                     FiatOrderDetailItemEntity.Text(
                         STATUS,
                         SpannableStringBuilder("Pending for seller’s release").also {
@@ -103,63 +108,67 @@ object OrderDetailListComposeUtil {
             }
 
             FiatOrderState.COMPLETED -> {
-                r.addAll(
-                    listOf(
-                        FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId),
-                        FiatOrderDetailItemEntity.Text(
-                            STATUS,
-                            SpannableStringBuilder("Pending").also {
-                                it.setSpan(
-                                    ForegroundColorSpan(Color.parseColor("#D88100")),
-                                    0,
-                                    it.length,
-                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                )
-                            })
-                    )
+                listOf(
+                    createTxId(),
+                    FiatOrderDetailItemEntity.Text(
+                        STATUS,
+                        SpannableStringBuilder("Pending").also {
+                            it.setSpan(
+                                ForegroundColorSpan(Color.parseColor("#D88100")),
+                                0,
+                                it.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                        })
                 )
             }
 
             FiatOrderState.WITHDRAW_SUCCESS -> {
-                r.addAll(
-                    listOf(
-                        FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId),
-                        FiatOrderDetailItemEntity.Text(
-                            STATUS,
-                            SpannableStringBuilder("Success").also {
-                                it.setSpan(
-                                    ForegroundColorSpan(Color.parseColor("#03A600")),
-                                    0,
-                                    it.length,
-                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                )
-                            })
-                    )
+                listOf(
+                    createTxId(),
+                    FiatOrderDetailItemEntity.Text(
+                        STATUS,
+                        SpannableStringBuilder("Success").also {
+                            it.setSpan(
+                                ForegroundColorSpan(Color.parseColor("#03A600")),
+                                0,
+                                it.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                        })
                 )
             }
 
             FiatOrderState.WITHDRAW_FAIL -> {
-                r.addAll(
-                    listOf(
-                        FiatOrderDetailItemEntity.Text(RELEASED_TXS, txId),
-                        FiatOrderDetailItemEntity.Text(
-                            STATUS,
-                            SpannableStringBuilder("Failure").also {
-                                it.setSpan(
-                                    ForegroundColorSpan(Color.parseColor("#ff0000")),
-                                    0,
-                                    it.length,
-                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                )
-                            })
-                    )
+                listOf(
+                    createTxId(),
+                    FiatOrderDetailItemEntity.Text(
+                        STATUS,
+                        SpannableStringBuilder("Failure").also {
+                            it.setSpan(
+                                ForegroundColorSpan(Color.parseColor("#ff0000")),
+                                0,
+                                it.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                        })
                 )
             }
 
-            else -> {}
+            FiatOrderState.APPEAL -> {
+                listOf(
+                    createTxId(),
+                )
+            }
+
+            else -> listOf()
         }
 
-        return r
+        return if (contentList.isNotEmpty()) {
+            groupTitle.also { groupTitle.addAll(contentList) }
+        } else {
+            listOf()
+        }
     }
 
     fun getMappedPayMethodInfo(payMethodInfo: List<OrderDetailRes.PayMethodValueInfo>): List<FiatOrderDetailItemEntity> {

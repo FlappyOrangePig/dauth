@@ -62,11 +62,14 @@ object CurrencyCalcUtil {
         }.getOrNull()
     }
 
-    fun String?.scale(precision: Int? = null): String {
+    fun String?.scale(
+        precision: Int? = null,
+        roundingMode: RoundingMode = RoundingMode.HALF_UP
+    ): String {
         this ?: return ""
         return if (precision != null) {
             kotlin.runCatching {
-                BigDecimal(this).setScale(precision, RoundingMode.HALF_UP).toString()
+                BigDecimal(this).setScale(precision, roundingMode).toString()
             }.getOrNull()
         } else {
             null

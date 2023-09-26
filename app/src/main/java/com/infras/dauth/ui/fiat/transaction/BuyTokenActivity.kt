@@ -40,7 +40,7 @@ import com.infras.dauth.util.LogUtil
 import com.infras.dauth.widget.compose.constant.DColors
 import com.infras.dauth.widget.compose.titleWith1Icon
 import com.infras.dauthsdk.wallet.ext.getParcelableExtraCompat
-import java.math.BigInteger
+import java.math.BigDecimal
 
 class BuyTokenActivity : BaseActivity() {
 
@@ -99,7 +99,7 @@ class BuyTokenActivity : BaseActivity() {
     @Preview
     @Composable
     private fun BuyTokenScreen(
-        selectPayMethod: (BigInteger) -> Unit = {},
+        selectPayMethod: (BigDecimal) -> Unit = {},
         onClickOrders: () -> Unit = {},
         onInputValueChanged: (String) -> Unit = {},
         onSwitchMethod: () -> Unit = {},
@@ -177,7 +177,7 @@ class BuyTokenActivity : BaseActivity() {
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 360.dp)
                             .background(color = DColors.GRAY, shape = RoundedCornerShape(10.dp))
-                            .clickable { selectPayMethod.invoke(BigInteger(inputValue)) }
+                            .clickable { selectPayMethod.invoke(BigDecimal(inputValue)) }
                             .padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 10.dp)
                     )
 
@@ -208,6 +208,14 @@ class BuyTokenActivity : BaseActivity() {
                                         str
                                     } else {
                                         inputValue.plus(str)
+                                    }
+                                }
+
+                                "." -> {
+                                    if (inputValue.contains(".")) {
+                                        inputValue
+                                    } else {
+                                        inputValue.plus(".")
                                     }
                                 }
 

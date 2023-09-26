@@ -124,11 +124,11 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                 OrderDetailPendingReleaseFragment.newInstance(data)
             }
 
-            FiatOrderState.COMPLETED -> {
+            FiatOrderState.COMPLETED, FiatOrderState.WITHDRAW_FAIL -> {
                 OrderDetailPendingChainFragment.newInstance(data)
             }
 
-            FiatOrderState.WITHDRAW_FAIL, FiatOrderState.WITHDRAW_SUCCESS -> {
+            FiatOrderState.WITHDRAW_SUCCESS -> {
                 OrderDetailCompleteFragment.newInstance(data)
             }
 
