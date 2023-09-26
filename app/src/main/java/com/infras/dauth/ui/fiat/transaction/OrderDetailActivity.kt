@@ -27,7 +27,10 @@ import com.infras.dauthsdk.login.model.OrderCancelAppealParam
 import com.infras.dauthsdk.login.model.OrderCancelParam
 import com.infras.dauthsdk.login.model.OrderDetailParam
 import com.infras.dauthsdk.login.model.OrderDetailRes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCallback {
 
@@ -51,31 +54,25 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
         _binding = ActivityOrderDetailBinding.inflate(LayoutInflater.from(this))
         binding.initView()
         setContentView(binding.root)
-        refresh()
+        refresh(null)
     }
 
     private fun ActivityOrderDetailBinding.initView() {
         ivBack.setDebouncedOnClickListener {
             finish()
         }
-        binding.tvCancel.setDebouncedOnClickListener {
-            lifecycleScope.launch {
-                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-                val r = repo.orderCancel(OrderCancelParam(orderId))
-                loadingDialog.dismissAllowingStateLoss()
-                ToastUtil.show(this@OrderDetailActivity, resourceManager.getResponseDigest(r))
-                if (r != null && r.isSuccess()) {
-                    refresh()
-                }
-            }
-        }
     }
 
-    private fun refresh() {
+    private fun refresh(delay: Long? = 1000L) {
         if (false) {
             replaceFragment(OrderDetailRes.Data())
         } else {
             lifecycleScope.launch {
+                delay?.let { d ->
+                    withContext(Dispatchers.IO) {
+                        delay(d)
+                    }
+                }
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                 val o = if (false) {
                     "1703754270844653568"
@@ -156,7 +153,7 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
     override fun onHelpItemClick(index: Int) {
         lifecycleScope.launch {
             loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val r = repo.orderAppeal(OrderAppealParam(orderId))
+            val r = repo.orderAppeal(OrderAppealParam(orderId, index))
             loadingDialog.dismissAllowingStateLoss()
             ToastUtil.show(
                 this@OrderDetailActivity,

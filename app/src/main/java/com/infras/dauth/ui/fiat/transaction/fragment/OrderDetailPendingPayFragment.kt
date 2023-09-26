@@ -16,6 +16,8 @@ import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
 import com.infras.dauth.ui.fiat.transaction.test.OrderDetailMockData
+import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil
+import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauth.ui.fiat.transaction.util.OrderDetailListComposeUtil
 import com.infras.dauth.ui.fiat.transaction.util.UriUtil
 import com.infras.dauth.util.ToastUtil
@@ -92,10 +94,13 @@ class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
                 addAll(OrderDetailListComposeUtil.priceInfo(data))
                 add(FiatOrderDetailItemEntity.Split)
 
+                val fiatInfo = CurrencyCalcUtil.getFiatInfo(data.fiatCode)
+                val fiatPrecision: Int? = fiatInfo?.fiatPrecision?.toInt()
                 add(FiatOrderDetailItemEntity.Tips(
-                    cost = "Enter the payment amount of \$${data.amount}",
+                    cost = "Enter the payment amount of ${fiatInfo?.fiatSymbol}${data.amount.scale(fiatPrecision)}",
                     list = data.payMethodInfo?.payMethodValueInfo.orEmpty(),
                     imagePath = mediaPath.orEmpty(),
+                    payMethodName = data.payMethodInfo?.payMethodName.orEmpty()
                 ))
             }
         }

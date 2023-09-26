@@ -18,7 +18,7 @@ class OrderDetailPendingReleaseFragment : OrderDetailCompleteFragment() {
     }
 
     override fun getTitleListData(): FiatOrderDetailItemEntity.Title? {
-        val offTickInS = data.createTime / 1000L + 60L * 5L
+        val offTickInS = data.payTime / 1000L + 60L * 5L
         val nowInS = Date().time / 1000L
         val deltaS = (offTickInS - nowInS).takeIf { it > 0 } ?: 0
         val minutes = deltaS / 60

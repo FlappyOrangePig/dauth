@@ -64,6 +64,7 @@ class OrderDetailTipsItemBinder(
     inner class ViewHolder(private val bd: ItemFiatOrderDetailTipsBinding) :
         RecyclerView.ViewHolder(bd.root) {
         fun bind(item: FiatOrderDetailItemEntity.Tips) {
+            bd.tvTitle1.text = "Open your ${item.payMethodName} app"
             bd.tvCost.text = item.cost
             val r = 5.dp().toFloat()
             bd.ivProof.load(item.imagePath) {

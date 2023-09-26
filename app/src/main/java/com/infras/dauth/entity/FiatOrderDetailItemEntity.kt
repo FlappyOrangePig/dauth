@@ -30,6 +30,7 @@ sealed class FiatOrderDetailItemEntity {
         val cost: String,
         val list: List<OrderDetailRes.PayMethodValueInfo>,
         var imagePath: String,
+        var payMethodName: String,
     ) : FiatOrderDetailItemEntity() {
         override fun getKey(): String {
             return cost

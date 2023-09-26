@@ -23,6 +23,7 @@ object OrderDetailMockData {
                     OrderDetailRes.PayMethodValueInfo("accountNumber", "456638747627")
                 ),
                 imagePath = "",
+                payMethodName = "???Cash"
             ),
         )
     }

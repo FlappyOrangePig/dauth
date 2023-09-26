@@ -136,9 +136,9 @@ class BuyTokenViewModel : BaseViewModel() {
             newValue.copy(inputValue = keepX, estimatedPrice = tips)
         } else if (valid > 0) {
             val max = mh.getMaxLimit()
-            newValue.copy(inputValue = max, estimatedPrice = "")
+            newValue.copy(inputValue = max)
         } else {
-            newValue.copy(inputValue = keepX, estimatedPrice = "")
+            newValue.copy(inputValue = keepX)
         }
 
         if (quote && valid == 0) {
