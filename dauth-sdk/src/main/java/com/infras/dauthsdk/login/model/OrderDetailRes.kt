@@ -27,8 +27,8 @@ class OrderDetailRes(
         val updateTime: Long = 0,
         @Json(name = "pay_time")
         val payTime: Long = 0,
-        @Json(name = "relese_crypto_time")
-        val releaseCryptoTime: Int = 0,
+        @Json(name = "realese_crypto_time")
+        val releaseCryptoTime: Long = 0,
         @Json(name = "appeal_time")
         val appealTime: Long = 0,
         @Json(name = "withdraw_time")
