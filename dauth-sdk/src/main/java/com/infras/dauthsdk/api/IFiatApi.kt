@@ -124,7 +124,7 @@ interface IFiatApi {
     /**
      * 订单申诉
      *
-     * @param p
+     * @param p 申诉类型 0-seller do not release the Cryptos 1-i didn't receive the Cryptos
      * @return
      */
     suspend fun orderAppeal(p: OrderAppealParam): OrderAppealRes?
