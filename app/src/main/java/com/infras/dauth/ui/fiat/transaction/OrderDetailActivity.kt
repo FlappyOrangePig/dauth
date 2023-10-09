@@ -172,6 +172,9 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
             loadingDialog.dismissAllowingStateLoss()
             ToastUtil.show(v.context, resourceManager.getResponseDigest(r))
             if (r != null && r.isSuccess()) {
+                withContext(Dispatchers.IO) {
+                    delay(2000L)
+                }
                 refresh()
             }
         }
@@ -184,6 +187,9 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
             loadingDialog.dismissAllowingStateLoss()
             ToastUtil.show(v.context, resourceManager.getResponseDigest(r))
             if (r != null && r.isSuccess()) {
+                withContext(Dispatchers.IO) {
+                    delay(2000L)
+                }
                 refresh()
             }
         }
