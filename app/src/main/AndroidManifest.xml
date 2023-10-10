@@ -52,6 +52,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name="com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.infras.dauth.ui.fiat.transaction.BuyTokenActivity"

@@ -15,6 +15,7 @@ import com.infras.dauth.entity.FiatOrderDetailItemEntity
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauth.ui.fiat.transaction.BuyAndSellActivity
 import com.infras.dauth.ui.fiat.transaction.test.OrderDetailMockData
 import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil
 import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
@@ -120,7 +121,7 @@ class OrderDetailPendingPayFragment : BaseOrderDetailFragment() {
             activity?.let { a ->
                 ToastUtil.show(a, AppManagers.resourceManager.getResponseDigest(r))
                 if (r != null && r.isSuccess()) {
-                    a.finish()
+                    BuyAndSellActivity.launch(a)
                 }
             }
         }
