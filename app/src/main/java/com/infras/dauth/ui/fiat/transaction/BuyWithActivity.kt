@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.infras.dauth.BuildConfig
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.databinding.ActivityBuyWithBinding
@@ -70,8 +71,17 @@ class BuyWithActivity : BaseActivity() {
             finish()
         }
         tvBuy.setDebouncedOnClickListener {
-            DialogHelper.showInputDialogMayHaveLeak(this@BuyWithActivity, "Enter ChainId") { chainId ->
-                viewModel.buy(chainId)
+            if (BuildConfig.IS_LIVE) {
+                viewModel.fetchWithdrawConf("ARBITRUMONE")
+            } else {
+                //viewModel.fetchWithdrawConf("ETH")
+
+                DialogHelper.showInputDialogMayHaveLeak(
+                    this@BuyWithActivity,
+                    "Enter ChainId"
+                ) { chainId ->
+                    viewModel.buy(chainId)
+                }
             }
         }
 

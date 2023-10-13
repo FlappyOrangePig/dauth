@@ -14,14 +14,12 @@ import com.infras.dauth.ui.fiat.transaction.util.CurrencyCalcUtil.scale
 import com.infras.dauth.util.awaitLite
 import com.infras.dauthsdk.login.model.OrderCreateParam
 import com.infras.dauthsdk.login.model.OrderDetailParam
-import com.infras.dauthsdk.login.model.OrderDetailRes
 import com.infras.dauthsdk.login.model.PaymentQuoteParam
 import com.infras.dauthsdk.login.model.QueryWithdrawConfParam
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.math.BigInteger
 
 class BuyWithViewModel : BaseViewModel() {
 
@@ -218,11 +216,25 @@ class BuyWithViewModel : BaseViewModel() {
         }
     }
 
-    private suspend fun fetchWithdrawConf(){
-        val cryptoCode = input.crypto_info.cryptoCode.orEmpty()
-        val r = repo.queryWithdrawConf(QueryWithdrawConfParam(cryptoCode))
-        if (r != null && r.isSuccess()) {
+    fun fetchWithdrawConf(chainShortName: String) {
+        viewModelScope.launch {
+            val cryptoCode = input.crypto_info.cryptoCode.orEmpty()
+            val r = showLoading {
+                repo.queryWithdrawConf(QueryWithdrawConfParam(cryptoCode))
+            }
+            val info = if (r != null && r.isSuccess()) {
+                val list = r.data?.list.orEmpty()
+                list.firstOrNull {
+                    it.chainShortName == chainShortName
+                }
+            } else {
+                null
+            }
 
+            val skyPayChainId = info?.chainCoinId
+            if (skyPayChainId != null) {
+                buy(skyPayChainId.toString())
+            }
         }
     }
 }
