@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityOrderDetailBinding
@@ -13,6 +14,7 @@ import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.manager.AppManagers
 import com.infras.dauth.repository.FiatTxRepository
+import com.infras.dauth.ui.fiat.transaction.fragment.OnClickOrderDetailImage
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCancelFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailCompleteFragment
 import com.infras.dauth.ui.fiat.transaction.fragment.OrderDetailDisputeFragment
@@ -32,7 +34,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCallback {
+class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCallback,
+    OnClickOrderDetailImage {
 
     companion object {
         private const val EXTRA_ORDER_ID = "EXTRA_ORDER_ID"
@@ -60,6 +63,10 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
     private fun ActivityOrderDetailBinding.initView() {
         ivBack.setDebouncedOnClickListener {
             finish()
+        }
+        ivImage.setDebouncedOnClickListener {
+            ivImage.setImageResource(0)
+            ivImage.visibility = View.GONE
         }
     }
 
@@ -116,7 +123,7 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
             }
 
             FiatOrderState.PAID -> {
-                binding.tvCancel.visibility = View.VISIBLE
+                binding.tvCancel.visibility = View.GONE
                 binding.tvCancel.setDebouncedOnClickListener(onClickCancel)
                 OrderDetailPendingReleaseFragment.newInstance(data)
             }
@@ -193,5 +200,10 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                 refresh()
             }
         }
+    }
+
+    override fun onClickImage(url: String) {
+        binding.ivImage.load(url)
+        binding.ivImage.visibility = View.VISIBLE
     }
 }

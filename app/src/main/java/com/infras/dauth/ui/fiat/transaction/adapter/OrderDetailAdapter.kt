@@ -58,7 +58,8 @@ class OrderDetailSplitItemBinder(
 }
 
 class OrderDetailTipsItemBinder(
-    private val onClickProof: () -> Unit
+    private val onClickProof: (() -> Unit)?,
+    private val onClickImage: ((String) -> Unit)?,
 ) : ItemViewBinder<FiatOrderDetailItemEntity.Tips, OrderDetailTipsItemBinder.ViewHolder>() {
 
     inner class ViewHolder(private val bd: ItemFiatOrderDetailTipsBinding) :
@@ -78,7 +79,7 @@ class OrderDetailTipsItemBinder(
                 )
             }
             bd.ivProof.setDebouncedOnClickListener {
-                onClickProof.invoke()
+                onClickProof?.invoke()
             }
 
             val mapped = OrderDetailListComposeUtil.getMappedPayMethodInfo(item.list)
@@ -88,7 +89,7 @@ class OrderDetailTipsItemBinder(
                 a.register(FiatOrderDetailItemEntity.Text::class.java, OrderDetailTextItemBinder())
                 a.register(
                     FiatOrderDetailItemEntity.Image::class.java,
-                    OrderDetailImageItemBinder()
+                    OrderDetailImageItemBinder(onClickImage = onClickImage)
                 )
                 a.items = mapped
             }
@@ -162,7 +163,9 @@ class OrderDetailTitleItemBinder :
     }
 }
 
-class OrderDetailImageItemBinder : ItemViewBinder<FiatOrderDetailItemEntity.Image, OrderDetailImageItemBinder.ViewHolder>() {
+class OrderDetailImageItemBinder(
+    private val onClickImage: ((String) -> Unit)?
+) : ItemViewBinder<FiatOrderDetailItemEntity.Image, OrderDetailImageItemBinder.ViewHolder>() {
 
     inner class ViewHolder(private val bd: ItemFiatOrderDetailImageBinding) :
         RecyclerView.ViewHolder(bd.root) {
@@ -182,6 +185,9 @@ class OrderDetailImageItemBinder : ItemViewBinder<FiatOrderDetailItemEntity.Imag
                 error(R.drawable.bg_grayd9_r5)
             }
             bd.tvTitle.text = item.title
+            bd.ivImage.setDebouncedOnClickListener {
+                onClickImage?.invoke(item.url)
+            }
         }
     }
 

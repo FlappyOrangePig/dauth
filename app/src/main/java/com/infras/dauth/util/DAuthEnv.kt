@@ -3,13 +3,16 @@ package com.infras.dauth.util
 import com.infras.dauth.BuildConfig
 import com.infras.dauthsdk.api.DAuthChainEnum
 import com.infras.dauthsdk.api.DAuthStageEnum
+import org.web3j.utils.Convert
+import java.math.BigInteger
+
 
 sealed class DAuthEnv {
     abstract val stage: Int
     abstract val chain: Int
     abstract val clientId: String
     abstract val chainName: String
-    abstract val erc20Tokens: List<Pair<String, String>>
+    abstract val erc20Tokens: List<Erc20TokenInfo>
 
     object EnvProd : DAuthEnv() {
         override val stage: Int
@@ -20,9 +23,12 @@ sealed class DAuthEnv {
             get() = "ce475be992763ee5ff0c51faba901942"
         override val chainName: String
             get() = "Arbitrum One"
-        override val erc20Tokens: List<Pair<String, String>>
+        override val erc20Tokens: List<Erc20TokenInfo>
             get() = listOf(
-                "USDT" to "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
+                Erc20TokenInfo.USDT(
+                    name = "USDT",
+                    address = "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+                )
             )
     }
 
@@ -35,10 +41,8 @@ sealed class DAuthEnv {
             get() = "b86df4abc13f3bba4d4b2057bc6df910"
         override val chainName: String
             get() = "Arbitrum Goerli"
-        override val erc20Tokens: List<Pair<String, String>>
-            get() = listOf(
-                "USDC" to "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291"
-            )
+        override val erc20Tokens: List<Erc20TokenInfo>
+            get() = listOf()
     }
 
     object EnvDevGoerli : DAuthEnv() {
@@ -50,7 +54,7 @@ sealed class DAuthEnv {
             get() = "b86df4abc13f3bba4d4b2057bc6df910"
         override val chainName: String
             get() = "Goerli"
-        override val erc20Tokens: List<Pair<String, String>>
+        override val erc20Tokens: List<Erc20TokenInfo>
             get() = listOf()
     }
 }
@@ -59,5 +63,26 @@ internal fun getEnv(): DAuthEnv {
     return when (BuildConfig.IS_LIVE) {
         true -> DAuthEnv.EnvProd
         false -> DAuthEnv.EnvDevGoerli
+    }
+}
+
+sealed class Erc20TokenInfo {
+    abstract val name: String
+    abstract val address: String
+    abstract fun getDisplayBalance(wei: BigInteger): String
+
+    companion object {
+        private const val TAG = "Erc20TokenInfo"
+    }
+
+    class USDT(override val name: String, override val address: String) : Erc20TokenInfo() {
+        override fun getDisplayBalance(wei: BigInteger): String {
+            return try {
+                Convert.fromWei(wei.toString(), Convert.Unit.MWEI).toString()
+            } catch (t: Throwable) {
+                LogUtil.d(TAG, t.stackTraceToString())
+                ""
+            }
+        }
     }
 }

@@ -152,14 +152,15 @@ class HomeViewModel : BaseViewModel() {
                 val address = addressResult.data.aaAddress
                 val erc20Tokens = getEnv().erc20Tokens
                 val results = mutableListOf<Pair<String,String>>()
-                erc20Tokens.forEachIndexed { _, pair ->
-                    val tokenName = pair.first
-                    val contractAddress = pair.second
+                erc20Tokens.forEachIndexed { _, entry ->
+                    val tokenName = entry.name
+                    val contractAddress = entry.address
                     val erc20Result =
                         sdk.queryWalletBalance(address, TokenType.ERC20(contractAddress))
                     if (erc20Result is DAuthResult.Success) {
                         val erc20 = erc20Result.data as WalletBalanceData.ERC20
-                        results.add(tokenName to erc20.amount.toString())
+                        val displayBalance = entry.getDisplayBalance(erc20.amount)
+                        results.add(tokenName to displayBalance)
                     }
                 }
                 if (results.isNotEmpty()) {

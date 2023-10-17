@@ -33,9 +33,10 @@ abstract class BaseOrderDetailFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val rv = view.findViewById<RecyclerView>(R.id.rv_detail)
-        listView = OrderDetailListView(rv) {
-            onClickProof()
-        }
+        listView = OrderDetailListView(rv,
+            onClickProof = { onClickProof() },
+            onClickImage = { (activity as? OnClickOrderDetailImage)?.onClickImage(it) }
+        )
         updatePage()
     }
 
@@ -59,4 +60,8 @@ abstract class BaseOrderDetailFragment : BaseFragment() {
     fun updatePage() {
         listView.updateAll(generatePageListData())
     }
+}
+
+interface OnClickOrderDetailImage {
+    fun onClickImage(url: String)
 }

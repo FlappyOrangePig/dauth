@@ -16,9 +16,8 @@ import com.infras.dauth.ui.fiat.transaction.adapter.OrderDetailTitleItemBinder
 class OrderDetailListView(
     private val rv: RecyclerView,
     private val onClickProof: (() -> Unit)? = null,
+    private val onClickImage: ((String) -> Unit)? = null,
 ) {
-    private var lastData = mutableListOf<FiatOrderDetailItemEntity>()
-
     init {
         rv.apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -33,16 +32,17 @@ class OrderDetailListView(
                     FiatOrderDetailItemEntity.Split::class.java,
                     OrderDetailSplitItemBinder()
                 )
-                a.register(FiatOrderDetailItemEntity.Tips::class.java, OrderDetailTipsItemBinder {
-                    onClickProof?.invoke()
-                })
+                a.register(FiatOrderDetailItemEntity.Tips::class.java, OrderDetailTipsItemBinder(
+                    onClickProof = onClickProof,
+                    onClickImage = onClickImage,
+                ))
                 a.register(
                     FiatOrderDetailItemEntity.Title::class.java,
                     OrderDetailTitleItemBinder()
                 )
                 a.register(
                     FiatOrderDetailItemEntity.Image::class.java,
-                    OrderDetailImageItemBinder()
+                    OrderDetailImageItemBinder(onClickImage)
                 )
             }
         }
