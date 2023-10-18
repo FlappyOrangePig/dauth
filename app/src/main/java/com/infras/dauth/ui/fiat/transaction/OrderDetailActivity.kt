@@ -68,6 +68,9 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
             ivImage.setImageResource(0)
             ivImage.visibility = View.GONE
         }
+        srRefresh.setOnRefreshListener {
+            refresh()
+        }
     }
 
     private fun refresh(delay: Long? = 1000L) {
@@ -80,12 +83,12 @@ class OrderDetailActivity : BaseActivity(), NeedHelpDialogFragment.HelpDialogCal
                         delay(d)
                     }
                 }
-                loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
+                binding.srRefresh.isRefreshing = true
                 val o = if (false) {
                     "1703754270844653568"
                 } else orderId
                 val r = repo.orderDetail(OrderDetailParam(o))
-                loadingDialog.dismissAllowingStateLoss()
+                binding.srRefresh.isRefreshing = false
                 if (r != null && r.isSuccess()) {
                     val data = r.data
                     if (data != null) {
