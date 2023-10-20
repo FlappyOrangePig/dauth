@@ -8,6 +8,7 @@ import com.infras.dauth.util.LogUtil
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.roundToInt
 
 /**
@@ -20,6 +21,7 @@ object ImageScaleUtil {
     private const val TAG = "ImageScaleUtil"
     private const val SCALE_IMAGE_WIDTH = 856
     private const val SCALE_IMAGE_HEIGHT = 540
+    private var index = AtomicInteger(0)
 
     fun getScaledImage(dstDir: File, imagePath: String): String {
         val originalFile = File(imagePath)
@@ -38,7 +40,8 @@ object ImageScaleUtil {
             if (!dstDir.exists()) {
                 dstDir.mkdirs()
             }
-            val tempFile = File.createTempFile("scaled_image", ".jpg", dstDir)
+            val indexVal = index.getAndIncrement()
+            val tempFile = File.createTempFile("scaled_image$indexVal", ".jpg", dstDir)
             val stream = FileOutputStream(tempFile)
             image.compress(Bitmap.CompressFormat.JPEG, 70, stream)
             stream.close()

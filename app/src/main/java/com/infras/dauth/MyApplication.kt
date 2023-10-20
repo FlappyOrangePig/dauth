@@ -11,6 +11,9 @@ import com.infras.dauth.util.getEnv
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.SdkConfig
 import com.infras.dauthsdk.api.annotation.DAuthLogLevel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
@@ -50,6 +53,11 @@ class MyApplication : Application() {
                 storageManager = StorageManager(this),
             )
         }
+
+        val date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(
+            Date(BuildConfig.BUILD_TIMESTAMP)
+        )
+        LogUtil.i(TAG, "build time: $date")
     }
 }
 

@@ -17,7 +17,7 @@ object UriUtil {
         val dstDir = AppManagers.storageManager.getDir(StorageDir.ImageCache)
         val file = CacheFileUtil.saveUriToCacheFile(a, uri) ?: return null
         val scaled = ImageScaleUtil.getScaledImage(dstDir, file.absolutePath)
-        LogUtil.d(TAG, "${file.length()} -> ${File(scaled).length()}")
+        LogUtil.d(TAG, "${file.length()} -> ${File(scaled).length()} $scaled")
         return scaled
     }
 }

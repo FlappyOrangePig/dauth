@@ -68,6 +68,7 @@ class VerifyUploadIdCardViewModel : BaseViewModel() {
         }
 
         val imageA = pathA.value.orEmpty()
+        LogUtil.d(TAG, "imageA=$imageA")
         if (imageA.isEmpty()) {
             toast("no image a")
             return@launch
@@ -91,12 +92,14 @@ class VerifyUploadIdCardViewModel : BaseViewModel() {
 
         val base64EncodedImageB = if (document.documentType.picCount == 2) {
             val imageB = pathB.value.orEmpty()
+            LogUtil.d(TAG, "imageB=$imageB")
             if (imageB.isEmpty()) {
                 toast("no image b")
                 return@launch
             }
 
             ImageBase64Util.getBase64EncodedImageFile(imageB).also {
+                LogUtil.d(TAG, "base64EncodedImageB=$it")
                 if (it == null) {
                     toast("image b base64 error")
                     return@launch
