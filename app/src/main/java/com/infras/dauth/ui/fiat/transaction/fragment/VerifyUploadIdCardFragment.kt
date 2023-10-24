@@ -46,12 +46,12 @@ class VerifyUploadIdCardFragment : BaseFragment() {
         // 参考教程：https://developer.android.com/training/data-storage/shared/photopicker?hl=zh-cn
         _pickMediaSideA =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                val path = UriUtil.uriTransform(activity, uri) ?: return@registerForActivityResult
+                val path = UriUtil.uriTransform(activity, uri, "1") ?: return@registerForActivityResult
                 fVm.pathA.value = path
             }
         _pickMediaSideB =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                val path = UriUtil.uriTransform(activity, uri) ?: return@registerForActivityResult
+                val path = UriUtil.uriTransform(activity, uri, "2") ?: return@registerForActivityResult
                 fVm.pathB.value = path
             }
     }

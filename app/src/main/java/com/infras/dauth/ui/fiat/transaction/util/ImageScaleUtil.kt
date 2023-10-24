@@ -21,9 +21,8 @@ object ImageScaleUtil {
     private const val TAG = "ImageScaleUtil"
     private const val SCALE_IMAGE_WIDTH = 856
     private const val SCALE_IMAGE_HEIGHT = 540
-    private var index = AtomicInteger(0)
 
-    fun getScaledImage(dstDir: File, imagePath: String): String {
+    fun getScaledImage(dstDir: File, imagePath: String, suffix: String): String {
         val originalFile = File(imagePath)
         if (!originalFile.exists()) {
             return imagePath
@@ -40,8 +39,7 @@ object ImageScaleUtil {
             if (!dstDir.exists()) {
                 dstDir.mkdirs()
             }
-            val indexVal = index.getAndIncrement()
-            val tempFile = File.createTempFile("scaled_image$indexVal", ".jpg", dstDir)
+            val tempFile = File.createTempFile("scaled${suffix}_", ".jpg", dstDir)
             val stream = FileOutputStream(tempFile)
             image.compress(Bitmap.CompressFormat.JPEG, 70, stream)
             stream.close()

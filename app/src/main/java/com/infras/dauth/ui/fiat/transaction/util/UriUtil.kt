@@ -11,12 +11,12 @@ import java.io.File
 object UriUtil {
     private const val TAG = "UriUtil"
 
-    fun uriTransform(activity: Activity?, uri: Uri?): String? {
+    fun uriTransform(activity: Activity?, uri: Uri?, suffix: String = ""): String? {
         uri ?: return null
         val a = activity ?: return null
         val dstDir = AppManagers.storageManager.getDir(StorageDir.ImageCache)
-        val file = CacheFileUtil.saveUriToCacheFile(a, uri) ?: return null
-        val scaled = ImageScaleUtil.getScaledImage(dstDir, file.absolutePath)
+        val file = CacheFileUtil.saveUriToCacheFile(a, uri, suffix) ?: return null
+        val scaled = ImageScaleUtil.getScaledImage(dstDir, file.absolutePath, suffix)
         LogUtil.d(TAG, "${file.length()} -> ${File(scaled).length()} $scaled")
         return scaled
     }
