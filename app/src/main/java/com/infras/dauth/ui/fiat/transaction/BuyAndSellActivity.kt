@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -33,10 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,8 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.Visibility
-import coil.compose.rememberAsyncImagePainter
+import com.infras.dauth.MyApplication
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.app.BaseViewModel
@@ -69,8 +64,6 @@ import com.infras.dauth.widget.compose.DFlowRow
 import com.infras.dauth.widget.compose.TokenListItem
 import com.infras.dauth.widget.compose.ViewPagerContent
 import com.infras.dauth.widget.compose.ViewPagerIndicatorsWithUnderLine
-import com.infras.dauth.widget.compose.constant.DColors
-import com.infras.dauth.widget.compose.constant.DStrings
 import com.infras.dauthsdk.login.model.DigitalCurrencyListRes
 
 class BuyAndSellActivity : BaseActivity() {
@@ -245,6 +238,7 @@ class BuyAndSellActivity : BaseActivity() {
             ),
             fiatList = data.fiatList,
             fiatSelectIndex = data.fiatSelectIndex,
+            buildTime = MyApplication.buildTime,
         )
     }
 
@@ -261,13 +255,14 @@ class BuyAndSellActivity : BaseActivity() {
         ),
         onClickCurrencyToggle: (Int) -> Unit = {},
         fiatSelectIndex: Int? = null,
+        buildTime: String = "???",
     ) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
-            val (cbCurrencySelector, ivBackArrow, pwCurrencyMenu) = createRefs()
+            val (cbCurrencySelector, ivBackArrow, pwCurrencyMenu, tvBuildVersion) = createRefs()
 
             Column(
                 modifier = Modifier
@@ -366,6 +361,17 @@ class BuyAndSellActivity : BaseActivity() {
                     }
                 }
             }
+
+            Text(
+                modifier = Modifier.constrainAs(tvBuildVersion) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+                text = buildTime,
+                fontSize = 8.sp,
+                color = Color.Black
+            )
         }
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import com.infras.dauth.MyApplication
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityKycSubmitBinding
@@ -37,6 +38,7 @@ class KycSubmitActivity : BaseActivity(), VerifySetProfileFragment.ProfileConfir
         binding.ivBack.setDebouncedOnClickListener {
             handleBackPress()
         }
+        binding.tvBuildTime.text = MyApplication.buildTime
         if (isBound) {
             layFragment1()
         } else {

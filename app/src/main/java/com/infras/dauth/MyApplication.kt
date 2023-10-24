@@ -26,6 +26,10 @@ class MyApplication : Application() {
         private const val TAG = "MyApplication"
         lateinit var app: MyApplication
             private set
+        val buildTime
+            get() = "build: " + SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(
+                Date(BuildConfig.BUILD_TIMESTAMP)
+            )
     }
 
     override fun onCreate() {
@@ -54,10 +58,7 @@ class MyApplication : Application() {
             )
         }
 
-        val date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(
-            Date(BuildConfig.BUILD_TIMESTAMP)
-        )
-        LogUtil.i(TAG, "build time: $date")
+        LogUtil.i(TAG, buildTime)
     }
 }
 
