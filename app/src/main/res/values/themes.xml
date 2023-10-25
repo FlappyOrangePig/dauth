@@ -34,6 +34,16 @@
         <item name="android:minHeight">10dp</item>
     </style>
 
+    <style name="Theme.client.Splash" parent="Theme.client">
+        <item name="android:windowBackground">?attr/colorSecondary</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:statusBarColor">?attr/colorSecondary</item>
+        <item name="android:navigationBarColor">?attr/colorSecondary</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">@null</item>
+    </style>
+
     <style name="Theme.client.BlueButtonWithLittleMargin" parent="Theme.client.BlueButton">
         <item name="android:layout_marginTop">5dp</item>
         <item name="android:layout_marginEnd">5dp</item>
@@ -51,6 +61,18 @@
         <item name="android:textColorHint">@android:color/darker_gray</item>
         <item name="android:background">@drawable/bg_edit_text</item>
         <item name="android:importantForAutofill" tools:targetApi="o">no</item>
+    </style>
+
+    <style name="Theme.client.EditText.KYC" parent="Theme.client">
+        <item name="android:gravity">left|center_vertical</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:paddingStart">15dp</item>
+        <item name="android:paddingEnd">15dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColorHint">@color/gray_b4</item>
+        <item name="android:background">@drawable/bg_black_r0_s1</item>
+        <item name="android:maxLines">1</item>"
     </style>
 
     <style name="Theme.client.Logo" parent="Theme.client">
@@ -74,6 +96,21 @@
         <item name="android:textSize">16sp</item>
         <item name="android:singleLine">true</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Theme.client.TextView.OrderState" parent="Theme.client.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:background">@drawable/bg_order_state_selector</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">1dp</item>
+        <item name="android:paddingBottom">1dp</item>
     </style>
 
 </resources>

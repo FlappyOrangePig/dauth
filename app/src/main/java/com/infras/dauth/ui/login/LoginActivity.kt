@@ -1,18 +1,19 @@
 package com.infras.dauth.ui.login
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityLoginLayoutBinding
+import com.infras.dauth.ext.launch
+import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.manager.sdk
+import com.infras.dauth.repository.SignInRepository
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.ui.login.fragment.SignInByCodeFragment
 import com.infras.dauth.ui.login.fragment.SignInByPasswordFragment
-import com.infras.dauth.ui.login.repository.SignInRepository
-import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.ui.main.WalletTestActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.HideApiUtil
@@ -20,25 +21,29 @@ import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
 import com.infras.dauthsdk.api.annotation.SignType3rd
 import com.infras.dauthsdk.api.entity.DAuthResult
-import com.infras.dauthsdk.api.entity.ResponseCode
 import kotlinx.coroutines.launch
 
 class LoginActivity : BaseActivity() {
     private var _binding: ActivityLoginLayoutBinding? = null
     private val binding: ActivityLoginLayoutBinding get() = _binding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     private var currentFragmentType = 0 // 0=code 1=password
     private val signInByCode by lazy { SignInByCodeFragment.newInstance() }
     private val signInByPassword by lazy { SignInByPasswordFragment.newInstance() }
+
+    companion object {
+        fun launch(context: Context) {
+            context.launch(LoginActivity::class.java)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityLoginLayoutBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         binding.initView()
-        initData()
     }
 
     private fun ActivityLoginLayoutBinding.initView() {
@@ -58,13 +63,13 @@ class LoginActivity : BaseActivity() {
                 val result = SignInRepository().signIn {
                     sdk.loginWithType(SignType3rd.GOOGLE, a)
                 }
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     a,
                     getString(if (result) R.string.success else (R.string.failure))
                 )
                 if (result) {
-                    MainActivity.launch(a)
+                    a.launchMainPage()
                     finish()
                 }
             }
@@ -77,13 +82,13 @@ class LoginActivity : BaseActivity() {
                 val result = SignInRepository().signIn {
                     sdk.loginWithType(SignType3rd.TWITTER, a)
                 }
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     a,
                     getString(if (result) R.string.success else (R.string.failure))
                 )
                 if (result) {
-                    MainActivity.launch(a)
+                    a.launchMainPage()
                     finish()
                 }
             }
@@ -159,55 +164,17 @@ class LoginActivity : BaseActivity() {
                 val tx = supportFragmentManager.beginTransaction()
                 tx.replace(R.id.fl_fragment_container, signInByPassword)
                 tx.commit()
-                binding.tvPasswordLogin.text = "验证码登录"
+                binding.tvPasswordLogin.text = "Sign in with SMS"
             }
 
             0 -> {
                 val tx = supportFragmentManager.beginTransaction()
                 tx.replace(R.id.fl_fragment_container, signInByCode)
                 tx.commit()
-                binding.tvPasswordLogin.text = "密码登录"
+                binding.tvPasswordLogin.text = "Sign in with password"
             }
 
             else -> throw RuntimeException()
-        }
-    }
-
-    private fun initData() {
-        performAutoLogin()
-    }
-
-    private fun performAutoLogin() {
-        lifecycleScope.launch {
-            val walletExists = AccountManager.isWalletExists()
-            if (!walletExists) {
-                return@launch
-            }
-
-            loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
-            val accountResult = sdk.queryAccountByAuthid()
-            loadingDialog.dismiss()
-            if (accountResult == null) {
-                ToastUtil.show(this@LoginActivity, "网络错误")
-                return@launch
-            }
-
-            val ret = accountResult.ret
-            when {
-                accountResult.isSuccess() -> {
-                    finish()
-                    MainActivity.launch(this@LoginActivity)
-                }
-
-                ResponseCode.isLoggedOut(ret) -> {
-                    ToastUtil.show(this@LoginActivity, "登录状态已失效 $ret")
-                    sdk.logout()
-                }
-
-                else -> {
-                    ToastUtil.show(this@LoginActivity, "登录失败 $ret")
-                }
-            }
         }
     }
 }

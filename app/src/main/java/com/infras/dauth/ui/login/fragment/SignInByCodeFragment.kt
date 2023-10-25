@@ -8,14 +8,14 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.infras.dauth.R
+import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.databinding.FragmentSignInByCodeBinding
+import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.ext.setDebouncedOnClickListener
 import com.infras.dauth.ui.login.viewmodel.SignInByCodeViewModel
-import com.infras.dauth.ui.main.MainActivity
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.ToastUtil
 import com.infras.dauth.widget.LoadingDialogFragment
-import com.infras.dauthsdk.wallet.base.BaseFragment
 import kotlinx.coroutines.launch
 
 class SignInByCodeFragment private constructor() : BaseFragment() {
@@ -46,7 +46,7 @@ class SignInByCodeFragment private constructor() : BaseFragment() {
             lifecycleScope.launch {
                 loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
                 val result = viewModel.sendVerifyCode()
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     it.context,
                     getString(if (result) R.string.success else (R.string.failure))
@@ -57,14 +57,14 @@ class SignInByCodeFragment private constructor() : BaseFragment() {
             lifecycleScope.launch {
                 loadingDialog.show(childFragmentManager, LoadingDialogFragment.TAG)
                 val result = viewModel.sendSubmitRequest()
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 requireActivity().apply {
                     ToastUtil.show(
                         this,
                         getString(if (result) R.string.success else (R.string.failure))
                     )
                     if (result) {
-                        MainActivity.launch(this)
+                        this.launchMainPage()
                         this.finish()
                     }
                 }

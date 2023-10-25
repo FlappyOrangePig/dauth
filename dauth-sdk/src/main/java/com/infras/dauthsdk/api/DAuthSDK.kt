@@ -46,8 +46,13 @@ class DAuthSDK private constructor(
         return Managers.eoaWalletApi
     }
 
+    override fun getFiatApi(): IFiatApi {
+        return Managers.fiatApi
+    }
+
     @VisibleForTesting
     fun initSDKForTest(context: Context, config: SdkConfig) {
+        Managers.context = context
         this._config = config
     }
 

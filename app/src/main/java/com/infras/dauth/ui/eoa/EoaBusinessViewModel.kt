@@ -2,8 +2,8 @@ package com.infras.dauth.ui.eoa
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.infras.dauth.app.BaseViewModel
 import com.infras.dauth.util.HideApiUtil
 import com.infras.dauth.util.LogUtil
 import com.infras.dauthsdk.api.IEoaWalletApi
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class EoaBusinessViewModel : ViewModel() {
+class EoaBusinessViewModel : BaseViewModel() {
 
     companion object {
         private const val TAG = "EoaBusinessViewModel"
@@ -24,9 +24,6 @@ class EoaBusinessViewModel : ViewModel() {
     private val api: IEoaWalletApi get() = HideApiUtil.getEoaApi()
     private val _textState = mutableStateOf(INIT_ACCOUNT_INFO)
     val textState: State<String> = _textState
-
-    private val _toastEvent = Channel<String>(capacity = Channel.UNLIMITED)
-    val toastEvent: Flow<String> = _toastEvent.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -45,11 +42,11 @@ class EoaBusinessViewModel : ViewModel() {
             when (result) {
                 is DAuthResult.Success -> {
                     _textState.value = result.data
-                    _toastEvent.send("connect success:${result.data}")
+                    toast("connect success:${result.data}")
                 }
 
                 else -> {
-                    _toastEvent.send("connect failure:${result.getError()}")
+                    toast("connect failure:${result.getError()}")
                 }
             }
         }
@@ -62,11 +59,11 @@ class EoaBusinessViewModel : ViewModel() {
             LogUtil.d(TAG, "getAddress << $result")
             when (result) {
                 is DAuthResult.Success -> {
-                    _toastEvent.send("getAddress success:${result.data}")
+                    toast("getAddress success:${result.data}")
                 }
 
                 else -> {
-                    _toastEvent.send("getAddress failure:${result.getError()}")
+                    toast("getAddress failure:${result.getError()}")
                 }
             }
         }
@@ -80,11 +77,11 @@ class EoaBusinessViewModel : ViewModel() {
             LogUtil.d(TAG, "personalSign << $result")
             when (result) {
                 is DAuthResult.Success -> {
-                    _toastEvent.send("personalSign success:${result.data}")
+                    toast("personalSign success:${result.data}")
                 }
 
                 else -> {
-                    _toastEvent.send("personalSign failure:${result.getError()}")
+                    toast("personalSign failure:${result.getError()}")
                 }
             }
         }
@@ -106,11 +103,11 @@ class EoaBusinessViewModel : ViewModel() {
             LogUtil.d(TAG, "sendTransaction << $result")
             when (result) {
                 is DAuthResult.Success -> {
-                    _toastEvent.send("sendTransaction success:${result.data.txHash}")
+                    toast("sendTransaction success:${result.data.txHash}")
                 }
 
                 else -> {
-                    _toastEvent.send("sendTransaction failure:${result.getError()}")
+                    toast("sendTransaction failure:${result.getError()}")
                 }
             }
         }

@@ -1,23 +1,22 @@
 package com.infras.dauth.ui.main
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import coil.load
+import coil.transform.RoundedCornersTransformation
 import com.infras.dauth.R
 import com.infras.dauth.app.BaseActivity
 import com.infras.dauth.databinding.ActivityMainLayoutBinding
 import com.infras.dauth.ext.dp
 import com.infras.dauth.ext.handleByToast
 import com.infras.dauth.ext.isMail
+import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.mount
 import com.infras.dauth.ext.myAddress
 import com.infras.dauth.ext.tokenIds
 import com.infras.dauth.manager.AccountManager
-import com.infras.dauth.manager.sdk
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.DialogHelper
 import com.infras.dauth.util.LogUtil
@@ -37,15 +36,14 @@ class MainActivity : BaseActivity() {
 
     companion object {
         fun launch(context: Context) {
-            val intent = Intent(context, MainActivity::class.java)
-            context.startActivity(intent)
+            context.launch(MainActivity::class.java)
         }
     }
 
     private var mainBinding: ActivityMainLayoutBinding? = null
     private val binding: ActivityMainLayoutBinding get() = mainBinding!!
     private val loadingDialog = LoadingDialogFragment.newInstance()
-    private val sdk get() = sdk()
+    private val sdk get() = AccountManager.sdk
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +62,7 @@ class MainActivity : BaseActivity() {
                 showEth(sb)
                 showUsdt(sb)
                 showNfts(sb)
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 DialogHelper.show1ButtonDialogMayHaveLeak(this@MainActivity, sb.toString())
             }
         }
@@ -83,7 +81,7 @@ class MainActivity : BaseActivity() {
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val accountRes = sdk.queryAccountByEmail(mail)
-                        loadingDialog.dismiss()
+                        loadingDialog.dismissAllowingStateLoss()
                         val data = accountRes?.data
                         if (data == null) {
                             ToastUtil.show(a, "获取失败")
@@ -109,7 +107,7 @@ class MainActivity : BaseActivity() {
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val response = sdk.sendEmailVerifyCode(mail)
-                        loadingDialog.dismiss()
+                        loadingDialog.dismissAllowingStateLoss()
                         if (response?.ret != 0) {
                             return@launch
                         }
@@ -126,7 +124,7 @@ class MainActivity : BaseActivity() {
                                         LoadingDialogFragment.TAG
                                     )
                                     val result = sdk.bindEmail(mail, code)
-                                    loadingDialog.dismiss()
+                                    loadingDialog.dismissAllowingStateLoss()
                                     result.handleByToast()
                                 }
                             }
@@ -146,7 +144,7 @@ class MainActivity : BaseActivity() {
                     lifecycleScope.launch {
                         loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                         val response = sdk.sendEmailVerifyCode(mail)
-                        loadingDialog.dismiss()
+                        loadingDialog.dismissAllowingStateLoss()
                         if (response?.ret != 0) {
                             return@launch
                         }
@@ -163,7 +161,7 @@ class MainActivity : BaseActivity() {
                                         LoadingDialogFragment.TAG
                                     )
                                     val result = sdk.checkEmail(mail, code)
-                                    loadingDialog.dismiss()
+                                    loadingDialog.dismissAllowingStateLoss()
                                     result.handleByToast()
                                 }
                             }
@@ -178,10 +176,8 @@ class MainActivity : BaseActivity() {
         }
 
         binding.btnQuit.setOnClickListener {
-            sdk.logout()
-            finish()
+            AccountManager.logout(this)
         }
-
     }
 
     override fun onDestroy() {
@@ -194,7 +190,7 @@ class MainActivity : BaseActivity() {
             lifecycleScope.launch {
                 loadingDialog.show(supportFragmentManager, LoadingDialogFragment.TAG)
                 val result = sdk.setPassword(SetPasswordParam().apply { this.password = password })
-                loadingDialog.dismiss()
+                loadingDialog.dismissAllowingStateLoss()
                 result.handleByToast()
             }
         }
@@ -287,11 +283,21 @@ class MainActivity : BaseActivity() {
 
                 this.toString().removeSuffix("\n")
             }
-            Glide.with(this@MainActivity)
-                .load(data.head_img_url)
-                .transform(RoundedCorners(8.dp()))
-                .placeholder(R.drawable.svg_ic_default_avatar)
-                .into(binding.ivAvatar)
+
+            binding.ivAvatar.load(data.head_img_url) {
+                transformations(
+                    RoundedCornersTransformation(
+                        8.dp().toFloat(),
+                        8.dp().toFloat(),
+                        8.dp().toFloat(),
+                        8.dp().toFloat()
+                    )
+                )
+                // 可选：设置占位符
+                placeholder(R.drawable.svg_ic_default_avatar)
+                // 可选：设置错误占位符
+                error(R.drawable.svg_ic_default_avatar)
+            }
 
             if (showDetail) {
                 showAccountInfoDialog(data)

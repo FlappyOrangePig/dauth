@@ -250,8 +250,8 @@ internal class DAuthLogin internal constructor() : ILoginApi {
         return requestApi.sendEmailVerifyCode(body)
     }
 
-    override suspend fun bindPhone(param: BindPhoneParam) {
-        requestApi.bindPhone(param)
+    override suspend fun bindPhone(param: BindPhoneParam): BaseResponse? {
+        return requestApi.bindPhone(param)
     }
 
     override suspend fun bindEmail(email: String, verifyCode: String): BaseResponse? {

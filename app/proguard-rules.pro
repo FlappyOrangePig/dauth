@@ -25,3 +25,5 @@
 -dontwarn javax.naming.directory.Attributes
 -dontwarn javax.naming.directory.DirContext
 -dontwarn javax.naming.directory.InitialDirContext
+
+-keep class com.infras.dauth.entity.** { *; }

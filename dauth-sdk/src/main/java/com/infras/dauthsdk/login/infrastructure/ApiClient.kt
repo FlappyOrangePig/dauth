@@ -4,6 +4,7 @@ import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.login.impl.TokenManager
 import com.infras.dauthsdk.login.model.IAccessTokenRequest
 import com.infras.dauthsdk.login.model.IAuthorizationRequest
+import com.infras.dauthsdk.login.network.BaseResponse
 import com.infras.dauthsdk.login.utils.DAuthLogger
 import com.infras.dauthsdk.login.utils.SignUtils
 import com.infras.dauthsdk.mpc.util.MoshiUtil
@@ -142,7 +143,7 @@ internal open class ApiClient {
         return r
     }
 
-    internal suspend inline fun <reified T : Any> request(
+    internal suspend inline fun <reified T : BaseResponse> request(
         requestConfig: RequestConfig,
         body: Any
     ): T? = withContext(Dispatchers.IO) {
@@ -268,7 +269,17 @@ internal open class ApiClient {
     }
 
     private val requestFieldBlackList =
-        arrayOf("access_token", "sign", "authid", "keyshare", "keyresult", "private_key", "mpc_result")
+        arrayOf(
+            "access_token",
+            "sign",
+            "authid",
+            "keyshare",
+            "keyresult",
+            "private_key",
+            "mpc_result",
+            "id_front_img",
+            "id_back_img"
+        )
 
     private fun traceMap(map: Map<String, String>) {
         val sb = StringBuilder()

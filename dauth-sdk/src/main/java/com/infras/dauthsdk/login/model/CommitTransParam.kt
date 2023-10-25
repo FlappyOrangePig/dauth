@@ -5,7 +5,8 @@ import java.math.BigInteger
 class CommitTransParam(
     val open_id: String,
     val transdata: String,
-    val client_id: String
+    val client_id: String,
+    val chain_id: String,
 ) : IAccessTokenRequest
 
 class WireUserOp(

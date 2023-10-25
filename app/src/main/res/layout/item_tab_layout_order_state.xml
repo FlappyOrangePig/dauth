@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.infras.dauth.widget.IFTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/text1"
+    android:layout_width="80dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:includeFontPadding="false"
+    android:lines="1"
+    android:maxLines="1"
+    android:textColor="@color/black"
+    android:textSize="13sp"
+    tools:text="Pending" />

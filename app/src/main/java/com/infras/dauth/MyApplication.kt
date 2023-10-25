@@ -2,11 +2,18 @@ package com.infras.dauth
 
 import android.app.Application
 import com.infras.dauth.manager.AccountManager
+import com.infras.dauth.manager.AppManagers
+import com.infras.dauth.manager.ResourceManager
+import com.infras.dauth.manager.StorageManager
 import com.infras.dauth.util.DAuthEnv
 import com.infras.dauth.util.LogUtil
+import com.infras.dauth.util.getEnv
 import com.infras.dauthsdk.api.DAuthSDK
 import com.infras.dauthsdk.api.SdkConfig
 import com.infras.dauthsdk.api.annotation.DAuthLogLevel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private const val CONSUMER_KEY = "2tUyK3TbbjxHPUHOP25OnSL0r"
 private const val CONSUMER_SECRET = "p9bAQDBtlNPdNiTQuMM8yLJuwwDsVCf8QZl2rRRa4eqHVIBFHs"
@@ -19,15 +26,16 @@ class MyApplication : Application() {
         private const val TAG = "MyApplication"
         lateinit var app: MyApplication
             private set
+        val buildTime
+            get() = "build: " + SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(
+                Date(BuildConfig.BUILD_TIMESTAMP)
+            )
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        val env = when (BuildConfig.IS_LIVE) {
-            true -> DAuthEnv.EnvProd
-            false -> DAuthEnv.EnvDev
-        }
+        val env = getEnv()
 
         runSpending(TAG, "启动耗时") {
             app = this
@@ -44,7 +52,13 @@ class MyApplication : Application() {
             val sdk = DAuthSDK.instance
             sdk.initSDK(this, config = config)
             AccountManager.attachSdk(sdk)
+            AppManagers.attach(
+                resourceManager = ResourceManager(this),
+                storageManager = StorageManager(this),
+            )
         }
+
+        LogUtil.i(TAG, buildTime)
     }
 }
 

@@ -3,11 +3,11 @@
     <string name="CONSUMER_KEY">Kd63x5Y6NuunwJc7qlW3O83JH</string>
     <string name="CONSUMER_SECRET">9ZGc6immVNhfOHMjBacxKCMYE6PmaFXRI0OJWslxWZFx1QPkxU</string>
     <string name="google_play_service_id">209392989758-svboqpe2r94q1p3vg9qrkgcgfuemnakk.apps.googleusercontent.com</string>
-    <string name="create_wallet">创建钱包</string>
-    <string name="sign">签名</string>
-    <string name="success">成功</string>
-    <string name="failure">失败</string>
-    <string name="network_error">网络错误</string>
-    <string name="create_aa">创建aa</string>
-    <string name="transfer_money_to_aa">给aa转钱</string>
+    <string name="create_wallet">Create Wallet</string>
+    <string name="sign">Sign</string>
+    <string name="success">Success</string>
+    <string name="failure">Failure</string>
+    <string name="network_error">Network Error</string>
+    <string name="create_aa">Create AA</string>
+    <string name="transfer_money_to_aa">Transfer Money To AA</string>
 </resources>

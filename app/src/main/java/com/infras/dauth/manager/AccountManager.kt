@@ -1,18 +1,19 @@
 package com.infras.dauth.manager
 
+import android.app.Activity
+import com.infras.dauth.ui.login.LoginActivity
 import com.infras.dauthsdk.api.IDAuthApi
 import com.infras.dauthsdk.api.entity.DAuthResult
 import com.infras.dauthsdk.api.entity.WalletAddressData
 
 internal object AccountManager {
 
-    private lateinit var sdk: IDAuthApi
+    lateinit var sdk: IDAuthApi
+        private set
 
     fun attachSdk(sdk: IDAuthApi){
         this.sdk = sdk
     }
-
-    internal fun sdk() = sdk
 
     private suspend fun getAccountAddressResult(): DAuthResult<WalletAddressData> {
         return sdk.queryWalletAddress()
@@ -28,6 +29,32 @@ internal object AccountManager {
     suspend fun isWalletExists(): Boolean {
         return !getAccountAddress().isNullOrEmpty()
     }
-}
 
-internal fun sdk() = AccountManager.sdk()
+    fun logout(activity: Activity) {
+        sdk.logout()
+        activity.finishAffinity()
+        LoginActivity.launch(activity)
+    }
+
+    fun getAuthId(): String {
+        return try {
+            val dauthLogin = Class.forName("com.infras.dauthsdk.api.DAuthSDK")
+                .getDeclaredField("loginApi").also { it.isAccessible = true }
+                .get(sdk)
+
+            val prefs = Class.forName("com.infras.dauthsdk.login.impl.DAuthLogin")
+                .getDeclaredMethod("getPrefs").also { it.isAccessible = true }
+                .invoke(dauthLogin)
+
+
+            val authId = Class.forName("com.infras.dauthsdk.login.utils.LoginPrefs")
+                .getDeclaredMethod("getAuthId").also { it.isAccessible = true }
+                .invoke(prefs) as String
+
+            authId
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            ""
+        }
+    }
+}

@@ -75,7 +75,7 @@ internal class RequestApiMpc internal constructor(): ApiClient() {
         "https://${ConfigurationManager.stage().baseUrlHost}"
     }
 
-    suspend fun commitOp(userOperation: EntryPoint.UserOperation): CommitTransRes? {
+    suspend fun commitOp(userOperation: EntryPoint.UserOperation, chainId: String): CommitTransRes? {
         val openId = Managers.loginPrefs.getAuthId()
 
         val wireUserOp = WireUserOp(
@@ -97,7 +97,8 @@ internal class RequestApiMpc internal constructor(): ApiClient() {
         val param = CommitTransParam(
             open_id = openId,
             transdata = transData,
-            client_id = config.clientId.orEmpty()
+            client_id = config.clientId.orEmpty(),
+            chain_id = chainId,
         )
         val host = getHost(ConfigurationManager.innerConfig.useDevRelayerServer)
         val url = "${host}/relayer/committrans"

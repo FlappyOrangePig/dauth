@@ -2,16 +2,14 @@ package com.infras.dauthsdk.wallet.impl.manager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.infras.dauthsdk.api.IEoaWalletApi
 import com.infras.dauthsdk.login.network.RequestApi
+import com.infras.dauthsdk.login.network.RequestApiFiat
 import com.infras.dauthsdk.login.network.RequestApiMpc
 import com.infras.dauthsdk.login.utils.LoginPrefs
-import com.infras.dauthsdk.mpc.MpcKeyStore
 import com.infras.dauthsdk.wallet.connect.wallectconnect.ConnectManager
 import com.infras.dauthsdk.wallet.impl.ConfigurationManager
 import com.infras.dauthsdk.wallet.impl.EoaWalletImpl
 import com.infras.dauthsdk.wallet.impl.Web3Manager
-import com.infras.dauthsdk.wallet.impl.manager.api.IKeyStore
 import com.infras.dauthsdk.wallet.util.DeviceUtil
 import com.infras.dauthsdk.wallet.util.WalletPrefsV2
 
@@ -34,6 +32,7 @@ internal object Managers {
     lateinit var logManager: DLogManager
     lateinit var fileManager: FileManager
     lateinit var eoaWalletApi: EoaWalletImpl
+    lateinit var fiatApi: RequestApiFiat
     lateinit var preGenerateKeyManager: PreGenerateKeyManager
     lateinit var globalPrefsManager: GlobalPrefsManager
     lateinit var statsManager: StatsManager
@@ -51,6 +50,7 @@ internal object Managers {
         connectManager = ConnectManager(context)
         requestApi = RequestApi()
         requestApiMpc = RequestApiMpc()
+        fiatApi = RequestApiFiat()
         web3m = Web3Manager().also { it.reset(ConfigurationManager.chain().rpcUrl) }
         deviceId = DeviceUtil.getDeviceId(context)
         logManager = DLogManager(fileManager)

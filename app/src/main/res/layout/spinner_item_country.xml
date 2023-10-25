@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.infras.dauth.widget.IFTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:drawableStart="@drawable/ic_segment_dot"
+    android:drawablePadding="5dp"
+    android:gravity="start|center_vertical"
+    android:paddingStart="7dp"
+    android:paddingEnd="7dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:textColor="@color/black"
+    android:textSize="12sp"
+    tools:ignore="MissingDefaultResource"
+    tools:text="Japan" />

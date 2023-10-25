@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  * 对MetaMask的WebView进行包装，封装基本逻辑。
  * 而使用不同UI组件的封装参见[MetaMaskActivity]或[MetaMaskDialog]
  */
-class MetaMaskFragment : BaseFragment() {
+internal class MetaMaskFragment : BaseFragment() {
 
     companion object {
         private const val TAG = "MetaMaskFragment"
@@ -43,6 +43,7 @@ class MetaMaskFragment : BaseFragment() {
     )
 
     private var metaMaskInput: MetaMaskInput? = null
+
     @Volatile
     private var jsToBeExecutedOnPageRefresh: String? = null
 
@@ -52,7 +53,7 @@ class MetaMaskFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         FrameLayout(requireContext()).apply {
-            addView(MetaMaskH5Holder.getGlobalWebView().also {wv ->
+            addView(MetaMaskH5Holder.getGlobalWebView().also { wv ->
                 wv.setOnPageFinished {
                     // 刷新页面后更新按钮状态
                     refreshH5Ui()

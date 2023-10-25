@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sv_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:paddingStart="22dp"
+    android:paddingEnd="22dp"
+    android:visibility="visible"
+    tools:visibility="visible">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Document Verification"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_tips1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Take pictures of your goverment issued ID document"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_tips1_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:drawableStart="@drawable/ic_segment_dot"
+            android:drawablePadding="15dp"
+            android:gravity="center_vertical"
+            android:text="Upload a complete image of your ID document."
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_tips1" />
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_tips1_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawableStart="@drawable/ic_segment_dot"
+            android:drawablePadding="15dp"
+            android:gravity="center_vertical"
+            android:text="Ensure all details are readable in the  image you upload."
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_tips1_1" />
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_tips1_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawableStart="@drawable/ic_segment_dot"
+            android:drawablePadding="15dp"
+            android:gravity="center_vertical"
+            android:text="Ensure the document is the orginal and has not expired."
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_tips1_2" />
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_tips1_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawableStart="@drawable/ic_segment_dot"
+            android:drawablePadding="15dp"
+            android:gravity="center_vertical"
+            android:text="Place document against a solid-colored background."
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_tips1_3" />
+
+        <FrameLayout
+            android:id="@+id/fl_side_a"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/gray_d9"
+            app:layout_constraintTop_toBottomOf="@id/tv_tips1_4">
+
+            <ImageView
+                android:id="@+id/iv_side_a"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:minHeight="160dp"
+                android:scaleType="centerCrop" />
+
+            <com.infras.dauth.widget.IFTextView
+                android:id="@+id/tv_side_a_tips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="+\nUpload the front of your ID card"
+                android:textColor="@color/black"
+                android:textSize="12sp" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/fl_side_b"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@color/gray_d9"
+            app:layout_constraintTop_toBottomOf="@id/fl_side_a">
+
+            <ImageView
+                android:id="@+id/iv_side_b"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:minHeight="160dp"
+                android:scaleType="centerCrop" />
+
+            <com.infras.dauth.widget.IFTextView
+                android:id="@+id/tv_side_b_tips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="+\nUpload the back of your ID card"
+                android:textColor="@color/black"
+                android:textSize="12sp" />
+
+        </FrameLayout>
+
+        <com.infras.dauth.widget.IFTextView
+            android:id="@+id/tv_continue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/bg_black_r5_s1"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Continue"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fl_side_b" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

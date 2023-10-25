@@ -6,4 +6,7 @@ interface IDAuthApi : ILoginApi, IAAWalletApi {
 
     @DAuthExperimentalApi
     fun getEoaApi(): IEoaWalletApi
+
+    @DAuthExperimentalApi
+    fun getFiatApi(): IFiatApi
 }

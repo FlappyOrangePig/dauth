@@ -102,7 +102,7 @@ interface ILoginApi {
      *
      * @param param
      */
-    suspend fun bindPhone(param: BindPhoneParam)
+    suspend fun bindPhone(param: BindPhoneParam): BaseResponse?
 
     /**
      * Bind email

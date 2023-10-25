@@ -9,11 +9,12 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ProgressBar
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.infras.dauth.ext.dp
+import com.infras.dauth.util.LogUtil
+import com.infras.dauth.widget.dialog.BaseDialogFragment
 
-class LoadingDialogFragment : DialogFragment() {
+class LoadingDialogFragment : BaseDialogFragment() {
     companion object {
         const val TAG = "LoadingDialogFragment"
         fun newInstance(): LoadingDialogFragment {
@@ -24,7 +25,7 @@ class LoadingDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val a = requireActivity()
         val fl = FrameLayout(a).apply {
-            setBackgroundColor(Color.parseColor("#88000000"))
+            //setBackgroundColor(Color.parseColor("#88000000"))
             val padding = 10F.dp()
             setPadding(padding, padding, padding, padding)
             addView(ProgressBar(a), ViewGroup.LayoutParams(-2, -2))
@@ -53,20 +54,37 @@ class LoadingDialogFragment : DialogFragment() {
         return dialog
     }
 
-    override fun show(manager: FragmentManager, tag: String?) {
-        super.show(manager, tag)
-        val window = dialog?.window
-        if (window != null) {
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
             val layoutParams = window.attributes
             layoutParams.gravity = Gravity.CENTER
             layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT
             layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-            layoutParams.dimAmount = 0.6f
+            layoutParams.dimAmount = 0.2f
             window.decorView.setPadding(0, 0, 0, 0)
             window.decorView.setBackgroundColor(Color.TRANSPARENT)
             window.attributes = layoutParams
             window.setBackgroundDrawable(null)
         }
         isCancelable = false
+    }
+
+    override fun dismissAllowingStateLoss() {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (t: Throwable) {
+            LogUtil.d(TAG, t.stackTraceToString())
+        }
+    }
+
+    override fun show(manager: FragmentManager, tag: String?) {
+        try {
+            if (!isAdded) {
+                super.show(manager, tag)
+            }
+        } catch (t: Throwable) {
+            LogUtil.d(TAG, t.stackTraceToString())
+        }
     }
 }
