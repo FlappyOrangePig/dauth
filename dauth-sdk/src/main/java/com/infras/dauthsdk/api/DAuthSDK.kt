@@ -33,6 +33,7 @@ class DAuthSDK private constructor(
         val appContext = context.applicationContext as Application
         this._config = config
         Managers.inject(appContext)
+        Managers.sdkVersionBumpManager.initialize()
         loginApi.initSDK(context, config)
         KeystoreUtil.setupBouncyCastle()
         Managers.preGenerateKeyManager.initialize()

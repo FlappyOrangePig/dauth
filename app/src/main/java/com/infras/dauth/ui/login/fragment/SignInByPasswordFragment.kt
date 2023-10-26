@@ -12,6 +12,7 @@ import com.infras.dauth.app.BaseFragment
 import com.infras.dauth.databinding.FragmentSignInByPasswordBinding
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.ext.setDebouncedOnClickListener
+import com.infras.dauth.repository.SignInResult
 import com.infras.dauth.ui.login.viewmodel.SignInByPasswordViewModel
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauth.util.ToastUtil
@@ -51,9 +52,9 @@ class SignInByPasswordFragment private constructor() : BaseFragment() {
                 requireActivity().apply {
                     ToastUtil.show(
                         this,
-                        getString(if (result) R.string.success else (R.string.failure))
+                        result.digest()
                     )
-                    if (result) {
+                    if (result is SignInResult.Success) {
                         this.launchMainPage()
                         this.finish()
                     }

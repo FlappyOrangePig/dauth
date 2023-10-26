@@ -7,6 +7,7 @@ import com.infras.dauth.ext.isMail
 import com.infras.dauth.ext.isPhone
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.repository.SignInRepository
+import com.infras.dauth.repository.SignInResult
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauthsdk.api.annotation.DAuthAccountType
 
@@ -29,7 +30,7 @@ class SignInByPasswordViewModel : BaseViewModel() {
         _password.value = text
     }
 
-    suspend fun sendSubmitRequest(): Boolean {
+    suspend fun sendSubmitRequest(): SignInResult {
         val account = this.account.value.orEmpty()
         when {
             account.isMail() -> {
@@ -38,10 +39,10 @@ class SignInByPasswordViewModel : BaseViewModel() {
 
             account.isPhone() -> {
                 // 接口暂不支持
-                return false
+                return SignInResult.UnknownError
             }
 
-            else -> return false
+            else -> return SignInResult.UnknownError
         }
 
         return repo.signIn {

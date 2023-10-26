@@ -36,6 +36,7 @@ internal object Managers {
     lateinit var preGenerateKeyManager: PreGenerateKeyManager
     lateinit var globalPrefsManager: GlobalPrefsManager
     lateinit var statsManager: StatsManager
+    lateinit var sdkVersionBumpManager: SdkVersionBumpManager
     val mpcKeyStore get() = KeyStoreManager.getInstance(loginPrefs.getAuthId())
     val walletPrefsV2 get() = WalletPrefsV2(context, loginPrefs.getAuthId())
 
@@ -58,5 +59,6 @@ internal object Managers {
         eoaWalletApi = EoaWalletImpl()
         preGenerateKeyManager = PreGenerateKeyManager(fileManager, globalPrefsManager)
         statsManager = StatsManager(requestApi)
+        sdkVersionBumpManager = SdkVersionBumpManager(context, globalPrefsManager)
     }
 }

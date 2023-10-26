@@ -7,6 +7,7 @@ import com.infras.dauth.ext.isMail
 import com.infras.dauth.ext.isPhone
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.repository.SignInRepository
+import com.infras.dauth.repository.SignInResult
 import com.infras.dauth.util.DemoPrefs
 import com.infras.dauthsdk.api.annotation.DAuthAccountType
 
@@ -29,7 +30,7 @@ class SignInByCodeViewModel : BaseViewModel() {
         _verifyCode.value = text
     }
 
-    suspend fun sendSubmitRequest(): Boolean {
+    suspend fun sendSubmitRequest(): SignInResult {
         val account = this.account.value.orEmpty()
         val userType = when {
             (account.isMail()) -> {
@@ -40,7 +41,7 @@ class SignInByCodeViewModel : BaseViewModel() {
                 DAuthAccountType.ACCOUNT_TYPE_OF_MOBILE
             }
 
-            else -> return false
+            else -> return SignInResult.UnknownError
         }
         return repo.signIn {
             val verifyCode = this.verifyCode.value.orEmpty()

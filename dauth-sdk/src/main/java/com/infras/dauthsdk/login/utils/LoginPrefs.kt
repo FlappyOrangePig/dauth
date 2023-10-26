@@ -3,21 +3,22 @@ package com.infras.dauthsdk.login.utils
 import android.content.Context
 import android.content.SharedPreferences
 import com.infras.dauthsdk.api.DAuthSDK
-import com.infras.dauthsdk.login.impl.DAuthLogin
-
-private const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
-private const val ACCESS_TOKEN = "access_token"
-private const val AUTH_ID = "auth_id"
-private const val USER_ID = "user_id"
-private const val DID_TOKEN = "did_token"
-private const val REFRESH_TOKEN = "refresh_token"
-private const val EXPIRE_TIME = "expire_in"
-private const val USER_TYPE = "user_type"
-private const val DEFAULT_USER_TYPE = 0
-
-private const val TAG = "LoginPrefs"
 
 internal class LoginPrefs internal constructor(private val context: Context) {
+
+    companion object {
+        private const val TAG = "LoginPrefs"
+
+        const val LOGIN_STATE_INFO = "LOGIN_STATE_INFO"
+        private const val ACCESS_TOKEN = "access_token"
+        private const val AUTH_ID = "auth_id"
+        private const val USER_ID = "user_id"
+        private const val DID_TOKEN = "did_token"
+        private const val REFRESH_TOKEN = "refresh_token"
+        private const val EXPIRE_TIME = "expire_in"
+        private const val USER_TYPE = "user_type"
+        private const val DEFAULT_USER_TYPE = 0
+    }
 
     private val defaultAsync = true
 

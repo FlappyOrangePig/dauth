@@ -11,6 +11,7 @@ import com.infras.dauth.ext.launch
 import com.infras.dauth.ext.launchMainPage
 import com.infras.dauth.manager.AccountManager
 import com.infras.dauth.repository.SignInRepository
+import com.infras.dauth.repository.SignInResult
 import com.infras.dauth.ui.eoa.EoaBusinessActivity
 import com.infras.dauth.ui.login.fragment.SignInByCodeFragment
 import com.infras.dauth.ui.login.fragment.SignInByPasswordFragment
@@ -66,9 +67,9 @@ class LoginActivity : BaseActivity() {
                 loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     a,
-                    getString(if (result) R.string.success else (R.string.failure))
+                    result.digest()
                 )
-                if (result) {
+                if (result is SignInResult.Success) {
                     a.launchMainPage()
                     finish()
                 }
@@ -85,9 +86,9 @@ class LoginActivity : BaseActivity() {
                 loadingDialog.dismissAllowingStateLoss()
                 ToastUtil.show(
                     a,
-                    getString(if (result) R.string.success else (R.string.failure))
+                    result.digest()
                 )
-                if (result) {
+                if (result is SignInResult.Success) {
                     a.launchMainPage()
                     finish()
                 }
