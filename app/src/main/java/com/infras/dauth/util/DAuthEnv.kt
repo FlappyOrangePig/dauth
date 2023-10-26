@@ -62,7 +62,7 @@ sealed class DAuthEnv {
 internal fun getEnv(): DAuthEnv {
     return when (BuildConfig.IS_LIVE) {
         true -> DAuthEnv.EnvProd
-        false -> DAuthEnv.EnvDevGoerli
+        false -> DAuthEnv.EnvDevArbitrumGoerli
     }
 }
 
